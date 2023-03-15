@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>A new API for access to schema information</title>
+      <meta name="id" content="190" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2012-05-21T16:12:23" />
+      <meta name="basename" content="a_new_api_for_access_to_schema_information" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>A new API for access to schema information</h1>
+      <p><a class="zem_slink" href="http://en.wikipedia.org/wiki/Saxon_XSLT" title="Saxon XSLT" rel="wikipedia">Saxon</a> for a while has had the ability to export the schema <a class="zem_slink" href="http://en.wikipedia.org/wiki/Component-based_software_engineering" title="Component-based software engineering" rel="wikipedia">component model</a> as an <a class="zem_slink" href="http://en.wikipedia.org/wiki/XML" title="XML" rel="wikipedia">XML document</a>, making it accessible to <a class="zem_slink" href="http://en.wikipedia.org/wiki/XSLT" title="XSLT" rel="wikipedia">XSLT</a> and <a class="zem_slink" href="http://www.w3.org/XML/Query/" title="XQuery" rel="homepage">XQuery</a> applications. Providing the information at this level is much easier to process because
+         it represents the "compiled" schema rather than the raw schema documents; so there's
+         no sensitivity to all the stylistic variations in the way users choose to write schemas.
+         Nevertheless, it's not a particularly easy model to work with, partly because chasing
+         all the references from one component to another isn't much fun.
+         </p>
+      <p>
+         I've been experimenting today with a new interface that represents the schema components
+         directly as a functional model.
+         </p>
+      <p>
+         So saxon:schema() returns the "<a class="zem_slink" href="http://en.wikipedia.org/wiki/XML_schema" title="XML schema" rel="wikipedia">Schema</a>" schema component as a function, and saxon:schema()('element declarations') gets
+         all the element declarations, as a list of functions. If you want the element declaration
+         with a particular name, that's
+         </p>
+      <p>
+         <b>let $bookDecl := saxon:schema()('element declarations')[.('name') = 'BOOK']</b>
+         </p>
+      <p>
+         which is likely to be sufficiently common that I propose to offer a short-cut.
+         </p>
+      <p>
+         The properties of the element are then available, for example
+         </p>
+      <p>
+         <b>$bookDecl('nillable')</b>
+         </p>
+      <p>
+         tests whether the declaration is nillable, and
+         </p>
+      <p>
+         <b>$bookDecl('abstract')</b>
+         </p>
+      <p>
+         tests whether it is abstract.
+         </p>
+      <p>
+         Many properties have values that are themselves schema components, also represented
+         as functions. So to discover whether an element has element-only content you can test:
+         </p>
+      <p>
+         <b>if ($bookDecl('type definition')('variety') = 'element-only') ...</b>
+         </p>
+      <p>
+         All the schema components and property records are available as described in the <a class="zem_slink" href="http://en.wikipedia.org/wiki/XML_Schema_%28W3C%29" title="XML Schema (W3C)" rel="wikipedia">XSD</a> 1.1 specification, with a very few exceptions (hopefully temporary):
+         </p>
+      <p>
+         (a) Saxon currently does not provide access to annotations (they are discarded at
+         schema processing time)
+         </p>
+      <p>
+         (b) One or two other properties are not fully implemented, for example, {context}
+         and {fundamental facets}
+         </p>
+      <p>
+         (c) The types available directly from the Schema do not include built-in types
+         </p>
+      <p>
+         (d) Saxon represents multiple patterns and assertions of a simple type as multiple
+         facet objects rather than a single facet object.
+         </p>
+      <p>
+         (e) There's one property that's hard to represent directly in the <a class="zem_slink" href="http://en.wikipedia.org/wiki/XDM_%28display_manager%29" title="XDM (display manager)" rel="wikipedia">XDM</a> data model: the value of the enumeration facet is a sequence of sequences. So I'm
+         currently exposing the enumeration values as string values rather than typed values.
+         </p>
+      <p>
+         Every component has an additional property "class" which tells you what kind of schema
+         component it is. This is particularly necessary for the components representing facets,
+         where the class is the only way of telling, for example, whether you have a minInclusive
+         or a maxExclusive facet.
+         </p>
+      <p>
+         That's a lot of capability but I think there are one or two other things needed:
+         </p>
+      <p>
+         (i) getting top-level global components by name. I think the best way to do this is
+         a function <b>saxon:element-declaration()</b> that takes the <a class="zem_slink" href="http://en.wikipedia.org/wiki/QName" title="QName" rel="wikipedia">QName</a> of the required component and returns the component directly; there will be one of
+         these functions for each kind of component.
+         </p>
+      <p>
+         (ii) a few other 'convenience' properties that short-circuit complex navigation of
+         the component model. For example, starting with an element declaration, getting all
+         the element declarations of its permitted children, without having to trawl your way
+         through the complex type and its particles and terms and their substitution groups.
+         I guess only experience of real applications will show what convenience functions
+         are really needed.
+         </p>
+      <p>
+         (iii) linking to this model from validated instances (a subset of the <a class="zem_slink" href="http://en.wikipedia.org/wiki/PSVI" title="PSVI" rel="wikipedia">PSVI</a> - initially perhaps just the ability to get from a node to the schema component representing
+         its type annotation) and perhaps also from validation errors: if you use try/catch
+         to catch a validation error, it would be nice if the error object gives access to
+         the relevant schema component.
+         </p>
+      <p>
+         Note that I haven't mentioned maps. The functions that implement schema components
+         might be maps, or they might not. That's an implementation detail. One of the nice
+         things about the XSLT 3.0 model for maps (already implemented in Saxon 9.4) is that
+         maps are functions, so  if an interface like this one is defined in terms of functions,
+         it can use maps behind the scenes in the implementation, or not, as it pleases. In
+         fact my current implementation isn't using maps, because that makes it easier to do
+         a lazy implementation in which there is no underlying data structure other than the
+         Java classes that are already there to implement the component model.
+         </p>
+      <p>
+         One nice property of this API is that I can't see many obstacles to standardizing
+         it so it's available in all XSLT and XQuery implementations. The main work, of defining
+         the schema component model, has already been done in the XSD specs. 
+         <br />
+          
+         <br />
+         
+         
+         
+         
+         
+         
+         
+         </p>
+   </body>
+</html>

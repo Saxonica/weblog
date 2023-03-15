@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Bugs that don't crawl out of the woodwork</title>
+      <meta name="id" content="158" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2008-12-22T14:18:45" />
+      <meta name="basename" content="bugs_that_dont_crawl_out_of_the_woodwork" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Bugs that don't crawl out of the woodwork</h1>
+      <p>I've said this before, but sometimes I'm truly amazed by some of the bugs I find:
+         how on earth can they remain undetected for so long?</p>
+      <p>Today's example is in schema validation. If you have a user-defined type derived by
+         restriction from a built-in restricted type such as xs:short or xs:NCName then of
+         course it inherits the restrictions defined in its base type alongside its own restrictions:
+         in the former case it must be in the range of values for xs:short, in the second case
+         it must conform to the syntax for xs:NCName. Well, Saxon isn't checking this: for
+         example it's allowing 1000000 as a valid value for a type derived from xs:short.</p>
+      <p>No-one reported this bug, and I didn't find it while running any test suite. I just
+         spotted it while reading the code for an unrelated reason. As far as I can see, the
+         bug has always been there. That means none of the 40,000 tests in the W3C test suite
+         is testing for this situation, and the chances are that in five years none of my users
+         has had a schema that relies on it being tested.</p>
+      <p>Some bugs, it seems, prefer to stay in the woodwork.</p>
+   </body>
+</html>

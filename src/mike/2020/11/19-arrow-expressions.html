@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta name="author" content="Michael Kay" />
+    <meta name="pubdate" content="2020-11-19T10:20:00" />
+    <meta name="basename" content="arrow-expressions" />
+    <meta name="blog-id" content="3" />
+    <link rel="stylesheet" type="text/css" href="/css/blog.css" />
+    <link rel="stylesheet" type="text/css" href="/css/michael-kay.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arrow Expressions</title>
+  </head>
+  <body class="michael-kay">
+    <h2>Arrow Expressions</h2>
+    <p>When I proposed the arrow operator to the XQuery/XSLT working groups, I thought of it as minor syntactic sugar.
+    It's just a convenience: instead of <code>substring-before(substring-after(X, '['), ']')</code> you can write
+    <code>X => substring-after('[') => substring-before(']')</code> which helps you to avoid going cross-eyed.
+    If you're the kind of person who can play the piano with your hands crossed over, you probably don't need it,
+    but for the rest of us, it makes life just a tiny bit easier.</p>
+    <p>So I was a bit surprised at XML Prague 2020 that Juri Leino managed to construct an entire
+            presentation around the arrow operator 
+            (<a
+        href="https://speakerdeck.com/minuso/shooting-arrows-fast-and-accurately"
+        >Shooting Arrows Fast and Accurately</a>).
+          Not only that, he also developed a whole library of functions, called XBow, to increase their power.</p>
+    <p>Now, XBow actually reveals a bit of a weakness in the construct: you can construct a pipeline of functions,
+          but you can't include arbitrary expressions in the pipeline unless each of the expressions is made available
+          via a function. Moreover,
+          the value output by one step in the pipeline can only be used as the first argument in the next function: you
+          can do <code>X => concat('$')</code> to add a "$" at the end of a string, but there's no simple way of adding
+          a "$" at the front, except by defining a new <code>prepend</code> function that does this for you (or hoping
+            that XBow will have anticipated your requirement).</p>
+    <p>Now, of course you can do <code>X ! concat('$', .)</code>. But that doesn't always fit the bill. Firstly,
+          it only works when you're processing single items (or mapping a sequence to multiple items). Secondly,
+          (to use the current jargon) the optics are wrong: it breaks the pipeline visually.</p>
+    <p>So my first suggestion is that we allow inline expressions to appear in a pipeline. Something like this:
+          <code>X => {~ + 1}</code>, or <code>X => {concat('$', ~)}</code>. 
+            I'm using '~' here as a variable to refer to the
+          implicit argument, that is, the value passed down the pipeline. I would have used '_', as Scala does, but unfortunately
+          '_' is a legal element name so it already has a meaning. And '~' seems to work quite nicely.</p>
+    <p>The next thing that's been requested is implicit mapping, so you can use something like arrow notation
+          to do <code>X ! substring-after(., '$') ! number(.) => sum()</code>. (Actually, the main obstacle in getting
+          the arrow operator accepted by the XQuery Working Group was that some people wanted it to have this meaning.)</p>
+    <p>For that I propose we use a "thin arrow": <code>X -> substring-after('$') -> number() => sum()</code>.
+          The effect of the thin arrow is that instead of passing the value of the LHS to the function on the RHS
+          <i>en bloc</i>, we pass it one item at a time. Of course, if the value on the LHS is a single item, then
+          it doesn't matter which kind of arrow we use, both have the same effect.</p>
+    <p>If you're a fan of map-reduce terminology, then you'll recognize this instantly as a map-reduce
+          pipeline. The <code>-></code> operations are doing a mapping, and the final <code>=></code> does a reduce.
+            If you're more into functional thinking, you probably think of it more in terms of function composition.</p>
+    <p>Of course thin arrows can also be used with arbitrary expressions, just like thick arrows:
+          <code>(0 to 3) -> {~ + 1} -> format-integer('a') => string-join('.')</code> returns 
+            <code>"a.b.c.d"</code>.</p>
+    <p>And now I'd like to pull one more rabbit out of the hat. What if I want a function that applies the
+            above pipeline to any input sequence. I could write <code>function($x){$x -> {~ + 1} -> 
+              format-integer('a') => string-join('.')}</code> but that seems clunky. I'm looking for a nice way
+          to supply functions as arguments to higher-order functions like sort, where other languages have
+          shown that a concise notation for anonymous functions (like <code>a -> a+1</code> in Javascript) can
+          make code a lot simpler, less verbose, more readable.</p>
+    <p>So my proposal is this: just remove the left-hand expression, so you have something starting with
+          <code>-></code> or <code>=></code>, and use this as an anonymous arity-1 function.</p>
+    <p>So you can now do: <code>//employee => sort((), ->{~/@salary})</code> to sort employees
+            by salary, or <code>//employee => sort((), ->{~/@salary}->substring-after('$')->number())</code> 
+          if you need to do a bit more processing.</p>
+    <p>As another little refinement, in the case of <code>-></code>, the implicit argument is
+          always a single item, so we can bind it to the context item. So <code>->{~/@salary}</code>
+          can be simplified to <code>->{@salary}</code>. Basically, within curly braces on the RHS of <code>-></code>,
+          <code>.</code> and <code>~</code> mean the same thing.</p>
+    <p>I believe that all these constructs can be added to the grammar without introducing ambiguity
+          or backwards incompatibility, but I haven't proved it conclusively yet.</p>
+    <h3>Postscript</h3>
+    <p>The <code>~</code> construct seems to be the missing ingredient to enabling pipelines in XSLT.
+          Consider:</p>
+    <p><pre>
+&lt;xsl:pipeline>
+  &lt;xsl:apply-templates select="/" mode="m1"/>
+  &lt;xsl:apply-templates select="~" mode="m2"/>
+  &lt;xsl:for-each select="~">
+    &lt;e>&lt;xsl:copy-of select="."/>&lt;e>
+  &lt;/xsl:for-each>
+&lt;/xsl:pipeline>             
+            </pre></p>
+    <p>Here "~" is acting as an implicit variable to pass the result of one instruction to be the input for
+          the next: basically eliminating the clunky <code>xsl:variable</code> declarations needed to do this today.
+          The instructions that form the children of the <code>xsl:pipeline</code> element are effectively
+          connected to each other with an implicit <code>=></code> operator.</p>
+  </body>
+</html>

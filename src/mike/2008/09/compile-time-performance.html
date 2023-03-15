@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Compile-time Performance</title>
+      <meta name="id" content="150" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2008-09-16T14:18:45" />
+      <meta name="basename" content="compile-time_performance" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Compile-time Performance</h1>
+      <p>There was a support request from Francis Upton a couple of days ago asking for a switch
+         to turn optimization off. He had a large query that was taking a long time to compile,
+         and naturally felt that the cost could be reduced by omitting the optimization phase.
+         It's a natural assumption to make, and I've always assumed myself that there were
+         savings to be made in this area. But as always with performance, assumptions are dangerous
+         until they have been verified by measurement.</p>
+      <p>I asked for a copy of the query concerned; it turned out to be 9Mb of code, about
+         70K lines in a single module. It's code that has been automatically generated to validate
+         complex incoming EDI messages. It's not particularly representative of user-written
+         code in that some of the functions are over 500 lines long, and I suspected this might
+         have something to do with the problem. But since compile time performance in Saxon
+         has received very little attention over the years, it was a welcome opportunity to
+         do some investigation.</p>
+      <p>Francis had attempted a patch to turn optimization off, but he got it wrong - he was
+         only suppressing optimization for the query body, not for all the functions. An easy
+         mistake to make. But when I tried it with optimization turned off "properly", total
+         query compilation time (reported as "analysis time" using the -t option on the command
+         line) only dropped from 57 to 55 seconds. So the assumption that optimization was
+         the culprit was clearly flawed.</p>
+      <p>The next step was to do some Java profiling (-Xrunhprof:cpu=samples) on the command
+         line. As often happens, the result was initially disappointing: a lot of calls on
+         a recursive method ExpressionTool.resetPropertiesWithinSubtree() and on Choose.iterateSubExpressions()
+         but I was under the impression that these would both be used from many places during
+         compilation, so the information didn't look too useful. The data from this tool tends
+         to be very "bottom up" - it tells you what code is being executed, but it doesn't
+         tell you when or why.</p>
+      <p>So I started inserting some calls to System.nanoTime() into the source and getting
+         a breakdown by phase of compilation. This quickly showed
+         that of the 57 seconds, parsing took the first 3.6 seconds, optimization the final
+         1.9 seconds, while over 50 seconds was spent in the XQueryFunction.compile() method,
+         called once per function. Some further investigation showed that 48.2 seconds of this
+         was in the typeCheck() phase.</p>
+      <p>Not being able to see how to break this down any further, I went back to the Java
+         profile data. The iterateSubExpressions() method is implemented for every kind of
+         expression, to return its subexpressions
+         on the expression tree. The implementation of this method for a Choose expression
+         (used for if/then/else, xsl:choose, and also typeswitch) was particularly inefficient,
+         so I rewrote it, and the total compile time came down to 40.8 seconds! A very easy
+         gain (30%) in an area where I would never have expected to find one.</p>
+      <p>That set me thinking about the other method to feature significantly in the profile:
+         resetPropertiesWithinSubtree(). Saxon maintains properties of expressions on the expression
+         tree: these include
+         type information, information about dependencies (for example, whether an expression
+         depends on the context item), and information about special properties of node-sets
+         (such as whether it is known statically that the nodes will be in document order,
+         or will come from a single document). These properties are calculated lazily, and
+         they are typically reset (to null) if an optimizer rewrite is such that it's advisable
+         to recompute the values. Usually this rewrite works upwards - properties for all the
+         ancestor expressions are reset to null. But this method clears the properties for
+         all the descendants in a subtree. It turns out there is only one place it is called:
+         during analysis of a for/let/some/every expression, if extra information becomes available
+         about the type of the variable, this information is passed to all places where references
+         to the variable occur, and then properties are cleared for every expression within
+         the scope of the variable, presumably on the theory that the extra type information
+         now available might come in useful for refining these properties.</p>
+      <p>So, just as an experiment, I commented out the single line of code that calls this
+         method (in Assignation.refineTypeInformation(), line 433 of net.sf.saxon.expr.Assignation.java),
+         and the total compilation time is now reduced from 57 seconds to 8.46 seconds!</p>
+      <p>But is it safe? Well, I tried rerunning the W3C XQuery test suite (19000 tests) and
+         it made no difference to the results. I did the same with the XSLT test suite, and
+         with my personal test suites, and there was still no impact.</p>
+      <p>But perhaps the call is important for performance reasons? I reran the XMark benchmark:
+         no regressions. (There's a side-story there, in that there was a regression, but it
+         turned out to not to be caused by this change. There were also some significant improvements
+         from 9.1 figures, all caused by some optimization changes made a few days ago that
+         I hadn't yet run XMark on.)</p>
+      <p>So, I'm going to get rid of this method call, and cross my fingers. I won't do it
+         as a 9.1 patch, I'll leave it till the next full release when it should get more exposure
+         to testing. But it looks like a big improvement for rather little effort, and if you
+         feel like trying the change locally, by all means do.</p>
+   </body>
+</html>

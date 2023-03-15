@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>How not to manage crypto keys</title>
+      <meta name="id" content="114" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-04-18T14:18:43" />
+      <meta name="basename" content="how_not_to_manage_crypto_keys" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>How not to manage crypto keys</h1>
+      <p>A tale of woe here: I don't expect any sympathy, but someone might learn from my mistakes!</p>
+      <p>Generally as soon as I've finished a Saxon release I do something approaching a full
+         backup: at any rate, all the directories that contain things I would be embarrassed
+         to lose. Doing this after shipping Saxon 8.7.1, I found a few disk errors were reported,
+         which chkdsk confirmed: so it looked like a good time to install a larger hard disk
+         in my laptop and rebuild my system. A tedious process which occupied many spare hours
+         over the Easter weekend when I wasn't in church, attending choir rehearsals, playing
+         croquet, or punting on the river... Anyway, it seemed to go smoothly. One or two minor
+         hiccups like finding that the saved setup file for UltraEdit was from a different
+         version than the saved license key, but that's the sort of thing you expect. </p>
+      <p>(Generally this sort of upgrade is a good opportunity to move forwards on various
+         software packages - but oddly, the software vendors don't encourage you to take this
+         opportunity because they usually make you reinstall the old version before you can
+         install the new one!)</p>
+      <p>Anyway, I'm left with one problem: the rebuilt system issues Saxon-SA license keys
+         on .NET that are incompatible with the issued software. Java licenses are fortunately
+         OK, but not .NET.</p>
+      <p>How did this happen?</p>
+      <p>The IKVM/GNU Classpath technology used to build the Saxon product on .NET offers pretty
+         comprehensive emulation of the JDK class library, but one of the exceptions is crypto
+         services, which I use for license key generation. So I reimplement the license issue
+         tool to use .NET crypto services instead. After reading up on this immensely feature-rich
+         set of capabilities, the process I followed was to create a .snk file containing the
+         private/public key pair, then save this in a "key container" with a well-known name.
+         The public key of course goes out with the issued software, the private key is accessed
+         from the key container by the license issue tool to create a license key file in the
+         form of a signed XML document.</p>
+      <p>When I tried to repeat this process on the new machine, it seems that the .snk file
+         that I saved in my backups contained different keys from the ones held in the key
+         container that was actually being used to generate the license files. So I tried to
+         export the keys from the key container - there's a method ToXmlString(true) that ought
+         to do the trick - but it didn't work, saying that it's not possible to export the
+         private key from this kind of key container.</p>
+      <p>Sadly, I think the only way forward is to create a new build of Saxon-SA on .NET,
+         with a new private/public key pair. The only redeeming feature of this story is that
+         the problem occurred at a stage where the number of users of Saxon-SA on .NET is still
+         relatively modest.</p>
+      <p>If anyone is thinking of following the advice in the MSDN .NET documentation which
+         says that private/public key pairs should only be held in key containers, then I suggest
+         you test your backup and recovery strategy! Otherwise, keeping the .SNK file in a
+         safe place would seem to be the right thing to do.</p>
+      <p>POSTSCRIPT (Sept 2006)</p>
+      <p>I again had the task of copying the license issueing software to a new machine, and
+         my first few attempts were worryingly unsuccessful. Everything appeared to work on
+         the new machine, but the license keys it generated were deemed to have an invalid
+         signature. </p>
+      <p>I eventually found a route that worked: here it is, for the record.</p>
+      <p>First produce the XML from the key container, use the aspnet_regiis utility found
+         in<br />c:/WindowsNT/Microsoft.NET/Framework/v2.0.50727.</p>
+      <p>To export the key from key container LicenseKeyPair as XML (the -pri option ensures
+         both the public and private keys are exported):</p>
+      <p> aspnet_regiis -px LicenseKeyPair c:\temp\LicenseKeyPair.xml -pri<br /> <br />To import the key from the XML into a key container on another machine:</p>
+      <p> aspnet_regiis -pi LicenseKeyPair c:\temp\LicenseKeyPair.xml</p>
+   </body>
+</html>

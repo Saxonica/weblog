@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>SaxonC HE “11.99” pre-release</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2022-12-23T17:15:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+  <style>
+    .fn { margin-top: 1in; }
+    .fn hr { width: 1in; margin-left: 0; color: #aaaaaa; }
+    code { font-size: 85%; }
+  </style>
+</head>
+<body>
+<h1>SaxonC HE “11.99” pre-release</h1>
+
+<p>Happy holidays everyone! Wishing you peace and joy in this festive season!</p>
+
+<p>And toys.</p>
+
+<p>Since we didn't get any releases out before Christmas, we've
+packaged up a special treat for anyone who wants to play with
+something new: SaxonC HE 12.0 in Python.</p>
+
+<p>We've built and deployed the Python "wheels" for installing SaxonC
+HE “11.99” (that's the 12.0 code base, but it's a test release so I
+didn't want to use up one of the 12.x release numbers). You’ll find the
+details at <a href="https://saxonica.com/saxon-c/1199/">https://saxonica.com/saxon-c/1199/</a>.
+</p>
+
+<p>If you decide to
+<a href="https://en.wiktionary.org/wiki/kick_the_tires">kick the tyres</a><sup>†</sup>,
+please do let us know how it goes. There’s still work to do with
+installing and packaging, but we think the API is in good shape. (I
+did notice that if you call <code>compile_stylesheet()</code> and the stylesheet
+isn’t well formed, the call silently returns <code>None</code> instead of raising
+an error. I’ve
+<a href="https://saxonica.plan.io/issues/5781">reported that one</a>!)</p>
+
+<p>I’ll probably check my email most days, but I can’t speak for
+anyone else. Apologies if some of your feedback isn’t properly
+addressed before the new year.</p>
+
+<p>Once again, wishing you the happiest of holiday seasons!</p>
+
+<div class="fn">
+<hr/>
+<sup>†</sup>That’s “tires” for my American friends.
+</div>
+</body>
+</html>

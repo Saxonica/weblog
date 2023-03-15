@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Just-in-Time Optimization</title>
+      <meta name="id" content="152" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2008-09-20T14:18:45" />
+      <meta name="basename" content="just-in-time_optimization" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Just-in-Time Optimization</h1>
+      <p>Rereading my last post on compile-time performance, the thought leaps out at me: if
+         I don't want to rely on users setting a switch to control whether optimization happens
+         or not, then I should only optimize functions or templates if I know they are going
+         to be used often enough to justify it. That strongly suggests I ought to be doing
+         lazy (or just-in-time) optimization. It doesn't seem difficult in principle: just
+         count entries to a function or template and invoke the optimizer when the counter
+         hits (say) 50. Need to be careful about multithreading, but I'm sure it can be done.
+         There are a few optimizations, like extracting global variables, that aren't local
+         to a template or function, and this complicates the issue a little, but it doesn't
+         sound all that hard.</p>
+   </body>
+</html>

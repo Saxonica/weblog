@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>New W3C XML Schema Test Suite</title>
+      <meta name="id" content="133" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-12-14T14:18:44" />
+      <meta name="basename" content="new_w3c_xml_schema_test_suite" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>New W3C XML Schema Test Suite</h1>
+      <p>
+         
+         A few weeks ago the W3C Schema working group published a new test suite, containing
+         nearly 40,000 tests: see<a href="http://www.w3.org/XML/2004/xml-schema-test-suite/">http://www.w3.org/XML/2004/xml-schema-test-suite/</a></p>
+      <p>Since then, I've been putting a fair amount of effort into reconciling Saxon's results
+         on these tests with the published results.</p>
+      <p>My first attempt looked like this:</p>
+      <pre><code>    expected    Saxon-SA     No of tests
+    result      result
+    valid       valid           24687
+    invalid     invalid         13150
+    valid       invalid           697
+    invalid     valid             856
+    not run                         9</code></pre>
+      <p>The "not run" tests included 6 that blew memory because of large minOccurs/maxOccurs
+         values, and 3 that crashed for another reason - deriving types directly from xs:anySimpleType.</p>
+      <p>That's not bad for a first run (96% agreement), but obviously analyzing the 1500+
+         discrepancies will take some time!</p>
+      <p>Most of the 697 tests where the expected result was "valid" but Saxon reported "invalid"
+         turned out to be regular expression tests submitted by Microsoft, where they seem
+         to be allowing through all kinds of regex syntax that the Schema spec quite clearly
+         doesn't allow.</p>
+      <p>I'm now getting close to finishing the analysis of one of the three groups of tests,
+         those submitted by Microsoft. I've raised 40 bugs so far against the test suite (go
+         to http://www.w3.org/Bugs/Public/query.cgi and search under the Product heading "XML
+         Schema Test Suite"). However, it's not all one-sided; I've also found about 30 bugs
+         in Saxon schema processing. Unlike the regex tests, some of these tests were clearly
+         written by people who knew the spec extremely well, and in some cases the test results
+         are correct according to the letter of the spec despite being highly counter-intuitive.
+         I haven't been reporting these individually on the SourceForge bug register because
+         most of them are so obscure I think they can simply wait until the next release. </p>
+      <p>Since there have been very few bug reports on Saxon's schema processing from the field,
+         this suggests that there are many corners of the schema spec that few users stray
+         into -- this makes the exercise a little frustrating, because it means that few users
+         will notice the improvement from 99% conformance to 99.9%. It's an educational experience,
+         however. Perhaps one of these days I will finally understand some of the more obscure
+         utterances in Schema Part 1, such as the parenthetical "which must be understood as
+         logically prior to this clause of this constraint, below" in 3.11.4, which has always
+         had me completely baffled. Certainly, I've been spending a lot of time over the last
+         few days poring over that kind of prose. I've also made a few comments on the spec
+         where there seem (still, 5 years after publication and countless errata) to be remaining
+         errors and inconsistencies.</p>
+      <p>The availability of these tests should greatly help interoperability between schema
+         processors, especially if the major processors all publish their results, and if the
+         test suite is properly maintained to remove reported bugs. It will be interesting
+         to see who publishes their results and who doesn't.<br />
+         
+         </p>
+      <div class="commentsHead">COMMENTS</div>
+      <div id="comments_block_id" class="comments"><a name="804164"></a><div id="cid_804164" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: New W3C XML Schema Test Suite</div>
+               <div class="commentAuthor">by Mike Champion on Thu 14 Dec 2006 16:44 GMT  |  <a href="#804164">Permanent Link</a></div>
+               <div class="commentBody">Thanks so much for such a deep investigation! I've given the XML team at Microsoft
+                  a heads-up on the bug reports on the tests we submitted.<br />
+                  I assume you've given the XSD 1.1 folks a heads-up on the specific instances of impenetrable
+                  language in the 1.0 spec?</div>
+            </div>
+         </div><a name="804616"></a><div id="cid_804616" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: New W3C XML Schema Test Suite</div>
+               <div class="commentAuthor">by adam on Thu 14 Dec 2006 23:42 GMT  |  <a href="#804616">Permanent Link</a></div>
+               <div class="commentBody">&lt;rant&gt; doubly astonishing! (a) a hugely capable developer with a great deal of experience
+                  in the domain and a focus on quality and conformance (all proven by a 5* track record)
+                  has difficulty conforming to the specification (albeit corner cases); and (b) microsoft
+                  has trouble writing conformance tests for the specification. surely this is a very
+                  negative result for w3c xml schema!? what are mere mortals to do!? the barrier to
+                  implementation is colossal. if we are to go around creating standards that are to
+                  describe the foundations of our software infrastructure surely to goodness they ought
+                  to be written such that it would be relatively straightforward to develop a fully
+                  conformant implementation. &lt;/rant&gt; <br /></div>
+            </div>
+         </div><a name="804684"></a><div id="cid_804684" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: New W3C XML Schema Test Suite</div>
+               <div class="commentAuthor">by Rick Jelliffe on Fri 15 Dec 2006 02:10 GMT  |  <a href="#804684">Permanent Link</a></div>
+               <div class="commentBody">99% is a great result! Well done Michael Kay. I am continually impressed by SAXON.
+                  Organizations that use it should assertively consider buying licenses, in order to
+                  let Dr Kay keep up the good work.<br />
+                  Of course, large test suites have many repeats, so probably 99% of tests passing is
+                  not the same as 99% of features covered.<br />
+                  Of course, technical specs are only really aimed at the handful of implementers and
+                  writers to understand; they just aren't end-user documents. And the XSD Structures
+                  spec has many virtues as well as its obvious shortcomings. To a certain extent, end-users
+                  never need to check the specification if either the technology is straight-forward
+                  enough (guessable) or if the user documentation and diagnostics are clear enough.
+                  So the question with XSD is not only "Can the spec be made clearer?" but also "Can
+                  comprehensible user documentation be made?" and "Can end-user comprehensible diagnostics
+                  be made?" Both these are areas of sheer man-hours, which is where buying SAXON licenses
+                  can directly help: if you organization is using XSD as a mission-critical part, you
+                  really should treat licensing as a basic part of risk-management.</div>
+            </div>
+         </div><a name="804807"></a><div id="cid_804807" class="comment">
+            <div class="commentIndent2">
+               <div class="commentTitle">Re: Re: Re: New W3C XML Schema Test Suite</div>
+               <div class="commentAuthor">by Michael Kay on Fri 15 Dec 2006 10:43 GMT |  Profile |  <a href="#804807">Permanent Link</a></div>
+               <div class="commentBody">Thanks for the comment, Rick. Actually I can't yet claim 99% - that's an estimate
+                  of what it will be when I've done the analysis. The question on end-user comprehensible
+                  diagnostics is a very pertinent one, and one where I've put a lot of effort. Xerces,
+                  I think, achieves a very high level of conformance to the spec but falls down badly
+                  on error messages. One of the problems when a spec uses very arcane language (as XSD
+                  certainly does) is that as an implementer you have to decide whether to use the same
+                  terminology in your messages. I tend to work on the basis that once I start talking
+                  about particles, I've lost 90% of my audience, and if I were to report that the intersection
+                  between two wildcards is inexpressible, or that "assessment with respect to a schema-like
+                  entity is incoherent", then I would lose 99%. Another problem arises where the spec
+                  says that "one of the following six (complex) conditions must be true". If none of
+                  them is true, what do you tell the user? Pragmatically, you try and identify which
+                  of them came closest to being satisfied, and report the error in terms of that condition.</div>
+            </div>
+         </div><a name="807342"></a><div id="cid_807342" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: New W3C XML Schema Test Suite</div>
+               <div class="commentAuthor">by Frans Englich on Tue 19 Dec 2006 12:16 GMT |  Profile |  <a href="#807342">Permanent Link</a></div>
+               <div class="commentBody">I've been considering implement W3C XML Schema(WXS) but put it off because of the
+                  enormous amounts of work it requires(largely because of how the specs are written)
+                  and that I hadn't found any easy way to assess whether I've implemented it correctly.<br />
+                  But perhaps this has changed with this test suite? Can one rely on this test suite
+                  for assessing how well ones validator will cope in the wild, or how crucial is it
+                  to build a complementary test collection?</div>
+            </div>
+         </div><a name="807348"></a><div id="cid_807348" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: New W3C XML Schema Test Suite</div>
+               <div class="commentAuthor">by Michael Kay on Tue 19 Dec 2006 12:27 GMT |  Profile |  <a href="#807348">Permanent Link</a></div>
+               <div class="commentBody">I think you can probably treat this test suite as being pretty comprehensive. Even
+                  the old test suite had enough coverage to cope with the things you were likely to
+                  encounter "in the wild", though it missed a lot of edge cases needed for spec conformance.</div>
+            </div>
+         </div>
+      </div>
+   </body>
+</html>

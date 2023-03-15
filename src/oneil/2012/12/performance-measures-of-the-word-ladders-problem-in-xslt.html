@@ -1,0 +1,1038 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Saxon performance measures of the Word Ladders problem in XSLT</title>
+      <meta name="id" content="195" />
+      <meta name="author" content="O’Neil Delpratt" />
+      <meta name="pubdate" content="2012-12-06T16:23:33" />
+      <meta name="basename" content="performance_measures_of_the_word_ladders_problem_in_xslt" />
+      <meta name="blog-id" content="6" />
+   </head>
+   <body>
+      <h1>Saxon performance measures of the Word Ladders problem in XSLT</h1>
+      <p>I would like to report on some Saxon performance measure on a Word ladder solution
+         implemented in XSLT.</p>
+      <p>Firstly, some background information on the Word ladder problem. From Wikipedia, the
+         free encyclopedia:</p>
+      <p>A <b>word ladder</b> (also known as a <b>doublets</b>, <b>word-links</b>, or <b>Word golf</b>) is a <a href="http://en.wikipedia.org/wiki/Word_game">word game</a> invented by Lewis Carroll<a title="Lewis Carroll" href="http://en.wikipedia.org/wiki/Lewis_Carroll"></a>.
+         A word ladder puzzle begins with two given words, and to solve the 
+         puzzle one must find the shortest chain of other words to link the two 
+         given words, in which chain every two adjacent words (that is, words in 
+         successive steps) differ by exactly by one letter.</p>
+      <p>XSLT interest in this problem was first started (to the best of my knowledge) by Dimitre
+         Novatchev through the <a href="http://www.biglist.com/lists/lists.mulberrytech.com/xsl-list/archives/201211/msg00187.html">mulberry mailing list</a>, who provides a 20 step guide to create a stylesheet in his blog to solve the Word
+         ladder problem (<a href="http://dev.saxonica.com/oneil/FindChainOfWordsHamming.xsl">FindChainOfWordsHamming.xsl</a>). Following the post on the list, there has been some interest; another solution
+         to this problem was given by Wolfgang Laun (please see <a href="http://www.biglist.com/lists/lists.mulberrytech.com/xsl-list/archives/201211/msg00210.html">thread</a>, file: <a href="http://dev.saxonica.com/oneil/FindChainOfWordsHamming2.xsl">FindChainOfWordsHamming2.xsl</a>).</p>
+      <p><b>Experimental Evaluation</b></p>
+      <p>Our interest resides in the Saxon performances only. I was curious and surprised by
+         the results reported by Dimitre. The question I had is why Dimitre's stylesheet was
+         much slower than Wolfgang's stylesheet in Saxon and faster in another XSLT processor:
+         there must be some optimization step we were not making. I was motivated to understand
+         were the bottle necks were and how we could improve the performance in Saxon.</p>
+      <p>Wolfgang wrote: "The XSLT program is three times faster on one XSLT implementation
+         than on another one is strange, 'very' strange". </p>
+      <p>Mike Kay addressed Wolfgang's comment by writing in the thread: "No, it's extremely
+         common. In fact, very much larger factors than this 
+         are possible. Sometimes Saxon-EE runs 1000 times faster than Saxon-HE. 
+         This effect is normal with declarative languages where powerful 
+         optimizations are deployed - SQL users will be very familiar with the 
+         effect."</p>
+      <p>The table below shows the execution times of the stylesheets in Saxon 9.XX (for some
+         recent X). Time were reported by Dimitre.</p>
+      <table border="1">
+         
+         
+         <tbody>
+            
+            
+            <tr>
+               
+               
+               <th>Transformation</th>
+               
+               
+               <th>Times (secs)</th>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>Dimitre</td>
+               
+               
+               <td>39</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>Wolfgang</td>
+               
+               
+               <td>25</td>
+               </tr>
+            </tbody>
+         </table>
+      <p>We observe that Wolfgang's transformation is 1.56 times faster. Please note that with
+         Wolfgang's stylesheet his results lists all solutions (i.e. ladders), whereas Dimitre
+         only finds one.</p>
+      <p>Saxon represents a stylesheet as a compiled abstract syntax tree (AST) which is processed
+         in a interpreted manner. Since the release of Saxon 9.4 we have included the bytecode
+         generation feature, which allows us at the compilation phase to generate directly
+         the byte code representation of the entire AST or sub-trees of it where performance
+         benefits can be achieved. We make use of properties we know at compile time (See <a href="http://www.balisage.net/Proceedings/vol7/html/Delpratt01/BalisageVol7-Delpratt01.html">full paper</a>).</p>
+      <p><b>Analysis of Dimitre's Stylesheet</b></p>
+      <p>Step one was to see how well Saxon does with the bytecode feature switched on. This
+         proved inconclusive because we discovered a bug in the bytecode generated. A useful
+         exercise already, we managed to fix the bug (see bug issue: <a href="https://saxonica.plan.io/issues/1653">#1653</a>). The problem was in the function processQueue the tail recursive call was not being
+         properly generated into bytecode. </p>
+      <p>The Table below shows running times of the stylesheets under Saxon 9.4.0.6. We observe
+         that Wolfgang's stylesheet was 2.07 and 3.22 faster in Saxon Intepreted and bytecode,
+         respectively.</p>
+      <table border="1">
+         
+         
+         
+         <tbody>
+            
+            
+            <tr>
+               
+               
+               <th>Transformation</th>
+               
+               
+               <th>Interpreted - Times (secs)</th>
+               
+               
+               <th>With bytecode generation - Times (secs)</th>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>Dimitre</td>
+               
+               
+               <td>7.95</td>
+               
+               
+               <td>7.78</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>Wolfgang</td>
+               
+               
+               <td>3.83</td>
+               
+               
+               <td>2.41</td>
+               </tr>
+            </tbody>
+         </table>
+      <p>Analyzing Dimitre's stylesheet with the Saxon tracing profile (i.e. option -TP) proved
+         useful. See the html output produced by Saxon below. We observe that there is a big
+         hit on the processNode method, with the most time spent in this function.</p>
+      <h3>Analysis of Stylesheet Execution Time</h3>
+      <p>Total time: 9498.871 milliseconds</p>
+      <p>
+         <b>Time spent in each template or function:</b>
+         
+         </p>
+      <p>The table below is ordered by the total net time spent in the template or   function.
+         Gross time means the time including called templates and functions;  net time means
+         time excluding time spent in called templates and functions.
+         </p>
+      <table border="1">
+         
+         
+         
+         <thead>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <th>file</th>
+               
+               
+               
+               <th>line</th>
+               
+               
+               
+               <th>instruction</th>
+               
+               
+               
+               <th>count</th>
+               
+               
+               
+               <th>avg time (gross)</th>
+               
+               
+               
+               <th>total time (gross)</th>
+               
+               
+               
+               <th>avg time (net)</th>
+               
+               
+               
+               <th>total time (net)</th>
+               </tr>
+            </thead>
+         
+         
+         
+         <tbody>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>79</td>
+               
+               
+               
+               <td>function my:processNode</td>
+               
+               
+               
+               <td align="right">2053</td>
+               
+               
+               
+               <td align="right">4.12</td>
+               
+               
+               
+               <td align="right">8470.67</td>
+               
+               
+               
+               <td align="right">3.729</td>
+               
+               
+               
+               <td align="right">7655.792</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>21</td>
+               
+               
+               
+               <td>function my:chainOfWords</td>
+               
+               
+               
+               <td align="right">1</td>
+               
+               
+               
+               <td align="right">9491.1</td>
+               
+               
+               
+               <td align="right">9491.12</td>
+               
+               
+               
+               <td align="right">993.34</td>
+               
+               
+               
+               <td align="right">993.34</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>131</td>
+               
+               
+               
+               <td>function f:eq</td>
+               
+               
+               
+               <td align="right">3993</td>
+               
+               
+               
+               <td align="right">0.06</td>
+               
+               
+               
+               <td align="right">230.02</td>
+               
+               
+               
+               <td align="right">0.058</td>
+               
+               
+               
+               <td align="right">230.26</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>131</td>
+               
+               
+               
+               <td>function my:HammingDistance</td>
+               
+               
+               
+               <td align="right">3993</td>
+               
+               
+               
+               <td align="right">0.20</td>
+               
+               
+               
+               <td align="right">807.38</td>
+               
+               
+               
+               <td align="right">0.049</td>
+               
+               
+               
+               <td align="right">194.77</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*func-apply.xsl"</td>
+               
+               
+               
+               <td>21</td>
+               
+               
+               
+               <td>function f:apply</td>
+               
+               
+               
+               <td align="right">15972</td>
+               
+               
+               
+               <td align="right">0.01</td>
+               
+               
+               
+               <td align="right">290.01</td>
+               
+               
+               
+               <td align="right">0.011</td>
+               
+               
+               
+               <td align="right">175.00</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*-Operators.xsl"</td>
+               
+               
+               
+               <td>244</td>
+               
+               
+               
+               <td>template f:eq</td>
+               
+               
+               
+               <td align="right">15972</td>
+               
+               
+               
+               <td align="right">0.01</td>
+               
+               
+               
+               <td align="right">115.01</td>
+               
+               
+               
+               <td align="right">0.004</td>
+               
+               
+               
+               <td align="right">68.23</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*-Operators.xsl"</td>
+               
+               
+               
+               <td>248</td>
+               
+               
+               
+               <td>function f:eq</td>
+               
+               
+               
+               <td align="right">15972</td>
+               
+               
+               
+               <td align="right">0.003</td>
+               
+               
+               
+               <td align="right">46.77</td>
+               
+               
+               
+               <td align="right">0.003</td>
+               
+               
+               
+               <td align="right">46.77</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*nc-zipWith.xsl"</td>
+               
+               
+               
+               <td>21</td>
+               
+               
+               
+               <td>function f:zipWith</td>
+               
+               
+               
+               <td align="right">19965</td>
+               
+               
+               
+               <td align="right">0.002</td>
+               
+               
+               
+               <td align="right">33.11</td>
+               
+               
+               
+               <td align="right">0.002</td>
+               
+               
+               
+               <td align="right">33.11</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*nc-zipWith.xsl"</td>
+               
+               
+               
+               <td>9</td>
+               
+               
+               
+               <td>function f:zipWith</td>
+               
+               
+               
+               <td align="right">19965</td>
+               
+               
+               
+               <td align="right">0.003</td>
+               
+               
+               
+               <td align="right">57.67</td>
+               
+               
+               
+               <td align="right">0.001</td>
+               
+               
+               
+               <td align="right">24.56</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*func-apply.xsl"</td>
+               
+               
+               
+               <td>16</td>
+               
+               
+               
+               <td>function f:apply</td>
+               
+               
+               
+               <td align="right">15972</td>
+               
+               
+               
+               <td align="right">0.019</td>
+               
+               
+               
+               <td align="right">309.52</td>
+               
+               
+               
+               <td align="right">0.001</td>
+               
+               
+               
+               <td align="right">19.52</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>70</td>
+               
+               
+               
+               <td>function my:processQueue</td>
+               
+               
+               
+               <td align="right">2053</td>
+               
+               
+               
+               <td align="right">0.009</td>
+               
+               
+               
+               <td align="right">18.35</td>
+               
+               
+               
+               <td align="right">0.009</td>
+               
+               
+               
+               <td align="right">18.35</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*hFunctions.xsl"</td>
+               
+               
+               
+               <td>498</td>
+               
+               
+               
+               <td>function f:string-to-codepoints</td>
+               
+               
+               
+               <td align="right">3993</td>
+               
+               
+               
+               <td align="right">0.003</td>
+               
+               
+               
+               <td align="right">10.52</td>
+               
+               
+               
+               <td align="right">0.003</td>
+               
+               
+               
+               <td align="right">10.52</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>120</td>
+               
+               
+               
+               <td>function my:HammingDistance</td>
+               
+               
+               
+               <td align="right">3993</td>
+               
+               
+               
+               <td align="right">0.204</td>
+               
+               
+               
+               <td align="right">814.48</td>
+               
+               
+               
+               <td align="right">0.002</td>
+               
+               
+               
+               <td align="right">7.09</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*hFunctions.xsl"</td>
+               
+               
+               
+               <td>498</td>
+               
+               
+               
+               <td>function f:string-to-codepoints</td>
+               
+               
+               
+               <td align="right">3993</td>
+               
+               
+               
+               <td align="right">0.001</td>
+               
+               
+               
+               <td align="right">4.88</td>
+               
+               
+               
+               <td align="right">0.001</td>
+               
+               
+               
+               <td align="right">4.88</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>73</td>
+               
+               
+               
+               <td>function my:processNode</td>
+               
+               
+               
+               <td align="right">2053</td>
+               
+               
+               
+               <td align="right">4.128</td>
+               
+               
+               
+               <td align="right">8475.2</td>
+               
+               
+               
+               <td align="right">0.002</td>
+               
+               
+               
+               <td align="right">4.57</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>54</td>
+               
+               
+               
+               <td>function my:processQueue</td>
+               
+               
+               
+               <td align="right">2053</td>
+               
+               
+               
+               <td align="right">0.011</td>
+               
+               
+               
+               <td align="right">22.20</td>
+               
+               
+               
+               <td align="right">0.002</td>
+               
+               
+               
+               <td align="right">3.85</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>17</td>
+               
+               
+               
+               <td>template /*</td>
+               
+               
+               
+               <td align="right">1</td>
+               
+               
+               
+               <td align="right">9491.87</td>
+               
+               
+               
+               <td align="right">9491.9</td>
+               
+               
+               
+               <td align="right">0.756</td>
+               
+               
+               
+               <td align="right">0.76</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>40</td>
+               
+               
+               
+               <td>function my:chainOfWords</td>
+               
+               
+               
+               <td align="right">1</td>
+               
+               
+               
+               <td align="right">0.344</td>
+               
+               
+               
+               <td align="right">0.34</td>
+               
+               
+               
+               <td align="right">0.344</td>
+               
+               
+               
+               <td align="right">0.34</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>117</td>
+               
+               
+               
+               <td>function my:enumerate</td>
+               
+               
+               
+               <td align="right">10</td>
+               
+               
+               
+               <td align="right">0.166</td>
+               
+               
+               
+               <td align="right">1.65</td>
+               
+               
+               
+               <td align="right">0.029</td>
+               
+               
+               
+               <td align="right">0.29</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>"*rdsHamming.xsl"</td>
+               
+               
+               
+               <td>111</td>
+               
+               
+               
+               <td>function my:enumerate</td>
+               
+               
+               
+               <td align="right">10</td>
+               
+               
+               
+               <td align="right">0.176</td>
+               
+               
+               
+               <td align="right">1.76</td>
+               
+               
+               
+               <td align="right">0.010</td>
+               
+               
+               
+               <td align="right">0.10</td>
+               </tr>
+            </tbody>
+         </table>
+      <p>In addition to the Saxon tracing profile I ran the Java hrof profiling tool, which
+         showed up that most time was spent in comparing strings. See the Java profile results
+         below. It was now obvious that the GeneralComparison expression was in question. Specifically
+         we narrowed it down to the instruction: <code>&lt;xsl:for-each select="$vNeighbors[not(. = $pExcluded)]"&gt;</code>. For the interpreted code we were doing some unnecessary runtime type checking when
+         we know statically at compile time that we are comparing string values. More Specifically,
+         we know at compile time that $vNeighbors is a sequence of untyped atomic values and
+         $pExcluded is a sequence of strings. We were unnecessarily checking at runtime that
+         untyped atomic and string literal were comparable and we were doing an unnecessary
+         conversion from an untyped atomic to string.  </p>
+      <pre>CPU SAMPLES BEGIN (total = 1213) Thu Nov 29 14:42:47 2012
+rank   self  accum   count trace method
+   1 24.24% 24.24%     294 300547 java.lang.Integer.hashCode
+   2 19.13% 43.36%     232 300581 net.sf.saxon.expr.GeneralComparison.compare
+   3  7.75% 51.11%      94 300613 java.util.HashMap.getEntry
+   4  2.14% 53.26%      26 300570 java.util.LinkedHashMap$Entry.recordAccess
+   5  2.06% 55.32%      25 300234 java.lang.ClassLoader.defineClass1
+   6  2.06% 57.38%      25 300616 com.saxonica.expr.ee.GeneralComparisonEE.effectiveBooleanValue
+   7  1.98% 59.36%      24 300603 java.util.LinkedHashMap$Entry.recordAccess
+   8  1.98% 61.34%      24 300609 net.sf.saxon.type.Converter.convert
+....</pre>
+      <p>See full hprof results: <a href="http://dev.saxonica.com/oneil/java.hprof-DN.txt">java.hprof-DN.txt</a></p>
+      <p><b>Improvements in Bytecode generation</b></p>
+      <p>In the bytecode we discovered we were missing out on opportunities to capitalise on
+         static properties we know at compile time. For example during atomization we were
+         doing an instanceof test to see whether each item was a node when we already know
+         from static analysis that this was the case. We were also able to avoid unnecessary
+         conversions of the strings, checking of instanceof and we found we could avoid repeated
+         conversions by saving of string values for reuse when appropriate.</p>
+      <p>With the code improvements discussed above we were able to apply them in Saxon-EE
+         9.5 (pre-release). The table below shows these running times on the stylesheet written
+         by Dimitre and Wolfgang. We observe that in the interpreted code that Wolfgang's XSL
+         is 2.13 times faster than Dimitre (This is similar to Dimitre results above). With
+         the bytecode generation feature switched on: Dimitre's stylesheet has dramatically
+         improved in performance and is now 1.19 times faster than Wolfgang's XSL.</p>
+      <table border="1">
+         
+         
+         
+         <tbody>
+            
+            
+            <tr>
+               
+               
+               <th>Transformation</th>
+               
+               
+               <th>Interpreted - Times (secs)</th>
+               
+               
+               <th>With bytecode generation - Times (secs)</th>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>Dimitre</td>
+               
+               
+               <td>7.373</td>
+               
+               
+               <td>1.938</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>Wolfgang</td>
+               
+               
+               <td>3.450</td>
+               
+               
+               <td>2.17</td>
+               </tr>
+            </tbody>
+         </table>
+      <p>We have not done any similar analysis on Wolfgang's stylesheet, we will now attempt
+         to do this.</p>
+      <p>To be continued....</p>
+   </body>
+</html>

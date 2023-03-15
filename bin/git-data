@@ -1,0 +1,10 @@
+#!/bin/bash
+
+OUTPUT=$1
+shift
+
+if [ "$OUTPUT" = "" ]; then
+    git ls-files src/ -z | xargs -0 -n1 -I{} -- git log -1 --format="%aI %h {}" {}
+else
+    git ls-files src/ -z | xargs -0 -n1 -I{} -- git log -1 --format="%aI %h {}" {} > $OUTPUT
+fi

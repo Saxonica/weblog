@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Saxon-JS 2.0.3</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2021-01-08T15:41:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+</head>
+<body>
+<h1>Saxon-JS 2.0.3</h1>
+
+<p>Happy New Year!</p>
+
+<p>As of a few minutes ago (at time of publication!), Saxon-JS 2.0.3
+has been published to the
+<a href="https://www.npmjs.com/package/saxon-js">npm registry</a>.
+This release contains no changes in functionality (this is not the
+release you’ve been waiting for, we’re still working on that one).</p>
+
+<p>The previous version has a published dependency on
+<a href="https://www.npmjs.com/package/axios">axios</a> version 
+0.19.2 which is, apparently, the subject of a security vulnerability
+(or so <code>npm install</code> asserted this morning).</p>
+
+<p>This tiny release simply updates the dependency to a patched
+version of axios.</p>
+
+<p>Axios is an HTTP library that is only used by the NodeJS version of
+Saxon-JS. When Saxon-JS is running in the browser, it uses the
+browser’s APIs, so this update should have no consequences for the
+browser version at all.</p>
+
+</body>
+</html>

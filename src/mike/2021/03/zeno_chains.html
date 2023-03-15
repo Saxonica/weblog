@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>The Zeno Chain: a new data structure for XDM sequences</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="author" content="Michael Kay" />
+        <meta name="pubdate" content="2021-03-18T15:34:00" />
+
+    </head>
+    <body>
+        <p>This article presents the Zeno Chain, a new data structure used
+        to underpin the implementation of XDM sequences in Saxon. It is also
+        designed to be capable of supporting XDM arrays, and might also have
+        potential for holding long character strings.</p>
+        <p>The current implementation of the Zeno Chain is a mutable list,
+        but the design lends itself easily to creating an immutable variant.
+        It also makes it easy to construct an immutable list from a mutable
+        one, making it efficient to construct a sequence with in-situ
+        modification, and then "freeze" it once construction is complete.</p>
+        <p>Saxon currently uses a variety of structures for holding sequences
+        and arrays. This variety is a problem in itself. Choosing the right
+        structure for a particular scenario involves somewhat hit-or-miss 
+        decision making; it would be better to have a single "all-rounder"
+        structure that performs well in a variety of situations.</p>
+        <p>There are of course vast numbers of data structures for sequences
+        available in the computer science literature. One promising one,
+        for example, is the "finger tree" which supports a wide range of
+        access patterns efficiently. But it also has drawbacks: any tree
+        structure that requires a node for each item in a list is going
+        to have a large memory overhead when storing a long sequence, and
+        the use of a fine-grained structure like this tends to mean that
+        there is little locality of reference for memory addressing, leading
+        to poor CPU caching performance.</p>
+        <p>The Zeno chain stores a sequence as a list of lists of items:
+        that is, it is a tree with a constant depth of 2. In the Java
+        implementation, both levels of list are instances of 
+        <code>java.util.ArrayList</code>. The key to the performance of the
+            structure is managing the number and size of the second-level
+            lists, which I call <i>segments</i>.</p>
+        <p>In a list that is constructed by appending individual items
+            on the end (a common scenario), the length of a segment
+            increases the closer it is to the start. For a list of 20,000
+            items, there are ten segments whose sizes are (8192, 4096, 4096, 
+            2048, 1024, 256, 128, 64, 64, 32). (Now you know why I called
+            it a Zeno chain.) The exact numbers don't matter
+            here: what is important is that the total number of segments
+            increases only logarithmically with the length of the sequence,
+            and that the segments on the right are short, which makes further
+            append operations efficient.</p>
+        <p>In a list constructed by prepending individual items, the
+            distribution of lengths will be the other way round: shortest
+            segments near the front. In the rare case where both append and
+            prepend operations occur, both ends will have short segments,
+            while longer segments will cluster around the middle.</p>
+        <p>Here's a summary of the major operations performed on the sequence:</p>
+        <ul>
+            <li><b>Append an item:</b> if the list is empty, construct a single
+            segment of length 1. Otherwise, if the last segment has length &lt; 32,
+            append to it. If the last segment is already full, coalesce the last segment with the previous
+            segment if the previous segment has sufficient room; if not, work
+            up the list to the start to find adjacent segments that can be merged.
+            A segment is considered to have sufficient room for such expansion if its resulting size
+            would not exceed 2^(N+5) where N is the distance of the segment
+            from the right-hand end of the sequence; it's this formula that ensures
+            that longer segments accumulate at the start of the sequence. If all
+            segments in the sequence are full — that is, if the
+            segment sizes are decreasing powers of two — then add a new segment. 
+            Append operations essentially take constant time; 97% of them only
+            affect the final segment.</li>
+            <li><b>Prepend an item:</b> simply append in reverse.</li>
+            <li><b>Get the Nth item:</b> search the master list of segments examining
+            the sizes of the segments until
+            the right segment is found, then get the item by addressing into the
+            Java <code>ArrayList</code>. This takes logarithmic time. The average
+            access time will be slightly higher in a list built by prepending items,
+            because the chance of finding the required item in the first couple of
+            segments is much lower.</li>
+            <li><b>Subsequence:</b> make a new Zeno chain containing whole or part copies
+            of the segments from the original chain that are in the required range.</li>
+            <li><b>Iteration:</b> Keep two index positions, the index position in the master
+            list, and the index position in the current segment, and use these indexes
+            to retrieve the next item by calling <code>ArrayList.get()</code> twice.</li>
+            <li><b>Sequence concatenation: </b> This is quite a common operation in
+            XSLT and XPath, as it's the basis of the "flattening" operations such as
+            <code>xsl:for-each</code>, <code>xsl:apply-templates</code>, and
+            FLWOR expressions. The most direct approach is simply to concatenate the two
+            master lists, leaving the segments unchanged. This however can lead to 
+            fragmentation of the sequence, so we perform a reorganization to
+            reduce the number of short segments. Specifically, working from the
+            right hand end, if any segment is found to be shorter than both its
+            immediate neighbours, we combine it with the left-hand neighbour
+            and reduce the number of segments by one. This has the effect of reducing
+            the incidence of short segments in the middle of the chain.</li>
+            <li><b>Insertion, removal, and replacement: </b> these operations
+            are comparatively rare. With the immutable version of the structure,
+            an alteration affecting one of the larger segments will require copying
+            of everything else in that segment. This isn't ideal: but it's better
+            than copying the entire sequence, which is what often happens today.
+            And the use of the Java <code>ArrayList</code> at least means that the
+            copying is very fast.</li>
+        </ul>
+        <p>It's important to note that most operations on sequences don't actually
+            result in a new sequence being constructed. Calling <code>tail()</code>,
+            for example, doesn't copy any data: it delivers an iterator over a portion
+            of the original sequence. The sequence only gets materialized if, for example
+            the result is stored in a variable (and even then, not always).</p>
+        <p>Saxon's default implementation for a sequence is simply a Java List.
+            Appending an item to a list generally copies the whole list. Where Saxon
+            can detect that this is going to be inefficient, it instead uses a structure
+            called a Chain: this is effectively a tree of segments. But there's little
+            serious attempt to manage the depth of the tree or the size of the segments,
+            and the results in some cases can be rather poor.The Zeno chain offers
+            a signficant improvement; it also looks as if it can be used for arrays
+            as well as sequences.</p>
+        <p>For managing long strings, I invented a similar structure, which I then
+            discovered already existed in the literature and is known as a Rope:
+            a Rope represents a string as a tree of substrings. The literature on
+            Ropes describes how to keep the tree balanced, but it has nothing to say
+            about how to decide how many substrings to hold, and how long to make them.
+            The Zeno chain might turn out to provide an answer to that question.
+
+        </p>
+    </body>
+</html>

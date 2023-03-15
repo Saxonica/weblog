@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Compiling the Knight's Tour</title>
+      <meta name="id" content="126" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-09-24T14:18:44" />
+      <meta name="basename" content="compiling_the_knights_tour" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Compiling the Knight's Tour</h1>
+      <p>A progress report on query compilation: I've now got to the point where I can compile
+         the knight's tour query (tour.xq in the Saxon samples distribution) into Java code,
+         and execute it with correct results. It's running in 39.3ms, compared with 45.9ms
+         for the interpreted code, which isn't wildly exciting, but there's enormous scope
+         for tuning the generated code and it shouldn't be hard to improve on this figure very
+         significantly.</p>
+      <p>The 292 lines of XQuery translate into 1362 lines of Java, which will come down as
+         the code generation gets more efficient.</p>
+      <p>This is of course a very untypical query, as it has no input and generates fairly
+         minimal output: it spends most of its time doing recursive function calls. But it's
+         always been something of a torture test, so it's pleasing to have got it working (without
+         any really hard bugs to solve en route, I might add). I've also got most of the XMark
+         benchmark queries working, with speed factors varying from about 110% (compiled-to-interpreted
+         throughput ratio) to 400%.</p>
+      <p>There's still an enormous amount of work ahead though. Compiling 30% of the language
+         is enough to run 90% of queries, but it's not enough for a release.</p>
+   </body>
+</html>

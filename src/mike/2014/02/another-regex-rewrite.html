@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Another regex rewrite</title>
+      <meta name="id" content="204" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2014-02-11T07:52:21" />
+      <meta name="basename" content="another_regex_rewrite" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Another regex rewrite</h1>
+      <p>In Saxon 9.5, a new regular expression
+         engine was introduced. This was obviously a risky thing to do, but
+         I'm not averse to such risks, and although there is often some
+         short-term inconvenience to users, I believe such things usually
+         bring long-term benefits. The risks relate to both functionality and
+         performance. In both cases we were able to minimize the risks thanks
+         to a good collection of test material, but we always knew that
+         contact with real life problems might throw up things that the test
+         suite didn't.</p>
+      <p>Why did we need the new engine? There
+         were several factors. On Saxon-CE, the GWT technology didn't offer
+         access to the JDK regex library, only to the Javascript regex engine,
+         which has different syntax and semantics, and no support for non-BMP
+         Unicode characters. We could have translated XPath regexes to
+         Javascript regexes the way we were doing for the JDK, but the
+         expansions to handle non-BMP characters are very cumbersome. (We
+         could also have abandoned W3C regex conformance, but that's not my
+         style.) For "server-side Saxon", I had been impatient with
+         the existing design for some time. There are bugs I reported in the
+         JDK regex engine 5 years ago which Sun/Oracle have shown no
+         inclination to fix; the approach of translating one regex dialect to
+         another is slow and clunky; and the JDK wasn't keeping pace with new
+         Unicode versions. I felt it was time we brought the regex engine
+         in-house.</p>
+      <p>I looked around for an open source
+         regex engine suitable for forking, and chose the Apache Jakarta
+         engine. Unlike some other options the code was clear and well
+         commented, the performance seemed reasonable, and the license was
+         compatible. I made all the changes needed to support the XPath regex
+         syntax and semantics, and a few other changes including some
+         optimizations, and it passed all the tests. In fact, it has proved
+         very reliable; there have been no bug reports against its
+         functionality.</p>
+      <p>But there have been two performance
+         glitches.
+         </p>
+      <ul>
+         <li>One is the way it handles integer
+            repetition bounds such as a{3,7}. The algorithm it uses for this is
+            the same as Saxon uses in its schema processor, which is described in
+            a paper by Thompson and Tobin [1]; it essentially translates such an
+            expression to aaaa?a?a?a?, and then generates a finite state machine
+            accordingly. This becomes problematic when the integer bounds start
+            to become significantly large; the size of the finite state machine
+            and the time taken to generate it both increase rapidly with size.
+            (For the technically minded, I'm not sure how rapidly, but even if
+            it's only linear, it's a significant problem.)</li>
+         <li>The second problem is the handling of
+            backtracking. The Jakarta engine, like most regex engines, relies on
+            backtracking to handle ambiguous expressions. Backtracking relies on
+            maintaining a stack so you can go back to where you were. In Jakarta,
+            this data was kept on the Java program stack; each checkpoint was
+            represented by a recursive function call. In many cases each
+            character position in the input string is a potential checkpoint, so
+            the depth of recursion was essentially equal to the length of the
+            input string. That puts a limit of around 1K to 2K on the size of the
+            input, which is not really acceptable.</li>
+      </ul>
+      <p>For the 9.5 release I mitigated this
+         problem by introducing an optimization: in cases where repetition was
+         unambiguous, the recursive calls were eliminated. This catches many
+         cases like A*B where you know that you have to keep reading A's until
+         you hit a B, and when you do hit a B you know you won't have to try
+         again from somewhere in the middle of the sequence of A's. But
+         unfortunately, ambiguous expressions are common (an example would be
+         .*B), and we have to handle them.</p>
+      <p>So I did something that I very rarely
+         do; I studied how the JDK regex engine avoided this problem, by
+         following its activity through the debugger. I was surprised to see
+         that the JDK engine doesn't actually build a finite state machine.
+         Instead it uses a pure interpreter pattern: it builds an abstract
+         syntax tree representing the grammar of the regex, and then evaluates
+         the regex by direct interpretation of the constructs on this tree.
+         The maximum recursive depth with this approach is represented by the
+         depth of the abstract syntax tree (that is, it depends on the regex
+         but not on the input string), and the data needed for backtracking is
+         held on the heap rather than on the Java stack.</p>
+      <p>Over the last week I have been
+         rewriting the back end of the (ex-)Jakarta regex engine to use a
+         similar design. It's passing all the functionality tests; I still
+         have some performance testing to do, but it's looking good. The
+         front-end code, that is the regex parser, is largely unchanged, but
+         it now generates an operation tree rather than an FSM. I retained
+         many of the features of the existing design, such as the use of a
+         variety of implementations of integer sets and predicates to support
+         the different kind of character classes, but the operations have all
+         been re-implemented to work interpretively. I departed from the JDK
+         design by using an approach similar to Saxon's XPath interpreter, in
+         that the implementation of each operation returns an iterator over
+         all the strings matched by the relevant expression. The key method
+         supported by each operation is</p>
+      <pre><code>IntIterator iterateMatches(final REMatcher matcher, final int position)
+</code></pre>
+      <p>which is passed an REMatcher (contain
+         all necessary information about the match operation, including the
+         input string and regex flags, plus support for captured groups and
+         backreferences), and a start position for matching; it return an
+         IntIterator representing a sequence of integers which are the
+         possible positions where a match can end.
+         </p>
+      <p>The class handling a repeat operation
+         such as (a|aa)* implements this operation by repeated calls on the
+         underlying choice operation. The first choice operation will return
+         an iterator over the two possible end positions (1,2); the next time
+         round there are four possible positions (1,2,2,3) (there is no
+         attempt to eliminate duplicates), and so on.The method maintains a
+         stack of IntIterator objects representing these successive calls;
+         initially only the first hit from each iterator is used, but when
+         backtracking is necessary, the stack is popped, and the iterator now
+         at the top of the stack is called to deliver its next match.</p>
+      <p>Saxon continues to take advantage of
+         the optimization that recognizes unambiguous repetitions. With
+         patterns such as A*B, or A{5}A, there is no need for  backtracking so
+         the stack of iterators is not used, and only the first match from
+         each iterator is used.</p>
+      <p>There is scope for further optimization
+         here. Some regular expression engines such as PCRE are known to
+         handle highly-ambiguous expressions much more efficiently than this
+         crude backtracking approach, mainly by eliminating the duplication
+         that arises when a backtrack attempt ends up doing the same matches
+         at the same positions as a previous attempt. Such improvements lie in
+         the future; for the moment, being as good as the Java engine in
+         performance, and better in features such as Unicode support and
+         buglessness, is enough to declare success.</p>
+      <p>The new code is currently operational
+         on the Saxon 9.6 development branch. In due course it will be
+         retrofitted to Saxon-CE, and probably also to a Saxon 9.5 maintenance
+         release. Probably only 10% of the original Jakarta code remains, but
+         that's probably enough that I can't get rid of the Apache license
+         that goes with it, for those who care about these things.</p>
+      <p>[1] Using
+         Finite-State Automata to Implement W3C XML Schema Content Model
+         Validation and Restriction Checking. Henry Thompson and Richard
+         Tobin. XML Europe 2003</p>
+   </body>
+</html>

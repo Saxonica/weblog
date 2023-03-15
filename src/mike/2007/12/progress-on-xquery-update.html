@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Progress on XQuery Update</title>
+      <meta name="id" content="145" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2007-12-19T14:18:45" />
+      <meta name="basename" content="progress_on_xquery_update" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Progress on XQuery Update</h1>
+      <p>I've now got the basics of XQuery update working, with no major difficulties. Things
+         still to be tackled after Christmas:</p>
+      <p>(1) the (so-called) transform expression (which in its latest incarnation is actually
+         a modify-copy-return expression). I don't expect any major difficulties here.</p>
+      <p>(2) building nodes that are constructed during the query (using element constructors,
+         etc) to use a data model implementation other than the TinyTree (because the TinyTree
+         isn't going to be made updateable). Of course this will only happen if the query is
+         using updates, and ideally it should only happen if the tree in question is being
+         subjected to updates, which in principle is something I could determine using the
+         path-analysis code that's used to underpin document projection. (But what is actually
+         the effect of updating such a node, for example "insert &lt;a/&gt; into &lt;b/&gt;"? Yes, it creates
+         the tree &lt;b&gt;&lt;/a&gt;&lt;/b&gt;, but is the updated result available in any way to the calling
+         application? Perhaps I should optimize this out as a no-op?)</p>
+      <p>(3) now that the linked tree model is updatable, some changes are needed to ensure
+         that it handles node identity correctly. I haven't worked out all the details on this
+         yet. In theory, if an attribute is replaced by another attribute, the new attribute
+         must have a different identity from the old; at the moment in the linked tree the
+         identity of an attribute is determined by the combination of the identity of the containing
+         element and the name of the attribute, so that will need to change.</p>
+      <p>(4) Revalidation: that is, checking after a set of updates that the tree is still
+         valid, allocating type annotations, and expanding any defaulted elements or attributes.
+         The difficulty with this is that unlike the validate{} expression in XQuery, it has
+         to be done in-situ, that is, without changing node identities. The Saxon schema validator
+         is designed to work as a push (SAX-like) pipeline, and it's not obvious how to change
+         it to work on a tree in-situ. It probably requires some kind of mechanism for retaining
+         node identities as they pass through the pipeline, so that the receiver at the end
+         of the pipe can apply updates to the original nodes.</p>
+      <p>(5) API and command line design. I still have to work out the best way of handling
+         rewrite of updated documents back to disk. From the command line the default should
+         probably be to update the source document in-situ while saving the original with a
+         .bak extension. Clearly there are cases where the source can't be updated, for example
+         if it's read via HTTP - what should happen then? Answers on a postcard please...</p>
+      <p>(6) Nearly forgot a few more loose ends: </p>
+      <p>(6a) I haven't yet implemented the rules for testing the compatibility of updates
+         on the pending update list</p>
+      <p>(6b) In turn that might create some issues concerning the possibility of transient
+         inconsistencies in the tree. For example, handling the case where there's a delete
+         on an existing attribute and an insert of a new attribute with the same name.</p>
+      <p>(6c) There are probably more complexities with namespace consistency than I'm yet
+         handling. In fact, I suspect there are more complexities in this area that the spec
+         is yet handling.</p>
+   </body>
+</html>

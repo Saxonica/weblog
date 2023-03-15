@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Further progress on XQuery Update</title>
+      <meta name="id" content="146" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2008-01-02T14:18:45" />
+      <meta name="basename" content="further_progress_on_xquery_update" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Further progress on XQuery Update</h1>
+      <p>I've no got to the point where my XQuery Update implementation is passing almost all
+         the published tests. That doesn't mean its complete, because the test suite doesn't
+         cover certain areas, such as revalidation of updated documents. But it's looking good.</p>
+      <p>There were quite a few hassles getting corner cases to parse correctly. The XQuery
+         grammar really is very fragile, and it's hard to make changes to a parser without
+         breaking something. The particularly thorny point was the overloading of the "as"
+         keyword in the insert and rename expressions, which has required changes to the Tokenizer
+         that have side-effects on almost all other constructs using "as".</p>
+      <p>The other problem has been making the linked tree fully updateable. There were all
+         kinds of hidden assumptions here about node identity and document order that have
+         had to be revisited. Some of them still need to be addressed, for example I don't
+         yet have an efficient way of representing the base URI of nodes. Currently a lot of
+         properties (like base URI and in-scope-namespaces) are computed on demand rather than
+         being physically stored in each node, and this makes for extra work when updating.
+         There are also document-level indexes that need to be updated or invalidated. I was
+         lucky that the test suite caught one or two of these, because it's only doing tiny
+         queries on updated documents so a lot of errors could remain uncaught.</p>
+      <p>There's a nasty messiness in the spec concerning the rules for mixing updating and
+         non-updating statements. For example, if one branch of a conditional is an updating
+         expression, then the other must either be an updating expression, or (), or a call
+         on error(). The problem with this is that you can only tell whether an expression
+         is updating after you have bound function calls to the corresponding function declarations,
+         and by that time Saxon has already done the first stages of simplification of the
+         expression tree: for example it replaces a typeswitch expression by a corresponding
+         structure of nested conditionals on-the-fly while parsing. If I can't get the rules
+         changed in this area then it's going to be quite difficult to implement them precisely:
+         it would mean, for example, that the expression tree has to retain information about
+         otherwise redundant parentheses in the source query. Really this part of the language
+         is badly designed; the rule on mixing updating and non-updating expressions should
+         be phrased as a semantic rule not as a syntactic one. I'd be suprised if other implementors
+         don't have similar problems, although some of them may be less agressive in the rewrites
+         they attempt than Saxon is.</p>
+   </body>
+</html>

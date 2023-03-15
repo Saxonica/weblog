@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>The ten most common XSLT programming mistakes</title>
+      <meta name="id" content="179" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2010-06-11T14:18:47" />
+      <meta name="basename" content="the_ten_most_common_xslt_programming_mistakes" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>The ten most common XSLT programming mistakes</h1>
+      <p>
+         
+         In response to a user recently, I told him he had fallen into the most common elephant
+         trap for XSLT users. Rather than being annoyed, which I half expected, he thanked
+         me and asked me if I could tell him what the next most common elephant traps were.
+         Although some of us have been helping users avoid these traps for many years, I don't
+         recall seeing a list of them, so I thought I would spend half an hour compiling my
+         own list. </p>
+      <p>1. Matching elements in the default namespace. If the source document contains a default
+         namespace declaration xmlns="something", then every time you refer to an element name
+         in an XPath expression or match pattern, you have to make it clear you are talking
+         about names in that namespace. In XSLT 1.0 you have to bind a prefix to this namespace
+         (for example xmlns:p="something" on the xsl:stylesheet element) and then use this
+         prefix throughout, for example match="p:chapter/p:section". In XSLT 2.0 an alternative
+         is to declare default-xpath-namespace="something" on the xsl:stylesheet element. </p>
+      <p>2. Using relative paths. xsl:apply-templates and xsl:for-each set the context node;
+         within the "loop", paths should be written to start from this context node. For example,
+         &lt;xsl:for-each select="chapter"&gt;&lt;xsl:value-of select="title"/&gt;&lt;/xsl:for-each&gt;. Common
+         mistakes are to use an absolute path within the loop (for example select="//title"),
+         or to repeat the name of the context node in the relative path (select="chapter/title"). </p>
+      <p>3. Variables hold values, not fragments of expression syntax. Some people imagine
+         that a variable reference $x is like a macro, expanded into the syntax of an XPath
+         expression by textual substitution - rather like variables in shell script languages.
+         It isn't: you can only use a variable where you could use a value. For example, if
+         $N holds the string 'para', then the path expression chapter/$N does not mean the
+         same as chapter/para. Instead, you need chapter/*[name()=$N]. If a variable holds
+         something more complex than a simple name (for example, a full path expression) then
+         you need an extension like saxon:evaluate() to evaluate it. </p>
+      <p>4. Template rules and xsl:apply-templates are not an advanced feature to be used only
+         by advanced users. They are the most basic fundamental construct in the XSLT language.
+         Don't keep putting off the day when you start to use them. If you aren't using them,
+         you are making your life unnecessarily difficult. </p>
+      <p>5. XSLT takes a tree as input, and produces a tree as output. Failure to understand
+         this accounts for many of the frustrations beginners have with XSLT. XSLT can't process
+         things that aren't represented in the tree produced by the XML parser (CDATA sections,
+         entity references, the XML declaration) and it can't generate these things in the
+         output either. If you think you need to do this, ask why: there's probably something
+         wrong with your requirements or your design. </p>
+      <p>6. Namespaces are difficult. There are no easy answers to getting them right: this
+         probably needs another article of its own. The key is to understand the data model
+         for namespaces. Namespaces appear in two guises: (a) every element and attribute has
+         a name comprising a prefix, local name, and URI; and (b) elements own namespace nodes
+         representing all the prefix/uri bindings in scope for that element. When you've understood
+         this, you can understand the specifications for different instructions and their effect
+         on namespaces in the result tree. Most of the time, all you need to do is to ensure
+         that the elements you create are in the right namespace, and everything else will
+         take care of itself. </p>
+      <p>7. Don't use disable-output-escaping. Some people use it as magic fairy dust; they
+         don't know what it does, but they hope it might make things work better. This attribute
+         is for experts only, and experts will only use it as an absolute last resort. 95%
+         of the time, if you see disable-output-escaping in a stylesheet, it tells you that
+         the author was a novice who didn't know what s/he was doing. </p>
+      <p>8. The &lt;xsl:copy-of&gt; instruction creates an exact copy of a source tree, namespaces
+         and all. (Well, there's one exception, in XSLT 2.0 you can say copy-namespaces="no").
+         If you want to copy a tree with changes, then you can't use xsl:copy-of. Instead,
+         use the identity-template coding pattern: a template rule that uses &lt;xsl:copy&gt; to
+         make a shallow copy of an element and applies-templates to its children, supplemented
+         by template rules that override this behaviour for particular elements. </p>
+      <p>9. Don't use &lt;xsl:variable name="x"&gt;&lt;xsl:value-of select="y"/&gt;&lt;/xsl:variable&gt;. Instead
+         use &lt;xsl:variable name="x" select="y"/&gt;. The latter is shorter to write, and much
+         more efficient to execute, and in many cases it's correct where the former is incorrect. </p>
+      <p>10. When you need to search for data, use keys. As with template rules, don't put
+         off learning how to use keys or dismiss them as an advanced feature. They are an essential
+         tool of the trade. Searching for data without using keys is like using a screwdriver
+         to hammer nails.
+         
+         </p>
+      <div class="commentsHead">COMMENTS</div>
+      <div id="comments_block_id" class="comments"><a name="1321968"></a><div id="cid_1321968" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by garymlewis on Fri 11 Jun 2010 14:55 BST |  Profile |  <a href="#1321968">Permanent Link</a></div>
+               <div class="commentBody">Very cool. Thank you.<br />
+                  I wish there were web sites for XSLT and XQuery like those for Perl (http://learn.perl.org/
+                  and http://perldoc.perl.org/). It would make learning these X tools a whole lot easier.<br />
+                  Regards, Gary</div>
+            </div>
+         </div><a name="1321971"></a><div id="cid_1321971" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by John Cowan on Fri 11 Jun 2010 15:29 BST |  Profile |  <a href="#1321971">Permanent Link</a></div>
+               <div class="commentBody">0. Misspell a namespace name, causing nothing to match; specifically, misspell the
+                  XSLT namespace name, causing nothing to work.</div>
+            </div>
+         </div><a name="1322009"></a><div id="cid_1322009" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Roland Bouman on Fri 11 Jun 2010 21:56 BST |  Profile |  <a href="#1322009">Permanent Link</a></div>
+               <div class="commentBody">11. Forgetting a dollar when referencing a variable, like in &lt;xsl:variable name="x"
+                  select="y"/&gt; :p¶(no harm intended - I enjoyed this post a lot, and I'm a big admirer
+                  of your work.
+                  But I couldn't resist posting after reading elephant trap #9)</div>
+            </div>
+         </div><a name="1322010"></a><div id="cid_1322010" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Roland Bouman on Fri 11 Jun 2010 21:57 BST |  Profile |  <a href="#1322010">Permanent Link</a></div>
+               <div class="commentBody">uh oh, seems I misread the article initially :(<br />
+                  please disregard my previous comment.</div>
+            </div>
+         </div><a name="1322013"></a><div id="cid_1322013" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Michael Kay on Fri 11 Jun 2010 22:52 BST |  Profile |  <a href="#1322013">Permanent Link</a></div>
+               <div class="commentBody">You're right that omitting a dollar is a very common mistake. But on this occasion,
+                  I meant what I wrote!</div>
+            </div>
+         </div><a name="1408743"></a><div id="cid_1408743" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by khanrashed110 on Thu 03 Feb 2011 15:20 GMT |  Profile |  <a href="#1408743">Permanent Link</a></div>
+               <div class="commentBody">haha how many times have I made this mistake but I don't think it should be classed
+                  as a programming mistake just a casual mistake if you know what I mean.</div>
+            </div>
+         </div><a name="1322467"></a><div id="cid_1322467" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Kim on Tue 15 Jun 2010 05:42 BST |  Profile |  <a href="#1322467">Permanent Link</a></div>
+               <div class="commentBody">If I had to add an eleventh one that would be improper use of abbreviated <br />syntax in XPath expressions. I have seen countless stylesheets using things like: <br />.//a[1]<br />
+                  to return the first 'a' below the context node which does not work if your DTD allows
+                  an 'a' to occur below another 'a'. E.g. <br />//a[1] applied to &lt;a&gt;&lt;a&gt;&lt;a/&gt;&lt;/a&gt;&lt;/a&gt; returns the three 'a' nodes. <br />(Happens in practice when you have mixed contents stuff). <br />I have also seen people writing stuf like /descendant::*[ 1 and (self::a or self::b)]
+                  to mean the first 'a' or 'b' in pre-order. (the path before being wrong in two places
+                  [ 1 and ... ] is like [ true and ... ] and not [ position() = 1 and ... ] and then
+                  even with position() = 1, it selects the first node in pre-order if its label is a
+                  or b. correct XPath would be /descendant::*[ self::a or self::b][position() = 1]</div>
+            </div>
+         </div><a name="1322695"></a><div id="cid_1322695" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Lars on Wed 16 Jun 2010 12:24 BST |  Profile |  <a href="#1322695">Permanent Link</a></div>
+               <div class="commentBody">How about the mistake of confusing <br />test="foo != bar" <br />with <br />test="not(foo = bar)"<br />
+                  I.e. not realizing that the comparison operators operate on sets. This is one you
+                  have written about in the past I believe. It has tripped up me and my colleagues more
+                  than once.</div>
+            </div>
+         </div><a name="1337122"></a><div id="cid_1337122" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Lapinski on Sun 08 Aug 2010 09:58 BST |  Profile |  <a href="#1337122">Permanent Link</a></div>
+               <div class="commentBody">I am confused. Matching elements WITH default namespace is the #1 most common mistake
+                  in XSLT? I have been seeing a lot of stylesheets matching default namespace... so
+                  they are all wrong? So is it possible to change the default namespace of the stylesheet
+                  on the fly (say, before it is run on the command line) if that's the case?</div>
+            </div>
+         </div><a name="1341468"></a><div id="cid_1341468" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Densil on Thu 19 Aug 2010 09:25 BST |  Profile |  <a href="#1341468">Permanent Link</a></div>
+               <div class="commentBody">Hi there, <br />I am trying to write a generic XSLT file which takes an XML as input and generates
+                  its XSD schema. Is it a valid approach to use XSLT ? are there any examples of such
+                  generation ? did anyone do such transformations ? <br />thanks <br />Den</div>
+            </div>
+         </div><a name="1341586"></a><div id="cid_1341586" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Michael Kay on Thu 19 Aug 2010 14:18 BST |  Profile |  <a href="#1341586">Permanent Link</a></div>
+               <div class="commentBody">Densil, a good place to ask that question would be the xsl-list at mulberrytech.com.</div>
+            </div>
+         </div><a name="1344410"></a><div id="cid_1344410" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by pvallone on Mon 30 Aug 2010 19:32 BST |  Profile |  <a href="#1344410">Permanent Link</a></div>
+               <div class="commentBody">Great Blog. I have a question in regards to:<br />
+                  7. Don't use disable-output-escaping.<br />
+                  I use it to output a new doc type declaration in the resulting xml:<br />
+                  &lt;xsl:text disable-output-escaping="yes"&gt;&lt;![CDATA[ <br />&lt;!DOCTYPE root SYSTEM "root.dtd"&gt; <br />]]&gt;&lt;/xsl:text&gt;<br />
+                  Is this correct?</div>
+            </div>
+         </div><a name="1344411"></a><div id="cid_1344411" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Michael Kay on Mon 30 Aug 2010 19:51 BST |  Profile |  <a href="#1344411">Permanent Link</a></div>
+               <div class="commentBody">It's much better to do this using &lt;xsl:output doctype-system="root.dtd"/&gt;.</div>
+            </div>
+         </div><a name="1344412"></a><div id="cid_1344412" class="comment">
+            <div class="commentIndent2">
+               <div class="commentTitle">Re: Re: Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by pvallone on Mon 30 Aug 2010 20:13 BST |  Profile |  <a href="#1344412">Permanent Link</a></div>
+               <div class="commentBody">Thanks</div>
+            </div>
+         </div><a name="1386056"></a><div id="cid_1386056" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Andriy Gerasika on Thu 02 Dec 2010 16:54 GMT |  Profile |  <a href="#1386056">Permanent Link</a></div>
+               <div class="commentBody">using name() function at all.<br />
+                  for example, very often people write: <br />&lt;xsl:apply-templates select="*[name()!='a:b']"/&gt;<br />
+                  instead of <br />&lt;xsl:apply-templates select="*[not(self::a:b)]"/&gt;<br />
+                  or XSLT 2.0 <br />&lt;xsl:apply-templates select="* exclude a:b"/&gt;<br />
+                  Bespoke undeterministic behaviour w/ namespaces, name() also creates problems w/ performance.</div>
+            </div>
+         </div><a name="1567186"></a><div id="cid_1567186" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: The ten most common XSLT programming mistakes</div>
+               <div class="commentAuthor">by Tom Wilson on Thu 05 Jan 2012 12:00 GMT |  Profile |  <a href="#1567186">Permanent Link</a></div>
+               <div class="commentBody">I struggled with no.3 for a few days and scoured various sites without much help.
+                  I now understand path expressions more clearly. I should also return to read more
+                  of your book, XSLT Programmer's Reference now that I have some experience of using
+                  XSLT, XPath and XQuery. Thanks.</div>
+            </div>
+         </div>
+      </div>
+   </body>
+</html>

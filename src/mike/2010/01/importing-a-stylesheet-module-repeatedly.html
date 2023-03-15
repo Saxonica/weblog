@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Importing a stylesheet module repeatedly</title>
+      <meta name="id" content="176" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2010-01-06T14:18:47" />
+      <meta name="basename" content="importing_a_stylesheet_module_repeatedly" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Importing a stylesheet module repeatedly</h1>
+      <p>
+         
+         I'm looking at a case submitted by a user where XSLT compilation is very slow. It
+         turns out to be caused by the same module being repeatedly imported with many different
+         import precedences (in the case of one module, with 174 different import precedences).
+         The user has a solution (only import it once, or change some of the imports to includes);
+         but I'm wondering what changes to make to prevent the problem recurring.</p>
+      <p>In this particular case, the stylesheet uses many functions and not many template
+         rules. This is significant because the two cases are different: with functions, a
+         named function that is masked by another with the same name and arity but higher precedence
+         is dead wood: it can never be invoked, so all the costs of compiling it and optimising
+         it are unnecessary. With template rules however, a template can always be reached
+         using xsl:apply-imports or xsl:next-match, so it can never be discarded.</p>
+      <p>The specification says that including or importing the same module twice has exactly
+         the same effect as if you included or imported two different modules that happened
+         to have the same content. And that's exactly how Saxon behaves: it doesn't remember
+         which modules have previously been read, so the second import/include causes the same
+         document to be read from disk, parsed into a tree, and then to go through all the
+         stages of XSLT and XPath static analysis. Clearly this involves a lot of wasted work.</p>
+      <p>The first question is, how much does this matter? How many users does it affect, and
+         how badly does it affect them? It's impossible to answer the question statistically,
+         so the usual test I apply is that if the code is correct and a reasonable user might
+         write it in this way, then the software has a responsibility to try and execute it
+         with reasonable efficiency. The principle (another one I remember from David Wheeler
+         - he was an appalling lecturer, but he seems to have drilled some firm ideas into
+         my brain) is "optimize the code that reasonable users actually write". And it does
+         seem that a reasonable user, seeing that module A has a dependency on module B, might
+         well add a redundant import declaration, and would not expect this to have an adverse
+         effect on performance.</p>
+      <p>The next question is how far we should go in eliminating the unnecessary processing
+         that is currently being done. Let's look at where the inefficiencies arise:</p>
+      <ul>
+         <li>We are parsing the same module repeatedly (about 10% of the cost), then parsing
+            its XPath expressions repeatedly (another 10%), and doing other miscellaneous static
+            checking (say another 5%).</li>
+         <li>In the case of functions, we do a serial search to bind function calls to stylesheet
+            functions, which is taking a long time because there are multiple instances of the
+            same function. I have already implemented a hash lookup to fix this particular problem,
+            which has halved the compilation time.</li>
+         <li>Again in the case of functions, we are type-checking and optimizing functions that
+            can never be called because they are masked by another of higher import precedence.
+            This is another 10% or so of the overhead, and I have already made changes to eliminate
+            it.</li>
+         <li>In the case of template rules, the "masked" templates do need to be type-checked
+            and optimized because they can be called, using apply-imports or next-match. However,
+            we could potentially take advantage of the fact that two template rules with different
+            import precedence can share the same executable code: if they come from different
+            incarnations of the same module, then they will have identical static contexts, and
+            could therefore be compiled once and share the same compiled code.</li>
+      </ul>
+      <p>We can do some of these optimizations (like doing less work to process masked functions)
+         without any change to the strategy of reading and parsing modules repeatedly. But
+         other optimizations do mean that we need to recognize when two modules derive from
+         the same source. In particular, we need to distinguish a "masked" function that comes
+         from the same source module from a "masked" function deriving from a different source
+         module: in the latter case, the spec requires all static errors to be detected even
+         though the code is dead, while in the former case we know that we only need to do
+         the analysis once to report all static errors.</p>
+      <p>The toughest aspect of this is that there is an impact on data structures. This is
+         particularly the case with template rules: the idea of two template rules sharing
+         the same executable code even though they have different import precedence, and then
+         taking advantage of this to only type-check and optimize the code once. Changing data
+         structures is always the hardest kind of change. But it's probably worth doing.<br />
+         
+         </p>
+      <div class="commentsHead">COMMENTS</div>
+      <div id="comments_block_id" class="comments">
+         <div id="no_comments" class="comments">No comments found.</div>
+      </div>
+   </body>
+</html>

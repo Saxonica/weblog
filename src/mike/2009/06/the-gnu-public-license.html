@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>The GNU Public License</title>
+      <meta name="id" content="164" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2009-06-07T14:18:46" />
+      <meta name="basename" content="the_gnu_public_license" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>The GNU Public License</h1>
+      <p>I've been thinking carefully about whether there's a way to reduce the number of people
+         "freeloading" on the back of Saxon - that is, selling commercial software that relies
+         heavily on Saxon functionality without contributing anything in return. One potential
+         way of doing that is switch in some way to a dual licensing approach: make application
+         vendors choose between paying for a commercial license, and using the product under
+         the GPL (GNU public license), which prevents them from creating "derivative works"
+         unless those works are also licensed under the GPL (that is, made available as open
+         source products). This is essentially the way MySQL works, and it seems to work well
+         for them.</p>
+      <p>However, there seem to be two obstacles in this approach that are very hard to overcome.</p>
+      <p>The first is that the language of the GPL is very vague, and as far as I can see,
+         it doesn't do what it claims to do.</p>
+      <p>It's often thought that GPL says that if program A links to program B, and program
+         B is issued under the GPL, then the GPL also applies to program A. Well go and read
+         it: that's not what it says. GPL (this applies to both v2 and v3) doesn't even use
+         the word "linking". It speaks of a "derivative work under copyright law:
+         that is to say, a work containing the Program or a portion of it". If someone distributes
+         an application containing calls to Saxon, and tells you to download Saxon from SourceForge,
+         I don't see how anyone can claim that the application is a derivative work under copyright
+         law. It would be like saying that I've created a derivative work to Harry Potter merely
+         by encouraging you to get yourself a copy and read it.</p>
+      <p>Now you'll find plenty of statements like "It has always been the FSF's position that
+         dynamically linking
+         applications to libraries creates a single work derived from both the
+         library code and the application code." Well, that may be their position, but it's
+         not what the license says. And how can it possibly be true? The dynamic linking is
+         done by the user, not by the supplier. If someone writes an application that calls
+         JAXP interfaces, does that make the application a derivative work of every XSLT processor
+         that implements JAXP interfaces, even XSLT processors that haven't been written yet?
+         The idea is absurd. </p>
+      <p>The other major obstacle to using the GPL is more of an ethical point than a technical
+         or legal one. The GPL license requires you to sign up to a world view which I simply
+         don't share. The preamble says, for example "the GNU General Public
+         License is intended to guarantee your freedom to share and change free
+         software--to make sure the software is free for all its users." Well, sorry, that's
+         the opposite of what I want to achieve. I think it is right in principle that those
+         who get benefits from software should contribute to the cost of its creation. My only
+         reason for even looking at the GPL is to achieve greater fairness in this regard:
+         essentially, to encourage those who get commercial benefits from using the software
+         to pay for a commercial license. </p>
+      <p>The Free Software Foundation includes in its FAQ statements like "If you hope some
+         day to look back on your career and feel that
+         it has contributed to the growth of a good and free society, you
+         need to make your software free." I disagree 100% with that: I have spent 25 years
+         of my life producing commercial software and I think that software has contributed
+         just as much to society as the free software I have produced. There are things I dislike
+         greatly about the capitalist system, for example the incredible waste of resources
+         that goes into the unproductive activities of advertising and marketing, but (unlike
+         the FSF, it seems) I do not disagree with the principle that those who produce useful
+         things should be rewarded for their work. And I really don't want to sign up to a
+         license that asks me in its preamble to agree with a political and philosophical position
+         which I don't hold.</p>
+      <p>This leaves me with the problem I started with of course: is there anything I can
+         do from a licensing point of view to achieve my objectives, having ruled out GPL.
+         On the other hand, MySQL must be doing something right.</p>
+   </body>
+</html>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>First compiled XMark results</title>
+      <meta name="id" content="131" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-11-06T14:18:44" />
+      <meta name="basename" content="first_compiled_xmark_results" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>First compiled XMark results</h1>
+      <p>The code to compile XQuery into Java has now advanced sufficiently that I can run
+         all the XMark benchmark queries, producing correct results, and reproducing the Saxon-SA
+         join optimizations. First results are shown below: there's clearly room for further
+         work in some areas, but overall it's an encouraging milestone. All timings in milliseconds,
+         to run the query on a 12Mb data file</p>
+      <pre>Query   Saxon-B  Saxon-SA  compiled
+  q1     6.6        6.8       1.8
+  q2     6.0        5.8       4.4
+  q3    22.0       19.4      14.8
+  q4    21.8       21.2      17.0
+  q5     6.8        4.6       3.8
+  q6     4.4        2.6       4.6
+  q7    32.6       20.2      34.5
+  q8 12217.7       56.3      21.6
+  q9 16700.7       81.5      47.5
+ q10  1735.7      163.9     265.3
+ q11 12528.0     4256.3    6049.0
+ q12  3234.7     1418.7    2697.0
+ q13     3.2        2.6       2.6
+ q14   152.2      106.7     115.8
+ q15     4.8        3.2       3.6
+ q16     8.4        7.8       4.0
+ q17    11.6       10.4       6.6
+ q18    11.2        9.0       8.2
+ q19    65.5       58.7     125.2
+ q20    34.9       27.6      24.6</pre>
+      <p>These figures are very preliminary. With some of them there's very little scope for
+         further improvement (the compiled code for count(/a/b/c/) is about as good as it's
+         going to get, and the only way to make further improvements is for the compiler to
+         penetrate deeper than the object model and serialization interfaces that the compiled
+         code currently invokes. But there's no reason why any of the figures for compiled
+         code should be slower than the interpreted figures. The results for Q8 and Q9 are
+         the most encouraging, because these rely very heavily on optimization. In fact it's
+         generally true that the more complex the query, the bigger the potential gains.</p>
+      <p>There are a couple of outliers here. Q19 is the only query in XMark that does sorting,
+         and that's clearly an area that needs attention. Q6 and Q7 are both dominated by a
+         count(). Q10, 11, and 12 are probably dominated by conversion of untyped values to
+         typed values in filter predicates (the XMark benchmark is schemaless, which makes
+         it very frustrating to work with at times, because there would be so many ways of
+         speeding it up if source changes to the queries were allowed!)</p>
+      <p>I'll come back with progress reports as these numbers improve. I don't expect to achieve
+         the same kind of speed-up as with the Knight's Tour (a factor of 7) because with these
+         queries, far more of the time is spent in reading the input data, and there's a limit
+         to how fast that can go. A factor of 2 for the more complex queries remains a reasonable
+         goal.</p>
+      <p>It's worth noting that all these figures are very competitive with those reported
+         by other vendors. Compare with the 11Mb database results at <a href="http://monetdb.cwi.nl/XQuery/Overview/Benchmark/XMark/">http://monetdb.cwi.nl/XQuery/Overview/Benchmark/XMark/</a> - the Q9 figure, for example, is 1000 times better than two of the competitive systems
+         cited.</p>
+   </body>
+</html>

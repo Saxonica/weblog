@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Repackaging Saxon</title>
+      <meta name="id" content="162" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2009-05-06T14:18:45" />
+      <meta name="basename" content="repackaging_saxon" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Repackaging Saxon</h1>
+      <p>I've been thinking for a while about some repackaging for Saxon, and I've now got
+         to the point where I'm working out the fine detail and creating appropriate build
+         files.</p>
+      <p>The main idea is that instead of two products, Saxon-B and Saxon-SA, there will in
+         future be three: Home Edition (HE), Professional Edition (PE), and Enterprise Edition
+         (EE).</p>
+      <p>At the top end, EE is just a rebranding of SA, to reflect the fact that the commercial
+         Saxon product is now differentiated by a lot more than schema awareness. For example,
+         many people are using it for the streaming capabilities. The -SA suffix causes confusion
+         because people imagine that you have to use a schema to use Saxon-SA.</p>
+      <p>The introduction of the Professional Edition (PE) is an attempt to tackle the problem
+         that an awful lot of people are currently getting a free ride, using Saxon for mission-critical
+         production work and contributing nothing in return. There's a lot to be said for open
+         source and free software, but unless there is some way of getting revenue to fund
+         investment from the people who get value from it, investment in the technology starts
+         to suffer, as does support. The revenue from Saxon-SA users has cross-subsidised the
+         whole operation quite successfully until now, but the product is getting ever bigger
+         and more complex and it's not clear that the current business model scales to meet
+         the growing requirements of the user community. So the aim is to produce a very low-cost
+         (but not zero-cost) version of the product that will be attractive to the bulk of
+         commercial users.</p>
+      <p>Of course the main reason people are reluctant to spend money is that the free version
+         is good enough to meet their needs, and this means we need to make HE a bit less attractive
+         to this community than Saxon-B is currently (but without alienating the open source
+         community who provide so much value, collectively, by creating public awareness).
+         This is a delicate tightrope to walk. For some time now I've been making new features
+         available only in Saxon-SA; increasingly "minor" features will show up first in PE.
+         The main carrot that I'm hoping will tempt people to take PE, however, will be convenience.
+         For example, some of the optional features of the product will be available to HE
+         users only in the form of source code, whereas they will be fully packaged in Saxon-PE.
+         I'm also thinking that bug fixes might be available to HE users only in source form,
+         while PE and EE users will get them packaged as a maintenance release.</p>
+      <p>Another benefit of the repackaging is that it "cleans up" the open source product.
+         Because of the long history, there are components such as the SQL module where it
+         is not always possible to trace all the contributors (and certainly, where there are
+         no formal signed handovers from those contributors clearing the code for use). This
+         has caused problems for some integrators wanting to integrate the source into their
+         own offerings. Many of these contributions are in non-core modules which can be isolated
+         so that those who care about these things get a "cleaner" source distribution, in
+         terms of having known and traceable provenance. (Using this kind of code in a commercial
+         product is far less of a problem, because Saxonica in effect indemnifies the end user.)</p>
+      <p>There are lots of risks associated with this strategy - one of them being that users
+         will simply stick with Saxon 9.1. Well, actually, that's not really a risk - it's
+         not a problem to Saxonica if they do, and the fact that they can do so will deflect
+         some of the inevitable grumbling. Over time, I think we should be able to get to the
+         position where those who have a good reason for not spending any money can get most
+         of what they need without doing so, but those who are deriving real commercial benefits
+         from the software contribute something to its ongoing development, and if we can get
+         to that position then I think everyone will be better off.</p>
+   </body>
+</html>

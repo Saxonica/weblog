@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Regex libraries in Java and .NET</title>
+      <meta name="id" content="100" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-02-03T14:18:42" />
+      <meta name="basename" content="regex_libraries_in_java_and_net" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Regex libraries in Java and .NET</h1>
+      <p>Saxon includes code to translate the XPath regex syntax into the
+         regex dialect supported by Java - a wonderful piece of code originally
+         written by James Clark, as usual hiding its brilliance with a total
+         absence of comments. One of the main things it does is to expand the
+         regex into one that matches surrogate pairs (characters above 65535),
+         which JDK 1.4 doesn't handle natively.</p>
+      <p>Only problem: JDK 1.5 does handle characters above 65535 in its
+         regex library; and what's more, if you try to match the two halves of a
+         surrogate pair as if they were separate characters, then it doesn't
+         work. And that of course is just what Saxon is doing. So the
+         paradoxical situation is that with Saxon, regular expressions handling
+         non-BMP characters work on JDK 1.4 (where they aren't supported by the
+         platform) but fail on JDK 1.5 (where they are).</p>
+      <p>I think I've fixed this by writing a new version of the translator
+         for use under 1.5, which cuts out all the clever stuff. The only
+         problem now is that I really don't have enough test cases to be sure
+         it's working properly.</p>
+      <p>I'v also been looking at the regex support in .NET 1.1. It looks
+         pretty compatible with JDK 1.4: the only difference I've found so far
+         is that JDK 1.4 supports the "&amp;&amp;" operator (for example
+         [A-Z&amp;&amp;[^IO]], which the translator generates for the XPath
+         regex [A-Z-[IO]]) - and .NET doesn't. It seems to be possible to handle
+         this as (?=[A-Z])[^IO] instead, which works on both platforms.</p>
+   </body>
+</html>

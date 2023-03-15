@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Improving Compile-Time Performance</title>
+      <meta name="id" content="215" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2016-06-22T10:04:28" />
+      <meta name="basename" content="improving_compile-time_performance" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Improving Compile-Time Performance</h1>
+      <p>For years we've been putting more and more effort into optimizing queries and stylesheets
+         so that they would execute as fast as possible. For many workloads, in particular
+         high throughput server-side transformations, that's a good strategy. But over the
+         last year or two we've become aware that for some other workloads, it's the wrong
+         thing to do.
+         </p>
+      <p>
+         For example, if you're running a DocBook or DITA transformation from the command line,
+         and the source document is only a couple of KB in size, then the time taken to compile
+         the stylesheet greatly exceeds the actual transformation time. It might take 5 seconds
+         to compile the stylesheet, and 50 milliseconds to execute it. (Both DocBook and DITA
+         stylesheets are vast.) For many users, that's not an untypical scenario.
+         </p>
+      <p>
+         If we look at the XMark benchmarks, specifically a query such as Q9, which is a fairly
+         complex three-way join, the query executes against a 10Mb source document in just
+         9ms. But to achieve that, we spend 185ms compiling and optimizing the query. We also
+         spend 380ms parsing the source document. So in an ad-hoc processing workflow, where
+         you're compiling the query, loading a source document, and then running a query, the
+         actual query execution cost is about 2% of the total. But it's that 2% that we've
+         been measuring, and trying to reduce.
+         </p>
+      <p>
+         We haven't entirely neglected the other parts of the process. For example, one of
+         the most under-used features of the product is document projection, which enables
+         you during parsing, to filter out the parts of the document that the query isn't interested
+         in. For query Q9 that cuts down the size of the source document by 65%, and reduces
+         the execution time of the query to below 8ms. Unfortunately, although the memory saving
+         is very useful, it actually increases the parsing time to 540ms. Some cases are even
+         more dramatic: with Q2, the size of the source document is reduced by 97%; but parsing
+         is still slowed down by the extra work of deciding which parts of the document to
+         retain, and since the query only takes 2ms to execute anyway, there's no benefit other
+         than the memory saving.
+         </p>
+      <p>
+         For the DocBook and DITA scenarios (unlike XMark) it's the stylesheet compilation
+         time that hurts, rather than the source document parsing time. For a typical DocBook
+         transformation of a small document, I'm seeing a stylesheet compile time of around
+         3 seconds, source document parsing time of around 0.9ms, and transformation time also
+         around 0.9ms. Clearly, compile time here is far more important than anything else.
+         </p>
+      <p>
+         The traditional answer to this has always been to compile the stylesheet once and
+         then use it repeatedly. That works if you're running hundreds of transformations using
+         the same stylesheet, but there are many workflows where this is impractical.
+         </p>
+      <p>
+         Saxon 9.7 makes a big step forward by allowing the compiled form of a stylesheet to
+         be saved to disk. This work was done as part of the implementation of XSLT 3.0 packages,
+         but it doesn't depend on packages in any way and works just as well with 1.0 and 2.0
+         stylesheets. If we export the docbook stylesheets as a compiled package, and then
+         run from this version rather than from source, the time taken for loading the compiled
+         stylesheet is around 550ms rather than the original 3 seconds. That's a very useful
+         saving especially if you're processing lots of source documents using a pipeline written
+         say using a shell script or Ant build where the tools constrain you to run one transformation
+         at a time. (To ensure that exported stylesheet packages work with tools such as Ant,
+         we've implemented it so that in any API where a source XSLT stylesheet is accepted,
+         we also accept an exported stylesheet package).
+         </p>
+      <p>
+         But the best performance improvements are those where you don't have to do anything
+         different to get the benefits (cynically, only about 2% of users will ever read the
+         release notes.) So we've got a couple of further projects in the pipeline.
+         </p>
+      <p>
+         The first is simply raw performance tuning of the optimizer. There's vast potential
+         for this once we turn our minds to it. What we have today has grown organically, and
+         the focus has always been on getting the last ounce of run-time performance regardless
+         how long it takes to achieve it. One approach is to optimize a bit less thoroughly:
+         we've done a bit of that recently in response to a user bug report showing pathological
+         compilation times on an extremely large (20Mb) automatically generated stylesheet.
+         But a better approach is to think harder about the data structures and algorithms
+         we are using.
+         </p>
+      <p>
+         Over the last few days I've been looking at how we do loop-lifting: that is, identifying
+         subexpressions that can be moved out of a loop because each evaluation will deliver
+         the same result. The current approach is that the optimizer does a recursive walk
+         of the expression tree, and at each node in the tree, the implementation of that particular
+         kind of expression looks around to see what opportunities there are for local optimization.
+         Many of the looping constructs (xsl:for-each, xsl:iterate, for expressions, filter
+         expressions, path expressions) at this point initiate a search of the subtree for
+         expressions that can be lifted out of the loop. This means that with nested loops
+         (a) we're examining the same subtrees once for each level of loop nesting, and (b)
+         we're hoisting the relevant expressions up the tree one loop at a time, rather than
+         moving them straight to where they belong. This is not only a performance problem;
+         the code is incredibly complex, it's hard to debug, and it's hard to be sure that
+         it's doing as effective a job as it should (for example, I only found during this
+         exercise that we aren't loop-lifting subexpressions out of xsl:for-each-group.)
+         </p>
+      <p>
+         In 9.7, as reported in previous blog posts, we made some improvements to the data
+         structures used for the expression tree, but so far we've been making rather little
+         use of this. One improvement was to add parent pointers, which enables optimizations
+         to work bottom-up rather than top-down. Another improvement was a generic structure
+         for holding the links from a parent node to its children, using an Operand object
+         that (a) holds properties of the relationship (e.g. it tells you when the child expression
+         is evaluated with a different focus from the parent), and (b) is updatable, so a child
+         expression can replace itself by some different expression without needing the parent
+         expression to get involved. These two improvements have enabled a complete overhaul
+         of the way we do loop-lifting. Without knowing anything about the semantics of different
+         kinds of expressions, we can now do a two-phase process: first we do a scan over the
+         expression tree for a function or template to identify, for each node in the tree,
+         what its "innermost scoping node" is: for example an expression such as "$i + @x"
+         is scoped both by the declaration of $i and by the instruction (e.g. xsl:for-each)
+         that sets the focus, and the innermost scoping expression is the inner one of these
+         two. Then, in a second pass, we hoist every expression that's not at the same looping
+         level as its innermost scoping expression to be evaluated (lazily) outside that loop.
+         The whole process is dramatically simpler and faster than what we were doing before,
+         and at least as effective - possibly in some cases more so.
+         </p>
+      <p>
+         The other project we're just starting on is to look at just-in-time compilation. The
+         thing about stylesheets like DocBook is that they contain zillions of template rules
+         for processing elements which typically don't appear in your average source document.
+         So why waste time compiling template rules that are never used? All we really need
+         to do is make a note of the match patterns, build the data structures we use to identify
+         which rule is the best match for a node, and then do the work of compiling that rule
+         the first time it is used. Indeed, the optimization and byte-code generation work
+         can be deferred until we know that the rule is going to be used often enough to make
+         it worthwhile. We're starting this project (as one should start all performance projects)
+         by collecting instrumentation, so we can work out exactly how much time we are spending
+         in each phase of compilation; that will tell us how much we should be doing eagerly
+         and how much we should defer. There's a trade-off with usability here: do users want
+         to be told about errors found while type-checking parts of the stylesheet that aren't
+         actually exercised by a particular run?
+         </p>
+      <p>
+         Plenty of ideas to keep us busy for a while to come.
+         </p>
+   </body>
+</html>

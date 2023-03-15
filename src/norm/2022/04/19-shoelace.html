@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>SaxonJS with web components</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2022-04-19T18:43:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+</head>
+<body>
+<h1>SaxonJS with web components</h1>
+
+<p>I haven’t worked with
+<a href="https://en.wikipedia.org/wiki/Web_Components">web components</a> very much,
+though they’ve been on my “must explore more” list for a while. A couple of days ago,
+I stumbled across <a href="https://shoelace.style/">Shoelace</a>, “a forward-thinking
+library of web components.”</p>
+
+<p>“That’d just work in SaxonJS, right?”, I asked myself.</p>
+
+<p>Yep. I updated the
+<a href="https://github.com/Saxonica/helloWorldJS">helloWorldJS</a> repository
+that I created a while back to demonstrate it.</p>
+
+<p>The new work is in the <code>shoelace</code> branch.</p>
+
+<p>There’s not much different, really.</p>
+
+<ol>
+<li>The HTML file includes the
+Shoelace scripts and styling from its CDN. (A more robust application
+would want local copies, but this is just a toy.)</li>
+<li>Instead of using a <code>button</code> element, we use the Shoelace
+web-component: <code>&lt;sl-button>Click me&lt;/sl-button></code>.
+</li>
+<li>The match pattern for the onclick handler changes to
+<code>match="sl-button"</code>.</li>
+</ol>
+
+<p>That’s pretty much all there is to it. Neat. I must try out some more web
+components when I have a chance. In principle, the seem like a really good idea.</p>
+
+</body>
+</html>

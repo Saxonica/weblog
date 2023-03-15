@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Result documents: validation and multi-threading</title>
+      <meta name="id" content="199" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2013-03-15T17:35:05" />
+      <meta name="basename" content="result_documents_validation_and_multi-threading" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Result documents: validation and multi-threading</h1>
+      <p>I've been working on a stylesheet that converts the W3C XQuery/XPath 3.0 test suite
+         into an XSLT 3.0 test suite. The idea is that all the XPath tests only need to be
+         written once, allowing them to form XSLT tests and thus avoiding the duplication of
+         effort that arises if separate test suites are written.
+         </p>
+      <p>
+         The stylesheet generates 19,700 output files (38Mb) from 1,863 input files (122Mb)
+         so it's a good test in its own right. I'm therefore running it using the almost-ready
+         Saxon 9.5 as part of the system testing before we ship the product. Here are a few
+         points I'd like to highlight.
+         </p>
+      <p>
+         Firstly, some files are copied unchanged. For this purpose the extension function
+         file:copy(), which is part of the EXPath file module, comes in very handy. This llibrary
+         will be included as standard with Saxon 9.5 (like all extensions, it will be in the
+         PE and EE editions only).
+         </p>
+      <p>
+         Secondly, I followed a development approach which I've found very useful and would
+         like to share. There's a schema for the target document vocabulary (the XSLT 3 test
+         suite metadata), so it makes sense to use a schema-aware stylesheet that validates
+         the result documents as they are produced. However, I don't switch on validation until
+         the transformation is "roughly working", that is, until it produces output that looks
+         correct to the naked eye. The reason for that is simply that the validation error
+         messages are a nuisance during the stage when you know the transformation is incomplete
+         and incorrect. It's only when the transformation is running without errors and handling
+         all the input that you need to start checking that the output is correct, and at this
+         stage adding an xsl:import-schema declaration for the output schema, plus the attribute
+         validation='strict" on the xsl:result-document instruction, is absolutely invaluable.
+         </p>
+      <p>
+         Except, I found it could be improved. The validation error messages tell you what's
+         wrong (for example, you've output an attribute value which isn't allowed for that
+         attribute), and they tell you where the code is in the stylesheet that caused the
+         error (the offending xsl:attribute or xsl:copy instruction), but they weren't telling
+         you what input was being processed at the time: where did the offending attribute
+         value come from? So I've fixed that, or at least tried to. It's one of those cases
+         that sounds easy but is actually quite tricky, because the code that detects the validation
+         error is very remote from any code than knows where we are in the source document
+         (or indeed, which of 1,863 source documents we are processing) at the time. The way
+         I've done this is that the PipelineConfiguration - which holds all the context information
+         used by a push pipeline, including schema valdiation - now includes a stack of items
+         representing items being processed using xsl:apply-templates; so the validation error
+         message can tell you what the latest node processed by a template rule is. Doesn't
+         work unfortunately for those who use monolithic xsl:for-each structures, or for those
+         who use XQuery - but this is specifically focussed on this kind of workload handling
+         many inputs and many outputs, for which XQuery is unsuitable anyway. There is of course
+         a small performance hit for maintaining this stack, but I'm confident it's very small,
+         and I always reckon that a small amount of machine time to save a large amount of
+         programmer time is a good trade-off.
+         </p>
+      <p>
+         The third thing I wanted to mention in this article is asynchronous processing of
+         xsl:result-document. This is a new feature for Saxon-EE 9.5. By default, an xsl:result-document
+         instruction executes in its own thread, independently of the rest of the stylesheet.
+         Threads are allocated from a pool, whose size defaults to the number of processors
+         available (on my Mac laptop, that's 8). If no free threads are available, the instruction
+         executes in the current thread.
+         </p>
+      <p>
+         I did some experiments on the performance as the number of available threads is increased:
+         </p>
+      <p>
+         1 - 14.3s
+         4 - 8.52s
+         8 - 8.92s
+         12 - 9.81s
+         16 - 10.6s
+         </p>
+      <p>
+         so the default of 8 appears to be a reasonable choice. The saving in elapsed time
+         by using multi-threading seems to be well worth having, though frankly, for a task
+         like this, 14s is already fantastically good performance and any improvement is simply
+         icing on the cake. It's becoming quite hard to find workloads where performance improvements
+         are genuinely needed.
+         </p>
+      <p>
+         Incidentally, switching bytecode generation off has almost no noticeable effect on
+         this transformation, and the same is true when optimization is switched off. That's
+         because it's a very simple transformation that happens to be processing a large amount
+         of data.
+         </p>
+      <p>
+         The xsl:result-document instruction is a good candidate for parallel processing because
+         there's no need to combine its results with those of any other instruction, which
+         minimizes the synchronization overheads that usually come with parallel processing.
+         However, there is still some synchronization needed, for example because global variables
+         are evaluated lazily, so there is the chance that two threads will encounter the same
+         unevaluated variable. Unfortunately finding all these cases is very difficult to do
+         methodically, and this test stylesheet found a few bugs that needed to be addressed.
+         Realistically, it's likely there will be further bugs that we won't hit until after
+         release. So we've been careful to make sure the feature can be disabled - that's proved
+         very useful with bytecode generation, which is another area where it inevitably took
+         a few months of field exposure to iron out the last bugs.
+         </p>
+   </body>
+</html>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>W3C Working Groups in Florida</title>
+      <meta name="id" content="101" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-02-03T14:18:42" />
+      <meta name="basename" content="w3c_working_groups_in_florida" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>W3C Working Groups in Florida</h1>
+      <p>I'm just back from spending most of the week in St Petersburg, Florida, at meetings
+         of the W3C XSLT and XQuery working groups. Someone asked on <a href="http://www.xquery.com/mailman/listinfo/talk">xquery-talk</a> how the meetings went: the answer is that at this stage of the end-game, you have
+         to be a bit of a masochist to take part (and this no doubt explains why attendance
+         is dropping at each meeting). Essentially the specs are finished -- one might say
+         they were finished years ago -- and it's largely a question of fixing bugs in obscure
+         edge cases. I probably cause a certain amount of friction by being the one who seems
+         to find a lot of these bugs -- or in some cases, to pass them on from Saxon users.</p>
+      <p>There were a couple of more meaty technical subjects on the agenda. One was the question
+         of the "xdt" namespace, which holds definitions of types such as xdt:dayTimeDuration
+         and xdt:yearMonthDuration. The question on the table was whether these types should
+         be moved into the XML Schema namespace. This is as much a procedural/political question
+         as a technical one, which has significant implications for users both short-term and
+         long-term. I think we made the right decision, but I won't reveal it until the public
+         announcement is made.</p>
+      <p>The other substantive question concerned the interaction of the different options
+         for controlling how text gets serialized: that is, the order in which operations like
+         character mapping, URI escaping, XML escaping, and Unicode normalization take place,
+         and whether data that's subjected to one of these operations then continues to be
+         processed by the others. I doubt that many users will notice the differences (although
+         it's probably one of those cases where they are likely to notice if we get it wrong).
+         The interactions are pretty subtle and it's going to require a fairly careful look
+         at the Saxon code to see if it reflects the spec correctly.</p>
+      <p>It was nice to have some sunshine, though there was none on the Monday which was my
+         day off! Oddly, with temperatures in the twenties Celsius, the flight back to the
+         UK was delayed for an hour or more by ice on the wings of the aircraft. </p>
+   </body>
+</html>

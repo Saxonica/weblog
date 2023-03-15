@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Transforming JSON</title>
+      <meta name="id" content="220" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2017-11-13T13:02:13" />
+      <meta name="basename" content="transforming_json" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Transforming JSON</h1>
+      <p>In my [conference paper at XML Prague](https://www.saxonica.com/papers/xmlprague-2016mhk.pdf)
+         in 2016 I examined a couple of use cases for transforming JSON structures using XSLT
+         3.0. The overall conclusion was not particularly encouraging: the easiest way to achieve
+         the desired results was to convert the JSON to XML, transform the XML, and then convert
+         it back to JSON.
+         </p>
+      <p>
+         Unfortunately this study came too late to get any new features into XSLT 3.0. However,
+         I've been taking another look at the use cases to see whether we could design language
+         extensions to handle them, and this is looking quite encouraging.
+         </p>
+      <p><b>Use case 1: bulk update</b></p>
+      <p>We start with the JSON document</p>
+      <pre>[ {
+  "id": 3, "name": "A blue mouse", "price": 25.50,
+  "dimensions": {"length": 3.1, "width": 1.0, "height": 1.0},
+  "warehouseLocation": {"latitude": 54.4, "longitude": -32.7 }},
+  {
+  "id": 2, "name": "An ice sculpture", "price": 12.50,
+  "tags": ["cold", "ice"],
+  "dimensions": {"length": 7.0, "width": 12.0, "height": 9.5 },
+  "warehouseLocation": {"latitude": -78.75, "longitude": 20.4 }
+} ]</pre>
+      <p>and the requirement: for all products having the tag "ice", increase the price by
+         10%, leaving all other data unchanged.
+         I've prototyped a new XSLT instruction that allows this to be done as follows:</p>
+      <pre>&lt;saxon:deep-update
+root="json-doc('input.json')
+select=" ?*[?tags?* = 'ice']"
+action="map:put(., 'price', ?price * 1.1)"/&gt;</pre>
+      <p>How does this work?
+         </p>
+      <p>
+         First the instruction evaluates the <code>root</code> expression, which in this case returns
+         the map/array representation of the input JSON document. With this root item as context
+         item, it then evaluates the <code>select</code> expression to obtain a sequence of contained
+         maps or arrays to be updated: these can appear at any depth under the root item. With
+         each of these selected maps or arrays as the context item, it then evaluates the action
+         expression, and uses the returned value as a replacement for the selected map or array.
+         This update then percolates back up to the root item, and the result of the instruction
+         is a map or array that is the same as the original except for the replacement of the
+         selected items.
+         </p>
+      <p>
+         The magic here is in the way that the update is percolated back up to the root. Because
+         maps and arrays are immutable and have no persistent identity, the only way to do
+         this is to keep track of the maps and arrays selected en-route from the root item
+         to the items selected for modification as we do the downward selection, and then modify
+         these maps and arrays in reverse order on the way back up. Moreover we need to keep
+         track of the cases where multiple updates are made to the same containing map or array.
+         All this magic, however, is largely hidden from the user. The only thing the user
+         needs to be aware of is that the select expression is constrained to use a limited
+         set of constructs when making downward selections.
+         </p>
+      <p>
+         The select expression <code>select="?*[?tags?* = 'ice']"</code>
+         perhaps needs a little bit of
+         explanation. The root of the JSON tree is an array of maps, and the initial <code>?*</code> turns
+         this into a sequence of maps. We then want to filter this sequence of maps to include
+         only those where the value of the "tags" field is an array containing the string "ice"
+         as one of its members. The easiest way to test this predicate is to convert the value
+         from an array of strings to a sequence of strings (so <code>?tags?*</code>) and then use the
+         XPath existential "=" operator to compare with the string "ice".
+         </p>
+      <p>
+         The action expression <code>map:put(., 'price', ?price * 1.1)</code> takes as input the selected
+         map, and replaces it with a map in which the <code>price</code> entry is replaced with a new
+         entry having the key "price" and the associated value computed as the old price multiplied
+         by 1.1.
+         </p>
+      <p><b>Use case 2: Hierarchic Inversion</b></p>
+      <p>The second use case in the XML Prague 2016 paper was a
+         hierarchic inversion (aka grouping) problem. Specifically: we'll
+         look at a structural transformation changing a JSON structure
+         with information about the students enrolled for each course to
+         its inverse, a structure with information about the courses for
+         which each student is enrolled.
+         </p>
+      <p>
+         Here is the input dataset:
+         </p>
+      <pre>[
+  {
+    "faculty": "humanities",
+    "courses": [
+      {
+        "course": "English",
+        "students": [
+          {
+            "first": "Mary",
+            "last": "Smith",
+            "email": "mary_smith@gmail.com"
+          },
+          {
+            "first": "Ann",
+            "last": "Jones",
+            "email": "ann_jones@gmail.com"
+          }
+        ]
+      },
+      {
+        "course": "History",
+        "students": [
+          {
+            "first": "Ann",
+            "last": "Jones",
+            "email": "ann_jones@gmail.com"
+          },
+          {
+            "first": "John",
+            "last": "Taylor",
+            "email": "john_taylor@gmail.com"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "faculty": "science",
+    "courses": [
+      {
+        "course": "Physics",
+        "students": [
+          {
+            "first": "Anil",
+            "last": "Singh",
+            "email": "anil_singh@gmail.com"
+          },
+          {
+            "first": "Amisha",
+            "last": "Patel",
+            "email": "amisha_patel@gmail.com"
+          }
+        ]
+      },
+      {
+        "course": "Chemistry",
+        "students": [
+          {
+            "first": "John",
+            "last": "Taylor",
+            "email": "john_taylor@gmail.com"
+          },
+          {
+            "first": "Anil",
+            "last": "Singh",
+            "email": "anil_singh@gmail.com"
+          }
+        ]
+      }
+    ]
+  }
+]</pre>
+      <p>The goal is to produce a list of students, sorted by last name then irst name, each
+         containing a list of courses taken by that student, like this:
+         </p>
+      <pre>[
+  { "email": "anil_singh@gmail.com",
+    "courses": ["Physics", "Chemistry" ]},
+  { "email": "john_taylor@gmail.com",
+    "courses": ["History", "Chemistry" ]},
+  ...
+]</pre>
+      <p>The classic way of handling this is in two phases: first reduce the hierarchic input
+         to a flat sequence in which all the required information is contained at one level,
+         and then apply grouping to this flat sequence.
+         </p>
+      <p>
+         To achieve the flattening we introduce another new XSLT instruction:
+         </p>
+      <p>
+         
+         
+         
+         <pre>&lt;saxon:tabulate-maps
+root="json-doc('input.json')"
+select="?* ! map:find(., 'students)?*"/&gt;</pre>
+         
+         
+         
+         <p>Again the <code>root</code> expression delivers a representation of the JSON document as an array
+            of maps. The <code>select</code> expression first selects these maps ("?*"), then for each one
+            it calls map:find() to get an array of maps each representing a student. The result
+            of the instruction is a sequence of maps corresponding to these student maps in the
+            input, where each output map contains not only the fields present in the input (first,
+            last, email), but also fields inherited from parents and ancestors (faculty, course).
+            For good measure it also contains a field _keys containing an array of keys representing
+            the path from root to leaf, but we don't actually use that in this example.
+            </p>
+         
+         <p>
+            Once we have this flat structure, we can construct a new hierarchy using XSLT grouping:
+            </p>
+         
+         
+         <pre>&lt;xsl:for-each-group select="$students" group-by="?email"&gt;
+&lt;xsl:map&gt;
+&lt;xsl:map-entry key="'email'" select="?email"/&gt;
+&lt;xsl:map-entry key="'first'" select="?first"/&gt;
+&lt;xsl:map-entry key="'last'" select="?last"/&gt;
+&lt;xsl:map-entry key="'courses'"&gt;
+&lt;saxon:array&gt;
+&lt;xsl:for-each select="current-group()"&gt;
+&lt;saxon:array-member select="?course"/&gt;
+&lt;/xsl:for-each&gt;
+&lt;/saxon:array&gt;
+&lt;/xsl:map-entry&gt;
+&lt;/xsl:map&gt;
+&lt;/xsl:for-each-group&gt;</pre>
+         
+         
+         
+         <p>This can then be serialized using the JSON output method to produce to required output.
+            </p>
+         
+         <p>
+            Note: the <code>saxon:array</code> and <code>saxon:array-member</code> instructions already exist in Saxon
+            9.8. They fill an obvious gap in the XSLT 3.0 facilities for handling arrays - a gap
+            that exists largely because the XSL WG was unwilling to create a dependency XPath
+            3.1.
+            </p>
+         
+         
+         
+         <p><b>Use Case 3: conversion to HTML</b></p>
+         
+         
+         
+         <p>This use case isn't in the XML Prague paper, but is included here for completeness.
+            </p>
+         
+         <p>
+            The aim here is to construct an HTML page containing the information from a JSON document,
+            without significant structural alteration. This is a classic use case for the recursive
+            application of template rules, so the aim is to make it easy to traverse the JSON
+            structure using templates with appropriate match patterns.
+            </p>
+         
+         <p>
+            Unfortunately, although the XSLT 3.0 facilities allow patterns that match maps and
+            arrays, they are cumbersome to use. Firstly, the syntax is awkward:
+            </p>
+         
+         
+         <pre>match=".[. instance of map(...)]"</pre>
+         </p>
+      <p>
+         We can solve this with a Saxon extension allowing the syntax
+         </p>
+      <pre>match="map()"</pre>
+      <p>Secondly, the type of a map isn't enough to distinguish one map from another. To identify
+         a map representing a student, for example, we aren't really interested in knowing
+         that it is a <code>map(xs:string, item()*)</code>. What we need to know is that it has fields
+         (email, first, last). Fortunately another Saxon extension comes to our aid: tuple
+         types, described here: <a href="https://blog.saxonica.com/mike/2016/09/tuple-types-and-type-aliases.html">https://blog.saxonica.com/mike/2016/09/tuple-types-and-type-aliases.html</a>
+         With tuple types we can change the match pattern to
+         </p>
+      <pre>match="tuple(email, first, last)"</pre>
+      <p>Even better, we can use type aliases:</p>
+      <pre>&lt;saxon:type-alias name="student" as="tuple(email, first, last)"/&gt;
+&lt;xsl:template match="~student"&gt;...&lt;/xsl:template&gt;</pre>
+      <p>With this extension we can now render this input JSON into HTML using the stylesheet:</p>
+      <pre>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+
+&lt;xsl:stylesheet
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0"
+xmlns:xs="http://www.w3.org/2001/XMLSchema"
+xmlns:saxon="http://saxon.sf.net/"
+exclude-result-prefixes="#all"
+expand-text="yes"
+
+&lt;saxon:type-alias name="faculty" type="tuple(faculty, courses)"/&gt;
+&lt;saxon:type-alias name="course" type="tuple(course, students)"/&gt;
+&lt;saxon:type-alias name="student" type="tuple(first, last, email)"/&gt;
+
+&lt;xsl:template match="~faculty"&gt;
+&lt;h1&gt;{?faculty} Faculty&lt;/h1&gt;
+&lt;xsl:apply-templates select="?courses?*"/&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match="~course"&gt;
+&lt;h2&gt;{?course} Course&lt;/h2&gt;
+&lt;p&gt;List of students:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Name&lt;/th&gt;
+&lt;th&gt;Email&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;xsl:apply-templates select="?students?*"&gt;
+&lt;xsl:sort select="?last"/&gt;
+&lt;xsl:sort select="?first"/&gt;
+&lt;/xsl:apply-templates&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match="~student"&gt;
+&lt;tr&gt;
+&lt;td&gt;{?first} {?last}&lt;/td&gt;
+&lt;td&gt;{?email}&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template name="xsl:initial-template"&gt;
+&lt;xsl:apply-templates select="json-doc('courses.json')"/&gt;
+&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;</pre>
+      <p><b>Conclusions</b></p>
+      <p>With only the facilities of the published XSLT 3.0 recommendation, the easiest way
+         to transform JSON is often to convert it first to XML node trees, and then use the
+         traditional XSLT techniques to transform the XML, before converting it back to JSON.
+         </p>
+      <p>
+         With a few judiciously chosen extensions to the language, however, a wide range of
+         JSON transformations can be achieved natively.
+         </p>
+   </body>
+</html>

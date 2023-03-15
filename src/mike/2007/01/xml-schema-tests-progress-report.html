@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>XML Schema Tests: progress report</title>
+      <meta name="id" content="134" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2007-01-23T14:18:44" />
+      <meta name="basename" content="xml_schema_tests_progress_report" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>XML Schema Tests: progress report</h1>
+      <p>As reported in my previous posting, I've been working on the new XML Schema Test suite.
+         Achieved a significant milestone today: all the tests in the Microsoft part of the
+         test suite are now "done". That's around 14600 tests. Of these I have queried the
+         results of 858 tests (you can find the bug reports in the W3C public bugzilla). Most
+         of these are illegal regular expressions in supposedly valid schemas. Of the remainder,
+         Saxon fails on 22 tests for known reasons, and passes on the remainder. </p>
+      <p>The failures are essentially for three reasons: (a) hitting resource limits on large
+         minOccurs/maxOccurs values; (b) Saxon has a better algorithm for testing type subsumption
+         than the one in the spec (it's essentially anticipating the XML Schema 1.1 spec here),
+         and (c) there are three tests in which a user-defined type is derived directly from
+         xs:anySimpleType, and although the spec appears to allow this, it's not at all clear
+         what it's supposed to mean, so Saxon disallows it.</p>
+      <p>I had to fix quite a large number of Saxon bugs to get to this point, but they were
+         almost all very obscure corner cases.</p>
+      <p>Next step is to tackle the Sun and NIST tests. On past experience these will be easier.</p>
+   </body>
+</html>

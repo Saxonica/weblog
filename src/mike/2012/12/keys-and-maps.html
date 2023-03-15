@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Keys and maps</title>
+      <meta name="id" content="196" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2012-12-11T09:16:25" />
+      <meta name="basename" content="keys_and_maps" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Keys and maps</h1>
+      <p>I've felt for a while there ought to be some kind of connection between keys (in the
+         xsl:key sense) and maps.
+         </p>
+      <p>
+         Keys are great, but their limitations are frustrating. There's no way of enumerating
+         the entries in a key, there's no way of using them for grouping or sorting. If you're
+         going to the effort of building an index, then one feels it ought to be possible to
+         get a higher return on this investment.
+         </p>
+      <p>
+         I've been trying out a fairly simple way of achieving this.
+         </p>
+      <p>
+         Firstly, to the xsl:key declaration we add the option saxon:range-key="yes". The main
+         effect of this is that we build the resulting index as a TreeMap rather than a HashMap,
+         which means that the keys are sorted.
+         </p>
+      <p>
+         Then, we add a single extension function: saxon:key-map('keyname', doc, min, max).
+         The effect of this function is to return a map. The keys in the map are the values
+         of the "use" expression in the key declaration; the map contains all entries for this
+         key relevant to the document supplied in the doc argument; and min and max are the
+         minimum and maximum (inclusive) values of the key - either can be supplied as an empty
+         sequence to indicate "no lower/upper limit". Perhaps for convenience we could also
+         have a version of the function in which only the first two arguments are supplied.
+         </p>
+      <p>
+         So, for example, given a list of transactions with a date attribute, you would declare
+         a key like this:
+         </p>
+      <p>
+         &lt;xsl:key name="transactions-by-date" match="transaction" use="@date" saxon:range-key="yes"/&gt;
+         </p>
+      <p>
+         and then the call
+         </p>
+      <p>
+         saxon:range-key('transactions-by-date', doc('transactions.xml'), '2012-12-01', '2012-12-31')
+         </p>
+      <p>
+         would return a map containing all the transactions for December. With the result bound
+         to variable $map, map:keys() returns the dates of these transactions, and $map($x)
+         returns the transactions for a specific date. It's a shame there isn't a nicer way
+         to iterate over the contents of a map (we're still working on that one), but by presenting
+         the result as a map we get access to all the map functionality without having to invent
+         a lot of new functions just for this use case.
+         </p>
+      <p>
+         We're guaranteeing that for this particular kind of map, keys() will return the keys
+         in sorted order. (Perhaps that's a facility that should also be available for other
+         kinds of map? I don't think this design precludes that.)
+         </p>
+      <p>
+         Let me know what you think.
+         
+         
+         
+         
+         
+         </p>
+   </body>
+</html>

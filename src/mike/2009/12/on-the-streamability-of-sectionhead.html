@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>On the streamability of //section/head</title>
+      <meta name="id" content="171" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2009-12-01T14:18:46" />
+      <meta name="basename" content="on_the_streamability_of_sectionhead_1" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>On the streamability of //section/head</h1>
+      <p>At first sight, nothing seems more eminently streamable than the expression <code>&lt;xsl:value-of select="//section/head"/&gt;</code>. The sections are in document order, the headings are in document order, the order
+         of the output is the same as the order of the input, so where is the problem? The
+         fact is, however, as I hinted in my <a href="/mike/2009/11/moving-forward-with-streaming-templates.html">previous post</a>, there is a lot more to this expression than meets the eye.</p>
+      <p>The problem is that if we adopt the nested-loop semantics for path expressions, interpreting
+         this as "for each descendant::section for each child::head", the results are not guaranteed
+         to be in document order. OK, they're in document order if the head element is the
+         first thing in each section; but we don't know that. Let's imagine that some perverse
+         document author has put the head element at the end. Then the XSLT processor has to
+         cope with an input document like this:</p>
+      <p><code>&lt;section nr="1"&gt;</code></p>
+      <p><code>  &lt;section nr="1.1"&gt;</code></p>
+      <p><code>    &lt;head&gt;section 1.1&lt;/head&gt;</code></p>
+      <p><code>  &lt;/section&gt;</code></p>
+      <p><code>  &lt;section nr="1.2"&gt;</code></p>
+      <p><code>
+                &lt;head&gt;section 1.2&lt;/head&gt;</code></p>
+      <p><code>
+              &lt;/section&gt;</code></p>
+      <p><code>  &lt;head&gt;section 1&lt;/head&gt;</code></p>
+      <p><code>&lt;/section&gt;</code></p>
+      <p>And while a path expression //section/head will output the headings in document order
+         "section 1.1 section 1.2 section 1", a nested for-each </p>
+      <p><code>&lt;xsl:for-each select="//section"&gt;&lt;xsl:value-of select="head"/&gt;&lt;/xsl:for-each&gt;</code></p>
+      <p>will output them as "section 1 section 1.1 section 1.2". Here the output is not in
+         the same order as the input, therefore by definition the construct is not fully streamable
+         - some kind of buffering is needed, either of the input or the output.</p>
+      <p>In the current internal draft of the XSLT 2.1 specification, we've therefore stated
+         that such expressions are not streamable. This has the unfortunate consequence that
+         <code>//head</code> isn't streamable either, because of course <code>//head</code> means <code>/descendant-or-self::node()/head</code>, which has the same structure, and has the feature that a pure nested loop evaluation
+         delivers results that aren't in document order.</p>
+      <p>This is unfortunate because we want the rules to be intuitive. Something that looks
+         streamable should actually be streamable. And the reason it looks streamable is that
+         99% of the time it is: most of the time the elements selected by <code>//employee</code> aren't actually going to be recursively nested, and even if they are (as in the <code>//section</code> case), most of the time the headings are going to be at the start rather than at
+         the end. So banning these constructs from streaming stylesheets is not a very friendly
+         thing to do.</p>
+      <p>One solution might be to say that for path expressions, we abandon the nested-loop
+         formulation of the semantics, and go instead with a "pattern-like" interpretation:
+         to evaluate the expression .<code>//section/head</code>, you search all the descendants of the context node, and return those that match
+         the pattern <code>//section/head</code>. That works unless the user actually does want a nested loop. And supporting streaming
+         of the nested loop case (which also of course includes nested apply-templates calls)
+         is probably just as important as supporting streaming of the path expression. It's
+         also useful to be consistent between the two - users won't appreciate it if one is
+         streamable and the other isn't, given that in 99% of cases the nested loop formulation
+         actually returns results in document order.</p>
+      <p>In fact ever since the earliest days of streaming in Saxon, such constructs have been
+         streamable. In the first incarnation of "streaming copy" you could write</p>
+      <p><code>&lt;xsl:copy-of select="doc('book.xml')//section/head" saxon:read-once="yes"/&gt;</code></p>
+      <p>and Saxon would sort it out - even if not only the sections, but their headings are
+         nested (who said that a <code>&lt;head&gt;</code> element can't contain a <code>&lt;section&gt;</code> element?)</p>
+      <p>The way Saxon does this is to activate a watch when a node matching <code>//section/head</code> is found; and while this watch is active, two things are happening. Events from the
+         parser are being directed to a tree builder that constructs a copy of the selected
+         element. At the same time, the watch is still watching, so if another matching element
+         is found, another tree builder is instantiated, and the relevant events will go to
+         both. The only complication is that the trees then need to be returned in the right
+         order: the first one started is the last to finish, but is also the first one that
+         needs to be delivered in the output, which means that any trees that are started while
+         another tree is already under construction need to be held back in a buffer, while
+         the outermost tree can be streamed straight through to the serializer if that's where
+         it's going. This turns out to work pretty well: in the 99% case, doing <code>//employee</code> does not find any nested employees, so the code to write an inner buffered employee
+         never gets activated, and all the output is fully streamed. But if nested elements
+         are found, the buffering swings into action, and the right result is still returned,
+         but requires a bit more memory.</p>
+      <p>Originally written for <code>xsl:copy-of</code>, this same logic is now working for finding the string-value and typed-value of nested
+         nodes, for doing aggregate functions such as <code>sum(//section/length)</code> (yes, even if the length element contains a section element...), and for nested apply-templates
+         calls. Nested <code>xsl:for-each</code> isn't coded yet, but should fall out easily.</p>
+      <p>Now we'll have to see if we can get some of this thinking into the XSLT 2.1 draft.
+         (If we can't it's not a great problem because we've always recognized that the spec
+         will define a minimum set of things that can be streamed. But there's a lot of synergy
+         to be gained by keeping the spec and what is in effect the reference implementation
+         in sync with each other.)</p>
+   </body>
+</html>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Zounds! I was never so bethump'd with words</title>
+      <meta name="id" content="124" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-08-13T14:18:44" />
+      <meta name="basename" content="zounds_i_was_never_so_bethumpd_with_words" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Zounds! I was never so bethump'd with words</h1>
+      <p>While I was away on holiday last week, an unwelcome bug report arrived from Michael
+         Allman. He pointed out that Saxon was implementing Unicode codepoint collation simply
+         by doing a Java string compare, and that this is incorrect in the case of strings
+         containing characters whose Unicode codepoint value is greater than 65535. Such characters
+         are represented in Java by a pair of "char" values (called a surrogate pair), each
+         of which is in the range 55296 to 56319; the effect is that such a character is sorted
+         before one in the range 56320 to 65535. For example, the expression (&amp;_#60000; lt
+         &amp;_#70000;) in the current Saxon release (8.7.3) returns false.</p>
+      <p>This kind of bug is irritating, because hardly anyone is going to be affected by it,
+         yet fixing it will impose a cost on everyone because string comparison will be slower.
+         However, my philosophy is that conformance always comes first, so the first thing
+         is to fix the bug. That's done, that was the easy part. Now let's see what we can
+         do to minimize the damage on performance.</p>
+      <p>First of all, we can try to ensure that the impact falls only on "less-than" comparisons
+         and not on the more common "equals". That means implementing a comparesEqual() method
+         in the collator that's separate from the compare() method, and changing ValueComparisons
+         to use this method rather than calling the general compare() method and testing the
+         result against zero. The compareEquals() method can use the Java String.equals() which
+         will work fine on the Java string representation and gives the correct result.</p>
+      <p>The next thing is to do some measurements. The most obvious thing affected by string
+         comparison is sorting. So I wrote a little stylesheet that sorted all the words in
+         a Shakespeare play (naturally!) and output the word that came last. First surprise:
+         this took 2800ms (give or take)  whether I used the new code or the old. A quick 
+         investigation with the debugger showed why: Saxon, in XSLT  xsl:sort, doesn't use
+         the Unicode codepoint collation by default, it uses the "linguistic" collation for
+         the current Java locale. Does this mean the performance of codepoint collation isn't
+         important? For many users, perhaps. However, codepoint collation is the default for
+         XQuery, so we still need to look at it.</p>
+      <p>So I changed the stylesheet to say collation="http://www.w3.org/2005/xpath-functions/collation/codepoint".
+         The transformation time went down from 2800ms to 546ms. So I've discovered something
+         I didn't know: linguistic collation imposes an enormous overhead. This raises questions
+         about whether I should change the default. I currently default to linguistic collation
+         mainly for backwards compatibility, but the spec allows me to change it.</p>
+      <p>Let's avoid that tangent and stick to the original objective of measuring the impact
+         of fixing this bug. The figure of 546ms was with the new (fixed) code; making the
+         same measurement with the old code (that is, Java string comparison) takes 401ms.
+         So this confirms that there is indeed a significant overhead (35%), but perhaps it
+         won't affect as many people as I feared.</p>
+      <p>Further investigations with the debugger show that the strings being sorted (the output
+         of tokenize() applied to nodes in a tiny tree) are StringValue objects that wrap a
+         CharSlice object. A CharSlice is essentially a (char[], start, length) triple. In
+         order to do the string comparison, we are doing a toString() operation on the CharSlice,
+         and then looking at the first character of the string. Could we win the performance
+         back by avoiding the conversion to a String object (which involves copying all the
+         characters in the string)?</p>
+      <p>It seems I can: with this change, the performance is down to 399ms. I've got to be
+         careful, though, that the improvement is across-the-board, and is not specific to
+         sorting the result of tokenize() (for example, at present I've only changed the path
+         for sorting strings, whereas it's probably more common to sort untypedAtomic values).</p>
+      <p>So let's try another test: this time I'll sort all the lines of all the plays and
+         output the last one, which happens to be "youth, to skip o'er the meshes of good counsel
+         the". With the code in its state after the last change, this takes 2758ms. Revert
+         to Java string comparison, and it takes 3075ms. </p>
+      <p>When I go back to linguistic collation, incidentally, the time increases to 17928ms.
+         (And the last line in alphabetical order is now the subject line of this article).</p>
+      <p>Three conclusions from this exercise:</p>
+      <p>(a) when you lose performance in one area, you can often win it back somewhere else.
+         Doing a character-by-character compare is intrinsically more expensive than a string
+         compare, except that it gives us the opportunity to avoid creating the String object.</p>
+      <p>(b) when you do measurements, you often find unexpected opportunities. I now need
+         to think about whether the very substantial performance savings from switching XSLT
+         sorting to use codepoint collation by default are worth the compatibility hit for
+         existing users. From a pure usability point of view, there are arguments both ways.
+         XQuery opted to make codepoint collation the default for sorting because it was consistent
+         with the default for "le", min/max, etc and that provides an argument in favour of
+         the change.</p>
+      <p>(c) simply studying the code in this area has revealed further opportunities for improvement.
+         For example the AtomicSortComparer is doing an expensive series of "instance of" tests
+         before it decides how to compare two values.  We could use static type information
+         to avoid much of this.</p>
+      <p>So perhaps the bug report from Michael Allman wasn't so unwelcome after all. </p>
+   </body>
+</html>

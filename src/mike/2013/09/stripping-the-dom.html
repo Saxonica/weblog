@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Stripping the DOM</title>
+      <meta name="id" content="202" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2013-09-18T06:55:24" />
+      <meta name="basename" content="stripping_the_dom" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Stripping the DOM</h1>
+      <p>I discovered yesterday that Saxon-CE isn't applying xsl:strip-space directives to
+         input documents.  An unfortunate bug: not that many users seem too bothered by it,
+         but conformance is always important.
+         </p>
+      <p>
+         A reminder: xsl:strip-space and xsl:preserve-space are designed to remove "ignorable"
+         whitespace from the application's view. Because XML  doesn't distinguish significant
+         from insignificant whitespace (a bad design mistake), this can only be done under
+         program control. The idea is to present the application (the stylesheet) with a view
+         of the input tree in which the insignificant whitespace does not appear, and the xsl:strip-space
+         and xsl:preserve-space directives allow the stylesheet author to say which whitespace
+         is considered significant.<br />
+         How to fix the bug? Server-side Saxon (what I am starting to call "Big Saxon") traditionally
+         provides two mechanisms: either it wraps the supplied DOM in a wrapping layer that
+         hides the offending whitespace text nodes, or it bulk-copies the supplied DOM to an
+         internal tree structure in which the whitespace is not copied across. Both methods
+         have disadvantages. The "wrapping" approach imposes a significant extra cost on navigation
+         of the tree (the cost is higher than it might appear, because whitespace stripping
+         also has to take account of xml:space attributes in the document, which means a lot
+         of searching for attributes-of-ancestors). The bulk-copy approach imposes a significant
+         start-up cost to the transformation, often larger than the cost of doing the real
+         transformation, and the cost is particularly high when processing large input documents
+         because it doubles the memory requirement.
+         
+         </p>
+      <p>
+         I'm considering using a third approach: in-situ modification of the supplied DOM.
+         For Big Saxon, I have tended to treat this option as unthinkable: you don't muck with
+         the user's data in this way. The same DOM, after all, might be input to multiple stylesheets,
+         perhaps concurrently (though DOM is not thread-safe so this is a bad idea....) and
+         they might have different space-stripping directives. A Java application might pass
+         the DOM to an XSLT stylesheet to do some processing, but might want to continue operating
+         on the same DOM afterwards.
+         </p>
+      <p>
+         In Saxon-CE, however, these considerations hardly apply. In the vast majority of cases
+         the DOM is built solely in order to act as XSLT input. Unlike Big Saxon, where one
+         can assume that if users supply a DOM they are doing so by choice, with Saxon-CE there
+         is no alternative: all input XML arrives this way.
+         </p>
+      <p>
+         In-situ clean-up of the input DOM has other attractions; it can be used to solve the
+         other two big problems with DOM processing (both arising from a mismatch between the
+         DOM model and the XDM model): adjacent text nodes, and namespaces. The same pre-scan
+         that strips unwanted whitespace nodes can also concatenate adjacent text nodes (eliminating
+         entity references and CDATA sections in the process); presenting a view of adjacent
+         text nodes as a single node accounts for a great deal of complexity (and lines of
+         code, and execution time) in navigating a DOM. Equally for namespaces. To determine
+         the namespace part of the name of an element or attribute, Saxon can't simply call
+         getNamespaceURI() on the underlying DOM node. That method is defined to have no effect
+         if "the node was created using DOM level-1 interfaces". Saxon of course has no idea
+         how the node was created, and DOM provides no way of finding out. So it does an optimistic
+         call of getNamespaceURI() just in case, and if this returns null then it has no choice
+         but to search the node's ancestors and attributes looking for namespace declarations
+         - and since this is done every time you look at a node to see whether it satisfies
+         an axis step, it's no wonder that Saxon can be ten times slower processing a DOM than
+         when processing its native tree structure. We should be able to cut this cost dramatically
+         by doing a pre-scan of the document and calling setNamespaceURI() on all element and
+         attribute nodes.
+         </p>
+      <p>
+         The more I think about this, the more appealing the idea of doing the same thing on
+         Big Saxon. The fact is, most people who supply a DOM as input to XSLT do so out of
+         ignorance; they have no idea of the extra costs they are incurring, or of the fact
+         that supplying SAX input would be ten times faster. It's important to deliver good
+         performance not only to experts who know how to get the ultimate performance out of
+         the system, but also to the average user who just copies JAXP code from somewhere
+         on the web without any great thought or understanding. For that kind of user, in-situ
+         modification of the supplied DOM might be the right answer. We can always continue
+         to provide wrapping or bulk-copying as alternative configuration options, for people
+         to invoke if they don't like their data being trampled upon.
+         </p>
+      <p>
+         Returning to Saxon-CE, the other complication is the HTML DOM. Running XPath against
+         an HTML DOM is already sufficiently quirky (e.g. because of case-insensitive element
+         names, namespace non-support, etc etc) that it's probably wisest to keep things as
+         simple as possible on this front. I don't think we need to apply xsl:strip-space directives
+         to the HTML document; there's nothing in the spec that would make this a conformance
+         issue, and there's no usability imperative. So we'll leave well alone here.
+         </p>
+   </body>
+</html>

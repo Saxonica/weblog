@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Another five-finger performance exercise</title>
+      <meta name="id" content="159" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2009-02-07T14:18:45" />
+      <meta name="basename" content="another_five-finger_performance_exercise" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Another five-finger performance exercise</h1>
+      <p>Most of the performance work I do is on XSLT 2.0 stylesheets, and as a result there's
+         little to be achieved by comparing Saxon's performance with other products (it's well
+         known to be streets ahead of other XSLT 2.0 processors). As a result, I've done rather
+         little in the way of comparative benchmarking in the last couple of years. But Tatu
+         Saloranta has started doing some work looking at the performance of XML parsers in
+         an XSLT environment, and in that context he started running the old Datapower XSLTMark
+         tests (no longer available, sadly) which are all 1.0 stylesheets, and the figures
+         comparing Saxon and Xalan seemed to be worth investigating.</p>
+      <p>Most of the tests show no problem, but one or two seem to be anomalous. So I took
+         one of the stylesheets that seemed to be performing particularly badly, reverser.xsl,
+         and applied it to othello.xml as source. Here are the results, which give food for
+         thought:</p>
+      <p>Saxon: 155ms<br />Xalan (interpreted): 145ms<br />Xalan (XSLTC, compiled): 58ms</p>
+      <p>What the stylesheet is doing is reversing the order of the words in each text node.
+         The essence is this:</p>
+      <pre><code>&lt;xsl:template name="textflipper"&gt;
+  &lt;xsl:param name="instring" select='""'/&gt;
+ 
+  &lt;xsl:variable name="firstword" select='substring-before($instring," ")'/&gt;
+  &lt;xsl:choose&gt;
+    &lt;xsl:when test="string-length($firstword) &gt; 0"&gt;
+      &lt;xsl:call-template name="textflipper"&gt;
+        &lt;xsl:with-param name="instring" select="substring($instring,string-length($firstword)+2)"/&gt;
+      &lt;/xsl:call-template&gt;
+      &lt;xsl:text&gt; &lt;/xsl:text&gt; 
+      &lt;xsl:value-of select="$firstword"/&gt;
+    &lt;/xsl:when&gt;
+    &lt;xsl:otherwise&gt;
+      &lt;xsl:value-of select="$instring"/&gt;
+    &lt;/xsl:otherwise&gt;
+  &lt;/xsl:choose&gt;
+&lt;/xsl:template&gt;
+&lt;xsl:template match="text()"&gt;
+  &lt;xsl:call-template name="textflipper"&gt;
+    &lt;xsl:with-param name="instring" select="normalize-space(.)"/&gt;
+  &lt;/xsl:call-template&gt;
+&lt;/xsl:template&gt;</code></pre>
+      <p>First, a couple of experiments to see the impact of a few small changes to the code.
+         Changing the output method to "text" gets it down to 136ms, changing it to "xml" (which
+         is what it actually ends up using) down to 142ms. The Xalan speed shows no difference
+         from those changes. So it seems Saxon is paying an unnecessarily high price in the
+         case where the output method is decided dynamically rather than statically. That certainly
+         suggests an opportunity for improvement, though I'll keep it on the TODO list for
+         now.</p>
+      <p>Changing the stylesheet to say version="2.0" actually makes the performance worse,
+         increasing the execution time to 166ms. That's disappointing, but not too surprising;
+         2.0 imposes additional runtime type checks, which are hard to eliminate statically
+         unless the code actually declares the types of its variables and parameters. But again,
+         this is something we need to look at.</p>
+      <p>Where is the code actually spending its time? Java profiling shows a heavy use of
+         java.lang.Math.floor(), called from DoubleValue.round(). This is the consequence of
+         two things: (a) 1.0 arithmetic is defined to to be double-precision floating point,
+         and (b) the substring() function is defined to take doubles rather than integers as
+         its arguments (and to apply round() to them). In the version="2.0" case, it's already
+         optimized to use integer arithmetic, but that's not happening for 1.0.</p>
+      <p>Can we make round() more efficient for the case where the double is already "a whole
+         number"? I spent some time poking around the IEEE formats and there's no obvious way.
+         Recognizing small integers specially, the kind that often occur in calling substring(),
+         might be possible. But it's only half the answer, because round() still returns a
+         double, which has to be cast to an integer eventually anyway. Looking more closely,
+         substring is calling DoubleValue.round(), which implements the XPath round() function
+         by calling Java Math.round() to get a long, then converting the long back to a DoubleValue,
+         which the substring() code then converts back to a long. So we can short-circuit this.
+         </p>
+      <p>Run-time down to 149ms. Every little helps. But it would be better to avoid double
+         arithmetic entirely.</p>
+      <p>So, change the 1.0-mode version of ArithmeticExpression so that if both arguments
+         are statically integers and the operator is +, - or * then it does integer arithmetic
+         and then converts the result to a double; and change substring() so that if the argument
+         is a call on fn:number() applied to an integer, it removes the call on fn:number.
+         That looks good in theory, and seems to be working, but for some reason the performance
+         has regressed slightly: now running at 151ms. Java profiling and Saxon -explain output
+         show that we've got rid of all the floating-point conversion, but it doesn't seem
+         to have achieved much on the bottom line.</p>
+      <p>The profile is now showing a lot of time spent in getStringLength(). This is more
+         expensive than you might expect because it has to check whether the string contains
+         surrogate pairs, which count as one character rather than two. This is only done the
+         first time; once it's established that a string contains no surrogate pairs, the check
+         isn't done again. This suggests that it would be useful, when we construct a substring
+         of a string that contains no surrogate pairs, to flag the substring as having the
+         same property; equally, concat() could propagate the property, as could various other
+         things such as the routines that construct strings from numbers.</p>
+      <p>Implemented this, propagating the "noSurrogates" property through all the string manipulations
+         done in this stylesheet: run-time now down to 139ms. That's better.</p>
+      <p>The Java profile is now showing a suprising frequency of calls on getProperty() from
+         openDocument() in the XMLEmitter. I'm getting suspicious: perhaps when the XML output
+         method is used, and text nodes are written before the first element start tag, openDocument()
+         is being called (and the serialization properties read) each time a text node is written?</p>
+      <p>My suspicions are right. Fixed that, and the run-time is down to 117ms. Not quite
+         down to the XSLTC figure yet, but enough to decide that it's time for lunch.</p>
+      <p>
+         
+         <hr style="width: 100%; height: 2px;" />After lunch: I looked at a few more cases that were showing up in the Java profile.
+         Calculating the effective boolean value of a variable looked like a rather convoluted
+         path, because it wasn't taking account of the known type of the variable. The call
+         on substring-before() was taking a lot of time to decide that it was a simple case
+         with no special collation requirements, so I added a short-circuit for the common
+         case. With these and a couple of other small tweaks, it's down to 112ms.</p>
+      <p>Escaping special characters in the serializer always shows up as a hotspot, but it's
+         very hard to see what to do about it. We could try harder to avoid the cost when outtputting
+         compile-time literals, but there aren't many of those around here - just the odd space.
+         </p>
+      <p>There are a few other inefficiencies showing up, but they don't look big. <br /><hr style="width: 100%; height: 2px;" />I would have expected that declaring the type of the template parameter as xs:string
+         would improve performance by removing run-time checking, and the -explain output does
+         appear to show fewer checks taking place. In fact, declaring the type makes it slower;
+         it turns out that (not shown on the -explain output) the template is checking that
+         the supplied parameter is of the correct type. This doesn't happen for function calls,
+         where the code for function calling generates the run-time checking code only where
+         needed; but templates are treated differently because in general (that is, if they
+         have a match attribute) it's not possible to tell statically who is calling whom.
+         So it seems we only get this benefit if we rewrite the template as a function. But
+         at the moment, the version written as a function is taking longer - 144ms. That, it
+         seems, is because the function is being evaluated in pull mode: where all that a function
+         does is to generate text that is written to the result tree, push mode is generally
+         better. Really it's high time we unified named templates and functions, trying to
+         get the best of both worlds for both cases.</p>
+      <p>It turns out that my rewrite using functions isn't 100% equivalent to the original:
+         the function is generating strings rather than text nodes, which means extra spaces
+         are being inserted as separators, which might account for the extra cost.<br /><hr style="width: 100%; height: 2px;" />Stripping whitespace from the source document improves the time to 95ms. Is there
+         any way that could be automated? It's not so far-fetched as it might seem - this is
+         just a special case of what we can do with document projection in XQuery. In principle,
+         a stylesheet like this with only one template rule (for text nodes) is fully analyzable
+         statically just as XQuery is, and it should therefore be possible to produce a path
+         map showing all the nodes visited, and remove those that make no contribution to the
+         output during document building - as it happens, these include not only the whitespace
+         text nodes, but <em>all</em> the elements!</p>
+      <p>Which suggests the idea that for XSLT, a different approach to document projection
+         might be possible: any element that isn't matched by any template rule in the stylesheet
+         can be skipped (replaced by its contents) during the initial document loading.</p>
+      <p>Alternatively, if there are no template rules that match any elements then we could
+         rewrite the defaulted template rule for the root as:</p>
+      <p>
+         
+         <address style="font-family: Courier New,Courier,mono;">&lt;xsl:template match="/"&gt;</address>
+         
+         
+         <address style="font-family: Courier New,Courier,mono;">  &lt;xsl:apply-templates select="//text()"/&gt;</address>
+         
+         
+         <address style="font-family: Courier New,Courier,mono;">&lt;/xsl:template&gt;</address><br />but this doesn't give very much saving - it seems that navigating down through all
+         the elements and applying the built-in rule for each one costs very little.</p>
+      <p>
+         
+         <hr style="width: 100%; height: 2px;" />I have now added static type checking for named template parameters, in the same way
+         as for function parameters. Adding a type declaration to the xsl:param now brings
+         the execution cost down from 114ms to 106ms. This doesn't help with the code as originally
+         written, of course, but it's a good message for users that adding type declarations
+         not only gives you better diagnostics but also better performance. And we can now
+         consider whether to create a required type for the parameter automatically, based
+         on the required type of the context where the variable is first used - in this case
+         as the first argument of substring-before().<br /><hr style="width: 100%; height: 2px;" />With the type declaration on the parameter, it's still running more slowly in 2.0
+         mode than in 1.0 mode -- 122ms versus 104ms. That's a surprisingly big difference.
+         There's no dramatic difference in the Java profiles for the two cases. There is a
+         small difference in the -explain output: for the initial template call from the match="text()"
+         template, 1.0 mode is doing normalize-space(string(.)) where 2.0 mode does normalize-space(treat
+         as string(convert untyped atomic to string(atomize(.)))). Can't see immediately why:
+         clearly for a text node, applying the string() function here is perfect.</p>
+      <p>I've changed the type checking code for UntypedAtomicConverter so it recognizes this
+         pattern and replaces itself with a simple call on the string function. The 2.0 performance
+         is now in line with 1.0 (106ms).<br /><hr style="width: 100%; height: 2px;" />That's probably exhausted the opportunities from this particular test case for the
+         time being. I'll now go back to Tatu's results for XSLTMark as a whole and see if
+         there are any others that call for attention. Matching the XSLTC figure will be a
+         bit of a challenge, but we've made up more than half the difference and there's still
+         more potential, even without going all the way to bytecode compilation.</p>
+   </body>
+</html>

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>A stylesheet conversion</title>
+      <meta name="id" content="168" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2008-09-20T14:18:46" />
+      <meta name="basename" content="a_stylesheet_conversion" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>A stylesheet conversion</h1>
+      <p>I'm doing what looks like a fairly simple project to upgrade an XSLT 1.0 stylesheet.
+         It's XSLT 1.0 because it has to run in the browser, but fortunately it doesn't really
+         need any 2.0 features. The old version of the stylesheet worked with XML files in
+         format A, described by a DTD. The new version of the stylesheet has to produce the
+         same HTML output, but this time from XML files in format B, described by an XSD schema.
+         The stylesheet is about 650 lines long. A quick visual inspection of the XML files
+         reveals that the two formats are very similar: clearly format B is a revised design
+         of format A, but it's not immediately clear what the differences are.</p>
+      <p>How do we go about this project? I'll report progress here as I go along, no doubt
+         there will be mistakes along the way but I hope they will be instructive.</p>
+      <p>First, format B uses a namespace while format A didn't. So the first thing to do is
+         add a prefix to every element name in a pattern or path expression. Tediously, by
+         hand, because I can't think of any way of automating it that will take less than the
+         20 minutes it takes to do it manually. It would be nice to use XSLT 2.0's default-xpath-namespace
+         attribute, but our hands are tied.</p>
+      <p>Of course, there's a big risk I miss some names, and the likely consequence will be
+         missing output in the HTML, which is going to be hard to track down. So I decide to
+         (temporarily) make the stylesheet schema-aware, in the hope that some of the bad path
+         expressions will be detected at compile time. I change all the match patterns from,
+         for example match="abc" to match="schema-element(p:abc)".</p>
+      <p>First run through Saxon. A couple of silly syntax errors, of course; then some errors
+         from the schema analysis.</p>
+      <p>There are five errors of the form:</p>
+      <p> XPST0008: XSLT Pattern syntax error at char 31 on line 260 in {...lement(p:abc)/p:h...}:<br />    There is no declaration for element &lt;p:abc&gt; in an imported schema</p>
+      <p>In all cases these turn out to be because the element declaration in the schema is
+         local. But fortunately in each case the type of the element is global, so schema-element(p:abc)
+         can be replaced by element(p:abc,p:abcType).</p>
+      <p>The stylesheet now compiles with no errors, but with half a dozen warnings of the
+         form "The complex type of element ABC does not allow a child element named PQR".</p>
+      <p>Now things start to get interesting. Let's take the first of these. It's true enough:
+         the schema doesn't allow such an element. It's mentioned only once in the stylesheet,
+         in a match pattern. Perhaps this is dead code, and the rule was never fired? Or perhaps
+         the child element has been renamed? So we go to the DTD: we're in luck, it tells us
+         that element PQR has been deprecated. So it seems they dropped support for it when
+         they wrote the XSD, which means we can remove this rule from the stylesheet. We know
+         the element won't appear in an instance because we know the instances are valid against
+         the schema (well, we hope they are...).</p>
+      <p>The next warning turns out to be an error introduced when I added prefixes. Instead
+         of changing a/fred to p:a/p:fred, I had changed it to p:a/p:red. Thanks, schema aware
+         processor, you spotted my error.</p>
+      <p>The next one is similar, but this time I had forgotten to add the prefix to one of
+         the element names in a long path.</p>
+      <p>And the fourth warning is the same kind of mistake as the second.</p>
+      <p>The stylesheet now compiles without any errors or warnings (that was easier than I
+         expected!). But it gives a runtime error: "When 'standalone' or 'doctype-system' is
+         specified, the document must be well-formed; but this document contains a top-level
+         text node". It took me about 20 seconds to work out what that really means: Silly
+         me, I forgot to validate the source document, so it didn't match the root template
+         which I had changed from match="/" to match="document-node(schema-element(p:abc))".
+         Ran again with -val:strict on the command line. This time we get no errors or warnings,
+         and it produces HTML output. However, a quick visual check reveals there are quite
+         a few chunks of text missing from the output.</p>
+      <p>A quick thought: I had left the stylesheet version as "1.0". Type checking is stricter
+         in 2.0 mode, so I try switching it to 2.0 and running again. No difference. But it
+         was worth a try.</p>
+      <p>Let's see if I can identify the cause of one of the bits of missing HTML by hand,
+         and then see if there's a general approach to solving the others. The first thing
+         that's missing is a line that says "Processed by Jane Doe, 2007". Does Jane Doe appear
+         in the (new format) source XML? No, she doesn't. Does she appear in the old format
+         XML? Yes, she does.</p>
+      <p>So, if there's information that's in the old XML but not in the new, then I'm not
+         going to be able to produce the identical HTML, which puts a slight spanner in the
+         works as regards how I was proposing to test it. Time to report back to the client.</p>
+      <p>To be continued.</p>
+      <p>
+         
+         <hr style="width: 100%; height: 2px;" />One way forward might be to run the old stylesheet against the old XML in Stylus Studio,
+         and use back-mapping to identify which part of the stylesheet generated the HTML that's
+         missing from the new output. I'll keep that plan in reserve. First I'm going to see
+         what I can do with Saxon directly (because it's always best when possible to use the
+         tools that sit most comfortably in your hands.) I'm going to try running both the
+         (oldXML+oldXSLT) and the (newXML+newXSLT) in Saxon with trace output (-T), and see
+         how the traces compare.</p>
+      <p>(Shame that Saxon doesn't provide any way on the command line of sending -T output
+         to a file.)</p>
+      <p>Interesting: the old trace is 116,000 lines long, the new trace only 350!</p>
+      <p>In both cases the output of literal result elements isn't being traced. I'm seeing
+         the attributes, but not the elements. That would appear to be a bug in Saxon 9.2.
+         I'll stack that for processing later.</p>
+      <p>First discrepancy in the trace is where the stylesheet selects the path ead/frontmatter/titlepage/titleproper:
+         this is selecting something in the old document, but the converted path selects nothing
+         in the new. Looking at the new XML, the relevant text is now at ead/eadheader/filedesc/titlestmt/titleproper.
+         So rather than just fixing the path, I need to ask why was this path accepted by the
+         static analysis against the schema, which was supposed to spot such things? Looking
+         at the schema, it seems that the frontmatter element is permitted by the schema, even
+         though it's not used in our XML instances. It looks as if it's been left in there
+         for backwards compability.</p>
+      <p>This makes me feel that perhaps I should generate a new schema from the instances.
+         I've asked the client for a larger collection of instances than I'm working with at
+         the moment, so I'll defer that task until they arrive. Meanwhile, I'll just comment
+         out the reference to frontmatter in the schema, and see what happens.</p>
+      <p>I expected lots of warnings from stylesheet compilation but there were none. Ah! I'm
+         loading the schema from the web, not from the local copy I edited. Now I get 7 warnings
+         of the form</p>
+      <p>Warning: on line 12 of abcdef.xsl:<br />  The complex type of element ead does not allow a child element named frontmatter</p>
+      <p>Good: I can now look at these six path expressions and work out where the data has
+         moved to in the new document. (After doing this, I realise I could simply have looked
+         for all occurrences of "frontmatter" in the stylesheet. Perhaps I was being too clever.
+         But it took no longer, and was more rigorous.)</p>
+      <p>Umm. The titleproper element is mixed content. In the old document we find</p>
+      <p>&lt;titleproper encodinganalog="title"&gt;Guide to Bananas, &lt;date&gt;1942-2002&lt;/date&gt;&lt;/titleproper&gt;<br />&lt;num&gt;MS2144&lt;/num&gt;</p>
+      <p>whereas the new document has</p>
+      <p>&lt;titleproper&gt;Guide to Bananas, <br />       &lt;date calendar="gregorian" era="ce"&gt;1942-2002&lt;/date&gt;<br />       &lt;num&gt;MS2144&lt;/num&gt;<br />&lt;/titleproper&gt;</p>
+      <p>That seems an odd change, the way &lt;num&gt; appears in the mixed content text without
+         any punctuation. I don't really understand why it's been coded this way, but I'll
+         just be pragmatic: change the value-of to an apply-templates, and have a template
+         rule for titleproper/num that skips this content.</p>
+      <p>One of the paths that has to be changed is tricky ("sponsor") because it doesn't match
+         anything in the old instance document. But the DTD allows it, and there's a similar
+         element in the new schema, so I'll take a risk here by changing the code even though
+         I don't have any data to test it against.</p>
+      <p>There's some trickiness because an element(did/head) appears in the old XML with a
+         standard value ("Description"), but doesn't appear in the new XML. This would be easy
+         enough to deal with, except that the element is being used (a) to generate an ID for
+         use in the table of contents, and (b) its presence is triggering some conditional
+         logic. So I'm forced to try and understand what is going on here... Ah: a wonderful
+         bit of obfuscated logic: there's an apply-templates select="did/head", which itself
+         does an apply-templates select="../*[@label]", so the whole section isn't processed
+         if there's no head child. Moreover, the schema-aware stylesheet analysis has let me
+         down here: it isn't clever enough to spot that "../*[@label]" will select nothing
+         in the new schema, because the @label attribute has disappeared, being replaced by
+         a more descriptive element name.</p>
+      <p>(I'm running out of screen space. I've got two high-res screens in front of me, one
+         with this blog plus old and new HTML, one with the text editor showing old and new
+         XML and XSL. I need more.)</p>
+      <p>I don't have an (old) instance document in which the element is absent, so I don't
+         really understand what's supposed to happen in this case.<br /><hr style="width: 100%; height: 2px;" />I've now recast a section of the stylesheet by hand to cope with the structural changes
+         in the source XML, and I've realised that I got very little help from the schema.
+         The reason is that the schema is too permissive - it allows many parts of the "old"
+         XML format that aren't actually being used any more. So, into Stylus Studio, to generate
+         a new schema from the instance document. This one will only describe what's actually
+         there. Then recompile the stylesheet with this new more restrictive schema.</p>
+      <p>Bingo. We now have a screenful of errors and warnings. Unfortunately the errors are
+         bogus: they relate to the patterns such as element(e:abc, e:abcType) that we introduced
+         earlier. The schema generated by Stylus Studio, of course, has not used the same type
+         names. In fact, it's made all the element declarations global, so we can go back to
+         using schema-element(e:abc).</p>
+      <p>Three errors remain, these relate to template rules that match elements which don't
+         appear in the instance document. We'll comment these out for now.</p>
+      <p>This leaves 25 warnings of the form "The complex type of XXX does not allow a child
+         element named YYY" - and then it says "No more warnings will be displayed", because
+         Saxon stops after 25. (No option to change that, sadly). So at last, we've got some
+         concrete indication, without having to inspect the output by eye, of where the paths
+         are that need changing.</p>
+      <p>Some of them, oddly, are on "line 0". From experience, the only way to fix poor Saxon
+         diagnostics is to do it immediately, while you've got the incorrect stylesheet to
+         play with. So it's into the IntelliJ IDE to discover why it hasn't got a line number
+         for these paths. It turns out this is a bug that has been there "for ever": the line
+         number information isn't being set on the subsidiary patterns in a location path pattern,
+         for example the pattern representing the a/b part of a/b/c. That's done, unwind the
+         stack.</p>
+      <p>Quite a lot of the incorrect paths are going via an element descgrp which serves merely
+         to group a rather arbitrary collection of properties.</p>
+      <p>(to be continued) </p>
+      <p>
+         
+         <hr style="width: 100%; height: 2px;" />It's now largely a question of hard slog debugging. Despite best efforts, in the end
+         you have to look at the HTML and try to understand why it's different.</p>
+      <p>I made use of the -T tracing option in Saxon to good effect to see which template
+         rules were firing. There should probably be an option that ONLY shows you which template
+         rules are firing. I had to fix the 9.2 bug whereby insufficient trace was being output,
+         and in the course of this I found another usability problem: when running within IntelliJ,
+         you can't use the usual 2&gt; option to redirect standard error output, and there's no
+         Saxon option to send the output to a file, so it wasn't possible to capture the output.
+         Fixed that by overloading the -traceout option.</p>
+      <p>
+         
+         <hr style="width: 100%; height: 2px;" /><br />The output is now fairly close to what's required. I decide to change the default
+         template rule to display unmatched elements in red, so I can make sure that all elements
+         in the input XML are handled by explicit template rules. This reveals some elements
+         that aren't being matched. I'm puzzled as to why, so I add a call on saxon:stack-trace()
+         to show where the fallback template rule is being called from. Unfortunately it turns
+         out saxon:stack-trace() isn't working properly in Saxon 9.2, so I fix it.</p>
+      <p>That resolves the problem in the stylesheet: a simple error in a match pattern.</p>
+      <p>
+         
+         <hr style="width: 100%; height: 2px;" />I've split some very large templates in the stylesheet into smaller units (using call-template)
+         to make the code more readable and maintainable. I noticed that in doing this, we
+         lose some static type-checking. There's no way in XSLT 2.0 to declare the expected
+         context item type of a named template: I've added an enhancement suggestion to do
+         this in 2.1. However, it might be possible in Saxon to extend the type checking from
+         a call-template to the template that is invoked.<br /><hr style="width: 100%; height: 2px;" />From here on, it was largely a process of refinement. I had to abandon making the
+         HTML 100% compatible with the previous version, for a number of reasons: one was that
+         there was data that wasn't properly formatted in the old version, and reproducing
+         the old bugs was going to be too difficult! I've handed over a stylesheet that does
+         the job adequately on the test data currently available, but it's clear that as more
+         documents are added to the test pool, further refinement will be needed. The stylesheet
+         probably only handles about 50% of the elements that are permitted by the schema,
+         and a big question is whether that will also be true of the final population of instance
+         documents. If so, good software engineering would probably demand creation of a restricted
+         schema that all the instance documents are expected to conform to, and testing that
+         the stylesheet can handle all instances of that restricted schema.</p>
+      <p>Even though this was simple XSLT 1.0 programming, it was a useful exercise. It flushed
+         out several weaknesses in Saxon's diagnostics, proving how important it is that those
+         who develop software products should also occasionally use them in anger to solve
+         real problems. (All too often, especially in big companies, this never happens: I've
+         known cases where the product developers wouldn't have the faintest idea where to
+         start.) It also generated a number of ideas for new features that could aid this kind
+         of task.</p>
+      <p>Using the schema-awareness capabilities was useful, but not the whole answer. It's
+         too much effort to take advantage of schema-awareness and achieve rigorous static
+         type checking of path expressions, and even then, many paths such as ../@code aren't
+         checked (only downwards paths are analyzed). Also, while the static checking gives
+         assurance that the paths in the stylesheet are capable of selecting something, there's
+         no analysis of how complete the coverage is. It would be nice to know at compile time,
+         rather than at run-time, that an apply-templates can select elements for which there
+         is no template rule.</p>
+      <p>That's all for now. Sorry it was rather disjointed, but I thought it might be interesting
+         to report progress as it happened, rather than giving a sanitised version later!</p>
+      <p>One final point: I underestimated the size of the task quite considerably. I thought
+         I could do it comfortably in about 15 hours but it's taken more like 30.</p>
+   </body>
+</html>

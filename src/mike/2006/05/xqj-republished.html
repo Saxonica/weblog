@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>XQJ republished</title>
+      <meta name="id" content="116" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-05-14T14:18:43" />
+      <meta name="basename" content="xqj_republished" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>XQJ republished</h1>
+      <p>After two years without any visible signs of progress, the XQJ expert group has published
+         a new set of Java API specifications for XQuery. (Quite an achievement to use those
+         three letters in an acronym, I think!) The specs can be downloaded at <a href="http://jcp.org/en/jsr/detail?id=225">http://jcp.org/en/jsr/detail?id=225</a></p>
+      <p>This isn't a final spec, but I would guess that the key design decisions are now fixed
+         and that changes from now on will be refinements to the details of individual methods.</p>
+      <p>As one would hope, it's a much more polished specification than the last one back
+         in 2004. There are still a few things in it that I don't like all that much: it's
+         very JDBC-like in its overall approach, being built around the concept that there
+         is a "Connection" between the application and the XQuery server (which they clearly
+         think of a database system). The XQConnection has all sorts of behaviour, like logging
+         on specifying a user name and password, and protocol for closing the connection and
+         specifying timeouts, that don't make much sense in an environment like Saxon where
+         the XQuery engine operates in-process. But given that the spec has been driven by
+         Oracle and IBM, that's not too surprising.</p>
+      <p>The way result sets are managed also seems rather clumsy. The XQResultSequence object
+         contains both a sequence of items and a current position, whereas to me a much more
+         natural design is to separate the collection and its iterator in separate objects.
+         Rather than having a single method "getCurrentItem()" which returns an Item and allows
+         you access to all the methods available for Items, the XQSequence object duplicates
+         all these methods and interprets them as operating on the current item in the sequence.
+         The net result of this kind of approach is that there's a very large number of methods
+         neeing to be coded: a lot of them end up being one-liners.</p>
+      <p>Similarly, a compiled query (XQPreparedQuery) and the context for its execution (context
+         item, values of parameters) are combined in a single object, which is unfortunate
+         because it means that the XQPreparedQuery object cannot be used safely across multiple
+         concurrent threads.</p>
+      <p>There's also a "metadata" facility (metadata in the sense that database people use
+         the term) that allows you to ask for details of things like available collections,
+         documents, extension functions, and collations. This seems to assume a rather "closed
+         world" implementation - with Saxon, producing a list of all the documents that are
+         available to a query (i.e. the whole of the web) is hardly a feasible proposition!.</p>
+      <p>But still, these are minor complaints. The value of a standard API depends more on
+         how well specified it is, which in turn tends to lead to compatible behaviour across
+         implementations. On that score, I think they've done a fairly reasonable job. There
+         are many points of detail that will require clarification.</p>
+      <p>I've started sketching out an implementation of XQJ for Saxon, and there don't seem
+         to be any major points of difficulty. All the underlying functionality, including
+         interfaces to DOM, StAX, and SAX, is there already, it's just a new skin. The real
+         challenge will be testing - not just because there are so many methods, but because
+         there's limited value in testing that a method does what I thought it was meant to
+         do, when the real danger is that the spec-writer intended it to mean something quite
+         different. It will be interesting to see if the XQJ group decides to publish its test
+         suite. Given that the whole exercise has been horribly delayed by the antics of corporate
+         lawyers (I won't say whose), I'm not holding my breath.</p>
+      <p>I wrote a few weeks ago about <a href="/mike/2006/03/apis-for-xml-processing.html">Saxon's new API on the .NET platform</a>, and about the prospects of porting this to Java. I haven't made a decision on this
+         yet: the trade-off between a patchwork of "standard" but increasingly incoherent APIs
+         (JAXP, XQJ, etc) and a coherent but Saxon-specific API is a difficult one. Technically
+         it's quite feasible to do both and let the user decide. The other challenge is what
+         to do about the existing XQuery API in Saxon, which I would love to kill off unceremoniously
+         if only I could get away with it.<br />
+         
+         
+         
+         </p>
+   </body>
+</html>

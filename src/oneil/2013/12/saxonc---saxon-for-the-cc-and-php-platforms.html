@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Saxon/C - Saxon for the C/C++ and PHP platforms</title>
+      <meta name="id" content="203" />
+      <meta name="author" content="O’Neil Delpratt" />
+      <meta name="pubdate" content="2013-12-02T18:11:25" />
+      <meta name="basename" content="saxonc_-_saxon_for_the_cc_and_php_platforms" />
+      <meta name="blog-id" content="6" />
+   </head>
+   <body>
+      <h1>Saxon/C - Saxon for the C/C++ and PHP platforms</h1>
+      <p>At the XML Summer School 2013, Tony Graham presented a lightning talk about life after
+         libxslt 1.0.  I was not present for this summer school, but it was clear from the
+         feedback of the discussions I received that there is a major gap of XSLT 2.0 support
+         in the large developer community of C/Perl/PHP/Python/Ruby world and associated tools
+         that rely on libxslt.<br />
+         It is a known problem, which has never, to my knowledge been addressed. At Saxonica,
+         we wanted to try and plug this gap by porting the Saxon processor from Java to C/C++,
+         which would enable us to communicate with the languages specified above. One of our
+         goals, if possible was to interface with libxml and libxslt. Providing such a bridge
+         or cross-compiled version of a full fledged Java application
+         to C/C++ is always a daunting task. In this blog post I discuss the technical steps
+         in our quest to achieve our goals
+         and give some details of the experiences gained along the way. I will begin by detailing
+         the various technologies that we tried, and how we have have ended up using a commercial
+         Java native compiler after several failed attempts with tools that either did not
+         work, cumbersome or were just too error prone.
+         </p>
+      <p>
+         <b>LLVM</b>
+         </p>
+      <p>
+         At the summer school there were discussions that the tool <a href="http://llvm.org/">LLVM</a> could do the job of compiling Java to native code. As claimed on the project website
+         LLVM is a collection of modular and reusable compiler and toolchain technologies.
+         The LLVM project seems very active with many projects using it to do various task,
+         but I found it difficult to get anything working. In particular, I tried using the
+         VMKit which relies on LLVM to compile some a simple 'Hello World' examples to machine
+         code, but even that seemed cumbersome.
+         </p>
+      <p>
+         <b>GCJ</b>
+         </p>
+      <p>
+         Secondly, I looked at the <a href="http://gcc.gnu.org/java/">GCJ</a> technology. GCJ is a tool that I have used before, so I was confident that it would
+         work. However, from my past experience using this tool is that it can be error prone
+         and contains long standing bugs, which is a result of the project being dormant for
+         several years, it seems unlikely that bugs will be fixed. The other worrying fact
+         is that GCJ only supports up-to JDK 1.5. Nevertheless for lack of other options, I persevered
+         with GCJ and I had much better success given that I managed to compile Saxon-HE to
+         native machine
+         code  and actually got it to execute my example stylesheets. I had some problems because
+         of classes that were not present in the GCJ implementation of JDK 1.5, such as the
+         packages java.math and javax.xml. Therefore, I had to include my own version of these
+         packages.
+         </p>
+      <p>
+         The next step was to create a shared library of Saxon-HE, so that I could interface
+         it with C/C++. This proved to be a real battle, which in the end I succeeded. I decided
+         to use Compiled Native Interface (CNI), which presents a convenient way to write Java
+         native methods using C++. The alternative was JNI (Java Native Interface), which may
+         be viewed as more portable. Both interfaces though have similar principles: you need
+         a Java/CNI-aware C++ compiler, any recent version of G++ is capable, and then you
+         must include the header file for each Java class it uses. These header files, if not
+         automatically generated, can be done using gcjh. I soon gave up on using GCJ: I stumbled
+         upon a few known bugs and because if I was having major issues with the setup and
+         prerequisites required then surely users would have the same problems.
+         </p>
+      <p>
+         <b>Excelsior JET</b>
+         </p>
+      <p>
+         The <a href="http://www.excelsior-usa.com/">Excelsior JET tool</a> is the final technology we looked at and thankfully it is what we have ended up using
+         in the alpha release. JET is a commercial product that provides a Java native compiler
+         for both Linux and Windows platforms. What is good about this software tool is that
+         it provides an easy to use Graphical interface to build native executables and shared
+         libraries from jar file(s). It also has the feature to package up the software into
+         an installer ready to be deployed onto its intended host machine. This was great for
+         us! 
+         </p>
+      <p>
+         There is a lot I could write about JET, but it would be a repeat of the plethora of
+         information currently available on their website and forum. However, just to mention
+         we started with their evaluation version which offers 90-days free usage of their
+         software
+         before purchasing the professional edition. Another point of interest is that Excelsior
+         offer a free-of-charge license for use in conjunction with open-source software.
+         </p>
+      <p>
+         We know that there will be some sections of the open-source community that dislike
+         the dependency upon using a commercial tool, but it is not that dissimilar from the
+         early years of Java when the Sun compiler was freely available but not open-sourced.
+          
+         </p>
+      <p>
+         <b>Implementation notes using JET</b>
+         </p>
+      <p>
+         After creating the shared library, to interface it with C/C++ I used JNI. It is possible
+         to use JET's own Java interface to external functions called xFunction, which is recommended
+         if starting from scratch, but having used JNI with GCJ I continued with that approach.
+         To get started there are a few examples of invoking a library with C/C++. In essence,
+         you need to load the library and initialize the JET run-time before you can use it,
+         see the code below (from the file xsltProcessor.cc):
+         </p>
+      <pre><code>/* Load dll. */
+HANDLE loadDll(char* name)
+{
+  HANDLE hDll = LoadLibrary (name);
+
+  if (!hDll) {
+    printf ("Unable to load %s\n", name);
+    exit(1);
+  }
+
+  printf ("%s loaded\n", name);
+  return hDll;
+}
+
+extern "C" {jint (JNICALL * JNI_GetDefaultJavaVMInitArgs_func) (void *args);
+            jint (JNICALL * JNI_CreateJavaVM_func) (JavaVM **pvm, void **penv, void *args);
+}
+
+/*Initialize JET run-time.*/
+extern "C" void initJavaRT(HANDLE myDllHandle, JavaVM** pjvm, JNIEnv** penv)
+{
+  int result;
+  JavaVMInitArgs args;
+
+  JNI_GetDefaultJavaVMInitArgs_func =
+  (jint (JNICALL *) (void *args))
+  GetProcAddress (myDllHandle, "JNI_GetDefaultJavaVMInitArgs");
+  JNI_CreateJavaVM_func =
+  (jint (JNICALL *) (JavaVM **pvm, void **penv, void *args))
+  GetProcAddress (myDllHandle, "JNI_CreateJavaVM");
+
+  if(!JNI_GetDefaultJavaVMInitArgs_func) {
+    printf ("%s doesn't contain public JNI_GetDefaultJavaVMInitArgs\n", dllname);
+    exit (1);
+  }
+
+  if(!JNI_CreateJavaVM_func) {
+    printf ("%s doesn't contain public JNI_CreateJavaVM\n", dllname);
+    exit (1);
+  }
+
+  memset (&amp;args, 0, sizeof(args));
+  args.version = JNI_VERSION_1_2;
+  result = JNI_GetDefaultJavaVMInitArgs_func(&amp;args);
+  if (result != JNI_OK) {
+    printf ("JNI_GetDefaultJavaVMInitArgs() failed with result %d\n", result);
+    exit(1);
+  }
+
+  /* NOTE: no JVM is actually created
+  * this call to JNI_CreateJavaVM is intended for JET RT initialization
+  */
+  result = JNI_CreateJavaVM_func (pjvm, (void **)penv, &amp;args);
+  if (result != JNI_OK) {
+    printf ("JNI_CreateJavaVM() failed with result %d\n", result);
+    exit(1);
+  }
+  printf ("JET RT initialized\n");
+  fflush (stdout);
+}
+
+XsltProcessor::XsltProcessor(bool license) {
+  /* * First of all, load required component.
+  * By the time of JET initialization, all components should be loaded.
+  */
+  myDllHandle = loadDll (dllname);
+
+  /*
+  * Initialize JET run-time.
+  * The handle of loaded component is used to retrieve Invocation API.
+  */
+  initJavaRT (myDllHandle, &amp;jvm, &amp;env);
+
+  /* Look for class.*/
+  cppClass = lookForClass(env, "net/sf/saxon/option/cpp/XsltProcessorForCpp");
+  versionClass = lookForClass(env, "net/sf/saxon/Version");
+
+  cpp = createObject (env, cppClass, "(Z)V", license);
+  jmethodID debugMID = env-&gt;GetStaticMethodID(cppClass, "setDebugMode", "(Z)V");
+  if(debugMID){
+    env-&gt;CallStaticVoidMethod(cppClass, debugMID, (jboolean)false);
+  }
+  ....
+}
+...</code></pre>
+      <p>In the constructor method of XsltProcessor we see that once we have loaded the library
+         and initialized the JET run-time we can now make calls to the environment, which has
+         been created to get class definitions and create instance(s) of the class in the Java
+         world. This is before we make method calls on the object.
+         </p>
+      <p>
+         <b>PHP Extension in C/C++</b>
+         </p>
+      <p>
+         After successfully getting XSLT transformations to work within C/C++, the next step
+         was to try and develop a PHP extension, which would operate like libxslt. There is
+         a lot of material on the web and books in regards to PHP extensions and I found the
+         following guide very useful: <a href="http://devzone.zend.com/1435/wrapping-c-classes-in-a-php-extension/">http://devzone.zend.com/1435/wrapping-c-classes-in-a-php-extension/</a>. I literally followed it step-by-step, adding a few steps of my own when I worked
+         out what I was doing.
+         </p>
+      <p>
+         <b>Testing</b>
+         </p>
+      <p>
+         As a proof of concept I wrote a test harness in PHP which makes use of the PHP extension
+         (see: xslt30TestSuite.php in the download library). This is a test driver designed
+         to run the public W3C XSLT test suite at <a href="https://dvcs.w3.org/hg/xslt30-test/">https://dvcs.w3.org/hg/xslt30-test/</a>. The test driver in its current form requires Saxon-EE, which is not yet available
+         in this alpha release; nevertheless, the program may serve as a useful example of
+         how the API can be used. Note that it is written to use libXML to read the test catalog,
+         but to use Saxon for running the tests and assessing the results.
+         </p>
+      <p>
+         <b>Performance Testing</b>
+         </p>
+      <p>
+         I now draw comparisons between running Saxon-HE (on Java) vs running Saxon-HE/C on
+         C++ and on PHP on some preliminary tests. I also compare these times to libxslt (C/C++).
+         An important aim is to get a good measure of the costs of crossing the Java/C++ boundary
+         using JNI and also to see what the effect is with the PHP extension. 
+         </p>
+      <p>
+         I used Saxon-HE 9.5.1.3 as the baseline. The test machine was a Intel Core i5 processor
+         430M laptop with 4GB memory, 2.26Ghz CPU and 3MB L3 cache, running Ubuntu 13.10 Linux.
+         Servers Apache2 and PHP version 5.5.3-1ubuntu2. The compiler was Sun/Oracle Java 1.6.0.43. 
+         </p>
+      <p>
+         The experiments were based on the XMark benchmark. I used query q8, which was converted
+         into the stylesheet below. The choice of q8.xsl is because we should expect some performance
+         bottle-necks across the implementations due to its equijoins in the query:
+         </p>
+      <pre>&lt;result xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xsl:version="2.0"&gt;
+&lt;!-- Q8.  List the names of persons and the number of items they bought.
+          (joins person, closed_auction) --&gt;
+
+  &lt;xsl:for-each select="/site/people/person"&gt;
+    &lt;xsl:variable name="a"
+       select="/site/closed_auctions/closed_auction[buyer/@person = current()/@id]"/&gt;
+    &lt;item person="{name}"&gt;&lt;xsl:value-of select="count($a)"/&gt;&lt;/item&gt;
+  &lt;/xsl:for-each&gt;
+
+&lt;/result&gt;</pre>
+      <p>
+         The running times of executing q8.xsl on the document xmark64.xml, which is a 64MB
+         size document are as follows:
+         </p>
+      <p>
+         Saxon-HE (Java):    60.5 seconds
+         </p>
+      <p>
+         Saxon-HE/C (C++): 132 seconds 
+         </p>
+      <p>
+         Saxon-HE/C (PHP): 137 seconds
+         </p>
+      <p>
+         libxslt (C/C++):        213 seconds
+         </p>
+      <ul>
+         <li>Update on the times reported for Saxon-HE/C as a result of optimizations in the
+            JET compiler.</li>
+         <li>Code used to get libxslt time taken from: <a href="http://xmlsoft.org/XSLT/tutorial/libxslttutorial.html">http://xmlsoft.org/XSLT/tutorial/libxslttutorial.html</a></li>
+      </ul>
+      <p>The times for Saxon-HE/C are without the cost of JET initialisation and loading the
+         library, which accounted for only 4 seconds. So we observe that there is not a big
+         overhead between C++ and the PHP
+         extension. The biggest cost as expected is between Java and C++, where we see on the
+         C++/PHP platform a slowdown of ~ x2.2. We also observe that Saxon-HE/C out performs
+         libxslt on C/C++ by ~40% on q8.
+         </p>
+      <p>
+         See project page on <a href="http://www.saxonica.com/saxon-c/index.xml">Saxon/C</a>. 
+         
+         
+         
+         </p>
+   </body>
+</html>

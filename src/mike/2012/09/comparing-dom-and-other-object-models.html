@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Comparing DOM and other object models</title>
+      <meta name="id" content="194" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2012-09-12T16:22:09" />
+      <meta name="basename" content="comparing_dom_and_other_object_models" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Comparing DOM and other object models</h1>
+      <p>Saxon has for a long time supported a number of implementations of the XDM tree model:
+         <br />
+         
+         
+         
+         <ul>
+            <li>Native Saxon implementations: the TinyTree, the LinkedTree, and a variant of the TinyTree
+               called TinyTreeCondensed</li>
+            <li>External object models: DOM, JDOM, DOM4J, XOM</li>
+            <li>Newly added in the last few weeks: JDOM2, AXIOM</li>
+         </ul>What we haven't done is to do any serious comparisons of performance, except for occasional
+         bouts of intensive tuning of one or another of the models while it was under development.
+         </p>
+      <p>
+         The addition of two more external models suggested it was time we did some measurements.
+         We adapted our test driver for the XMark benchmark suite to work with any of the above
+         models, and ran the queries to compare the results. The results quoted below are for
+         the nominal 1Mb source document (actual size 1182530 bytes).
+         </p>
+      <p>
+         DOM of course is an interface rather than an implementation; the DOM used here was
+         the Apache Xerces DOM.
+         </p>
+      <p>
+         First, memory usage: the table below gives the "expansion factor", that is, the amount
+         of memory used divided by the number of bytes in the source XML document:
+         </p>
+      <table border="1">
+         
+         
+         
+         <tbody>
+            
+            
+            <tr>
+               
+               
+               <th>Model</th>
+               
+               
+               <th>Expansion factor</th>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>TinyTree</td>
+               
+               
+               <td>3.79</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>TinyTreeCondensed</td>
+               
+               
+               <td>3.12</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>LinkedTree</td>
+               
+               
+               <td>5.86</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>DOM</td>
+               
+               
+               <td>6.17</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>JDOM</td>
+               
+               
+               <td>6.88</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>JDOM2</td>
+               
+               
+               <td>6.57</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>DOM4J</td>
+               
+               
+               <td>6.31</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>XOM</td>
+               
+               
+               <td>4.68</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>AXIOM</td>
+               
+               
+               <td>7.79</td>
+               </tr>
+            </tbody>
+         </table>
+      <p>No great surprises there.
+         </p>
+      <p>
+         As for query performance, our first measurements showed some alarmingly bad performance
+         on many of the external models for Q7. This query is dominated by traversal of the
+         descendant axis. On some of the models this was taking almost 100 times as long as
+         for the TinyTree. We know that the TinyTree is particularly good at traversing the
+         descendant axis, but this ratio was worse than we expected. We found that the recursive
+         algorithm used by some of the models was particularly inefficient, and replaced it
+         with the non-recursive algorithm used by the LinkedTree, which significantly improved
+         the figures. After this tuning exercise, the following table shows for each model,
+         the average elapsed time compared with the TinyTree figure, together with the minimum
+         and maximum values of this ratio.
+         
+         </p>
+      <table border="1">
+         
+         
+         
+         <tbody>
+            
+            
+            <tr>
+               
+               
+               <th>Model</th>
+               
+               
+               <th>Average</th>
+               
+               
+               <th>Best</th>
+               
+               
+               <th>Worst</th>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>TinyTree</td>
+               
+               
+               
+               <td>1</td>
+               
+               
+               
+               <td>1</td>
+               
+               
+               
+               <td>1</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>TinyTreeCondensed</td>
+               
+               
+               
+               <td>1.03</td>
+               
+               
+               
+               <td>0.97</td>
+               
+               
+               
+               <td>1.23</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>LinkedTree</td>
+               
+               
+               
+               <td>2.29</td>
+               
+               
+               
+               <td>1.2</td>
+               
+               
+               
+               <td>6.35</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>DOM</td>
+               
+               
+               
+               <td>8.05</td>
+               
+               
+               
+               <td>1.98</td>
+               
+               
+               
+               <td>23.05</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>JDOM</td>
+               
+               
+               
+               <td>12.17</td>
+               
+               
+               
+               <td>2.45</td>
+               
+               
+               
+               <td>71.07</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>JDOM2</td>
+               
+               
+               
+               <td>6.51</td>
+               
+               
+               
+               <td>2.08</td>
+               
+               
+               
+               <td>28.47</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>DOM4J</td>
+               
+               
+               
+               <td>17.3</td>
+               
+               
+               
+               <td>2.11</td>
+               
+               
+               
+               <td>98.38</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>XOM</td>
+               
+               
+               
+               <td>3.8</td>
+               
+               
+               
+               <td>1.99</td>
+               
+               
+               
+               <td>6.09</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>Axiom</td>
+               
+               
+               
+               <td>11.15</td>
+               
+               
+               
+               <td>2.61</td>
+               
+               
+               
+               <td>60.18</td>
+               </tr>
+            </tbody>
+         </table>
+      <p>
+         This clearly shows that of the external object models, XOM is clearly out-performing
+         the others. But even XOM is nearly four times slower than the TinyTree on average.
+         </p>
+      <p>
+         Finally, we also measured build time: the time taken to build the tree. The figures
+         below are in ms:
+         
+         </p>
+      <table border="1">
+         
+         
+         
+         <tbody>
+            
+            
+            <tr>
+               
+               
+               <th>Model</th>
+               
+               
+               <th>Build time</th>
+               </tr>
+            
+            <!--?xml version="1.0" encoding="UTF-8"?-->
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>TinyTree</td>
+               
+               
+               
+               <td>44</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>TinyTreeCondensed</td>
+               
+               
+               
+               <td>139</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>LinkedTree</td>
+               
+               
+               
+               <td>205</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>DOM</td>
+               
+               
+               
+               <td>184</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>JDOM</td>
+               
+               
+               
+               <td>177</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>JDOM2</td>
+               
+               
+               
+               <td>183</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>DOM4J</td>
+               
+               
+               
+               <td>187</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>XOM</td>
+               
+               
+               
+               <td>283</td>
+               </tr>
+            
+            
+            
+            <tr>
+               
+               
+               
+               <td>Axiom</td>
+               
+               
+               
+               <td>675</td>
+               </tr>
+            </tbody>
+         </table>
+      <p>
+         Nothing dramatic here, except to note that Axiom appears to be very slow to build
+         the tree.
+         
+         </p>
+      <p>
+         The results here are of course not necessarily representative of other workloads.
+         Notoriously, the XMark data does not use namespaces, and that could seriously distort
+         the results. The XMark queries are also heavily optimized; for example, they probably
+         do less sorting-into-document-order than your average workload, and that's an operation
+         that can be very expensive with some object models. Nevertheless, any data is better
+         than none, and publishing this may encourage some people to take another look at XOM.
+         
+         Unfortunately, most of the people who use DOM with Saxon do so out of ignorance, and
+         they are the people who are least likely t read this article.
+         </p>
+      <p>
+         <b>Footnote</b>
+         </p>
+      <p>
+         A more detailed look at the XMark performance data showed that in many cases the worst-performing
+         code in a number of the external model wrappers (XOM being a notable exception) was
+         when navigating the descendant axis. We've changed some of the wrappers, notably DOM
+         and DOM4J, to use the same algorithm as XOM was using for the descendant axis, and
+         the result is a notable improvement. However, one concern about this algorithm is
+         that it has the potential for very poor performance in trees with a high fan-out,
+         for example, where one parent node has tens of thousands of immediate children. In
+         the case of DOM the problem is compounded by the fact that DOM is an interface, not
+         an implementation, so different implementations of DOM might exhibit very different
+         performance characteristics: the right approach for one implementation is not necessarily
+         the right approach for others.</p>
+   </body>
+</html>

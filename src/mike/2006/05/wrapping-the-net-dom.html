@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Wrapping the .NET DOM</title>
+      <meta name="id" content="115" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-05-10T14:18:43" />
+      <meta name="basename" content="wrapping_the_net_dom" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Wrapping the .NET DOM</h1>
+      <p>A user of Saxon on .NET, Don Burden, has been doing some performance tests:</p>
+      <p><a href="https://sourceforge.net/forum/forum.php?thread_id=1493510&amp;forum_id=94027">https://sourceforge.net/forum/forum.php?thread_id=1493510&amp;forum_id=94027</a></p>
+      <p>At first sight the figures are not especially good: 227 transformations per second
+         against 613 for the System.Xml.Xsl transformer. However, closer analysis shows that
+         a great deal of the cost is in converting the System.Xml DOM into a Saxon tree prior
+         to performing the real transformation. This isn't really a surprise - the <a href="http://www.saxonica.com/documentation/dotnetdoc/index.html">API documentation</a> contains some clear warnings about the cost of doing this (it's far better, when
+         you can, to build a native Saxon tree directly from raw XML - the same is true for
+         the Java product). </p>
+      <p>On the other hand, if you want to manipulate your data from C# and then transform
+         it, you haven't got much choice other than to do this conversion, so one can't argue
+         that the measurement is untypical of at least some real applications.</p>
+      <p>So I decided to pull my fingers out and implement the alternative "wrapper" approach,
+         where a set of lightweight objects are wrapped around the DOM nodes to deliver the
+         Saxon NodeInfo interface. This turned out to be a pretty straight port of the Java
+         code that does the same job wrapping the Java DOM - as one might expect, the two DOM
+         interfaces differ mainly in details of method naming and the like.</p>
+      <p>As always happens in these cases, the Microsoft API documentation is woefully inadequate.
+         When a method expects a namespace URI, is the null namespace "null" or the empty string?
+         How exactly do EntityReference nodes behave? Often one simply has to do experiments
+         to find out.</p>
+      <p>For some things, even experimenting won't give you the answer. Does the System.Xml
+         DOM allow you to assume that you'll never have two different objects representing
+         the same node? The rumours suggest that this is a safe assumption, but it's not actually
+         written down in the spec. Sometimes you just have to go for it, and wait for the bug
+         reports if you get it wrong.</p>
+      <p>Developing this, I decided that it was high time I had a better set of tests for NodeInfo
+         implementations. There are two "complete" NodeInfo implementation in the product (the
+         tiny tree and the linked tree), there are a number of specialised implementations
+         for special cases such as <code>&lt;xsl:variable&gt;XYZ&lt;/xsl:variable&gt;</code> (a document node containing a single text node), and there are now five implementations
+         that wrap third-party object models - DOM, DOM4J, XOM, and JDOM on Java, and now the
+         System.Xml DOM on .NET. I've also done a couple of custom implementations for Saxonica
+         clients. Until now I've run a selected set of XSLT stylesheets to validate these implementations,
+         but it was becoming unwieldy. So I've started writing a set of unit tests to do the
+         testing at the Java level.</p>
+      <p>I also decided it was time I got cross-language debugging to work. Until now, to find
+         Java bugs that only occur in a .NET environment, I've had to resort to System.err.println
+         debugging, which is tedious to say the least (good discipline, though: it makes you
+         think twice when you have to wait ten minutes for your next test run. Memories of
+         the days when you had to wait 24 hours...). But I knew that it was in principle possible
+         to get the Visual Studio debugger to step into the Java code line-by-line, and sure
+         enough, after a frustrating day or two, I've cracked the problem. There seem to be
+         a lot of configuration settings that have to be exactly right: the final one was ensuring
+         that when cross-compiling the saxon JAR into a .NET assembly, the resulting assembly
+         is unsigned and unversioned.</p>
+      <p>Next step is to do some performance measurements to see how far I've closed the gap
+         against System.Xml.Xsl. Not that Saxon is primarily competing on performance - it's
+         the productivity benefits in XSLT 2.0 that will really influence people - but it would
+         be nice if it's in the same ballpark. Don Burden's measurements show that's not an
+         unreasonable target - even when using a DOM as input, which will never be the fastest
+         way of running Saxon. </p>
+   </body>
+</html>

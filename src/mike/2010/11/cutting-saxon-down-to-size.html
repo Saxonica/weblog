@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Cutting Saxon down to size</title>
+      <meta name="id" content="184" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2010-11-21T14:18:47" />
+      <meta name="basename" content="cutting_saxon_down_to_size" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Cutting Saxon down to size</h1>
+      <p>It's clear that in cross-compiling Saxon to Javascript to run on the browser, reducing
+         the size of the code could make a major impact on the performance and therefore usability
+         of the resulting product. So I've been thinking about how one might achieve a radical
+         reduction in the size. Rather like an incoming Chancellor faced with a record budget
+         deficit, I've been trying to think the unthinkable to see where one might make savage
+         cuts. </p>
+      <p>It's instructive to compare Saxon 9.3 with Saxon 5.0, released in December 1999 as
+         the first fully-compliant implementation of XSLT 1.0. Saxon 5.0 was 17K non-comment
+         lines of code; Saxon-HE 9.3 is 143K, and Saxon-EE 9.3 is 210K. (The ratio of comment
+         to non-comment lines, incidentally, has remained steady at roughly 1:1). </p>
+      <p>Let's look at an example: the substring function, which is unchanged between XSLT
+         1.0 and XSLT 2.0. In Saxon 9.3, there's about 200 lines of Saxon-HE code to implement
+         this function, plus 30 lines in EE to support compilation of XQuery to Java: there
+         isn't any specific support for streaming, though there is for many other similar functions.
+         In Saxon 5.0 the size of the code is 40 lines, plus 12 lines to support the rudimentary
+         compile-to-Java facility that was present in that release, and later abandoned. In
+         AJAXSLT, an abortive 2005 attempt by Steffen Meschkat to write an XSLT processor in
+         Javascript, the substring function is implemented in 17 lines of code. In Henry Lindquist's
+         2008 XPath.js implementation of XPath 1.0, this is the implementation, in its entirety,
+         formatted for readability: </p>
+      <p>XPath.substring=function(s,i,l){ <br />s=this.string(s); <br />i=Math.round(this.number(i))-1; <br />return(arguments.length==2)?s.substr(i&lt;0?0:i):s.substr(i&lt;0?0:i,Math.round(this.number(l))-Math.max(0,-i)); <br />}; </p>
+      <p>How do these implementations differ? </p>
+      <p>Firstly, even the early 1999 version of Saxon (unlike either of the Javascript versions)
+         supported Unicode astral planes (characters above 65535) properly; it also included
+         rudimentary code to supply static type information. That meant it didn't use Java's
+         substring() method. The code was also split into methods to support use in a run-time
+         library called from compiled code. It could easily be reduced to 20 lines and still
+         have full Unicode support. </p>
+      <p>In the 9.3 version of the code, we see first some compile-time optimization, designed
+         to avoid conversions of arguments from integer to double and then back to integers.
+         Then we find that the 2-argument form of the function and the 3-argument form are
+         separately implemented; and there are separate paths for the case when the arguments
+         are integers rather than doubles, and for the case where the the input string is known
+         to contain no astral characters (in which case the function can be implemented using
+         the Java substring() method). It is also careful in this case to mark the output string
+         as containing no astral characters, so that the consumer of the string can make similar
+         optimizations downstream. </p>
+      <p>In short, the code is ten times bigger than it needs to be, to achieve tiny speed
+         improvements which in the case of client-side execution will never pay for the cost
+         of the extra code that needs to be downloaded. (In Javascript, the assumption that
+         integer arithmetic is faster than double probably needs to be reversed anyway.) Extrapolated
+         across the product as a whole, this suggests that radical cuts are indeed possible. </p>
+      <p>I have already cut the size of the code base for the GWT compilation from about 145K
+         non-comment lines (in Saxon-HE 9.3) to under 80K, by cutting out unwanted functionality
+         such as XQuery, updates, serialization, support for JAXP, Java extension functions,
+         JDOM, etc etc. This study of the implementation of one function suggests that 40K
+         ought to be achievable, given enough effort. That's consistent with the figure of
+         17K lines for Saxon 5.0, on the basis that XSLT 2.0 as a language is about twice the
+         size of XSLT 1.0. </p>
+      <p>Where might we look for these savings? </p>
+      <p>The GWT compiler reports show that a significant proportion of the compiled Javascript
+         contains string literals. A lot of these are data: character tables supporting Unicode
+         normalization, case conversion, validation of XML characters, and regular expression
+         handling. I've already ditched the case conversion code in favour of using Javascript's
+         own version of the same - it's probably not 100% conformant to the XPath requirements
+         in corner cases, but I doubt anyone will notice. The Unicode normalization tables
+         are a vast amount of data to support one rarely-used function, normalize-unicode()
+         - the obvious thing to do here is to put the data in a separate file on the server
+         and download it only when it's needed. The data for validating XML characters can
+         be halved by removing support for XML 1.1 (or for XML 1.0, take your pick). More radically,
+         perhaps we can check whether a name is a valid name by exploiting functionality already
+         available in the Javascript platform - if it's a valid name, then it's a valid XPath
+         1.0 expression, so we could throw it at an XPath 1.0 parser to find out. I'm not sure
+         I would trust the answer (all the signs are that impementors take short cuts with
+         conformance in this kind of environment), but perhaps I need to pick up a bit of that
+         culture. </p>
+      <p>For regular expressions, Saxon currently parses the regex against the XPath rules,
+         and translates it to a Java regex. The "obvious" thing to do is to change that code
+         as necessary to generate a Javascript regex instead. (I've already retargeted the
+         code to use the Javascript RegExp class). The JS RegExp library doesn't support Unicode
+         properly ("." matches a 16-bit UCS code point, not a Unicode character), so I would
+         have to resurrect the JDK1.4 version of this code which handled the differences. But
+         I'm not sure this is the right thing to do. Most people wouldn't complain if I simply
+         offered Javascript regular expressions instead of XPath regular expressions. I'm not
+         comfortable with that level of non-conformance myself, but I do think there is room
+         here to find a more pragmatic balance. </p>
+      <p>As regards optimization, it's quite hard to know what code one can reasonably discard.
+         There's a lot of static type-checking logic, which has significant benefits in terms
+         of diagnostics as well as optimization; I don't think it's right to discard all of
+         this, but some of the more complex analysis can probably be simplified. The best thing
+         is probably to chip away at it on a case-by-case basis. I want to reduce the "instruction
+         set" of the compiled code, that is the number of different kinds of Expression that
+         the compiler/optimizer generate. Some of these are used in only very specialized circumstances;
+         some could be combined with other expressions. </p>
+      <p>Saxon goes to a fair bit of trouble to ensure that the original stylesheet tree isn't
+         needed at execution time. That involves copying data over from the stylesheet tree
+         to the expression tree. This seems rather pointless in the browser environment. There's
+         a lot of administrative overhead in maintaining things like line numbers for diagnostics
+         that will be little use in the browser (because the XML parser doesn't supply line
+         number information in the first place), so it should go. There's also code that unnecessarily
+         generalized because the requirements of XSLT and XQuery are different. The whole apparatus
+         for function binding is looking vastly over-engineered for a world in which every
+         function call is either a system function, a constructor function for a built-in type,
+         or a user-defined stylesheet function. </p>
+      <p>So there are plenty of candidates. But as with the Chancellor's cuts, it's important
+         to avoid becoming obsessive: there's a law of diminishing returns here. </p>
+      <p>Also, the size of the download doesn't depend only on the size of the Saxon source
+         code: it also depends on the libraries that are included. Adding in GWT's support
+         for the HTML DOM (which is quite separate from the XML DOM) appears to have bloated
+         the download size very substantially. I need to look at whether it's possible to avoid
+         that or reduce its impact.
+         
+         </p>
+      <div class="commentsHead">COMMENTS</div>
+      <div id="comments_block_id" class="comments"><a name="1380960"></a><div id="cid_1380960" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by thorn on Sun 21 Nov 2010 20:15 GMT |  Profile |  <a href="#1380960">Permanent Link</a></div>
+               <div class="commentBody">JavaScript doesn't have such thing as integer arithmetic.</div>
+            </div>
+         </div><a name="1380970"></a><div id="cid_1380970" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by Michael Kay on Sun 21 Nov 2010 22:34 GMT |  Profile |  <a href="#1380970">Permanent Link</a></div>
+               <div class="commentBody">That's right. GWT simulates it using double arithmetic. That's why Saxon's previous
+                  assumptions that integer arithmetic is faster are probably wrong.</div>
+            </div>
+         </div><a name="1381460"></a><div id="cid_1381460" class="comment">
+            <div class="commentIndent2">
+               <div class="commentTitle">Re: Re: Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by John Cowan on Mon 22 Nov 2010 14:42 GMT |  Profile |  <a href="#1381460">Permanent Link</a></div>
+               <div class="commentBody">Do you actually have evidence for that view even on the JVM? Raw floating-point and
+                  integer arithmetic are usually about equally fast on modern CPUs, and Perl is certainly
+                  performant, even though it does all arithmetic in float unless integer processing
+                  is explicitly enabled. My guess would be that the conditional processing overwhelms
+                  any remaining difference between int and float.</div>
+            </div>
+         </div><a name="1381498"></a><div id="cid_1381498" class="comment">
+            <div class="commentIndent3">
+               <div class="commentTitle">Re: Re: Re: Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by Michael Kay on Mon 22 Nov 2010 16:56 GMT |  Profile |  <a href="#1381498">Permanent Link</a></div>
+               <div class="commentBody">Actually, I wasn't really thinking about the cost of floating point arithmetic, but
+                  the cost of repeated conversion between integers, floating-point, and strings, which
+                  can happen an awful lot if you're not careful. I've no idea of the overall significance:
+                  one of the problems is that Saxon has accumulated a vast number of small local optimizations,
+                  most of which were probably justified at some stage by measurements on some particular
+                  use case, but which may now contribute very little in the overall scheme of things.</div>
+            </div>
+         </div><a name="1380972"></a><div id="cid_1380972" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by trygve on Sun 21 Nov 2010 22:51 GMT |  Profile |  <a href="#1380972">Permanent Link</a></div>
+               <div class="commentBody">Hi Michael ¶I've seen your post and tweets the last couple of weeks and the work your
+                  doing on
+                  trying to bring Saxon to the browser. I'm not sure how aware your are of this but
+                  JavaScript are not to be found only on the browser side and at the moment JavaScript
+                  are really picking up on the server side also. JavaScript are starting to be pretty
+                  powerful on the server and there are may advantages by having one language on both
+                  the server and the client. ¶Again, I'm not sure how aware you are of this but the
+                  popularity of JavaScript on
+                  the server are mainly due to the surface of node.js: http://nodejs.org/ ¶Node are
+                  a truly scalable, single treaded and non-blocking event server. It have gained
+                  a lot of interest due to this. Douglas Crockford (creator of JSON and architect at
+                  Yahoo) have a great talk where he talks about what makes Node a good application server:
+                  http://www.yuiblog.com/blog/2010/08/30/yui-theater-douglas-crockford-crockford-on-javascript-scene-6-loopage-52-min/ ¶I
+                  must say; I would love to see Saxon coming to Node. And maybe to Node first...</div>
+            </div>
+         </div><a name="1381500"></a><div id="cid_1381500" class="comment">
+            <div class="commentIndent1">
+               <div class="commentTitle">Re: Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by Michael Kay on Mon 22 Nov 2010 17:01 GMT |  Profile |  <a href="#1381500">Permanent Link</a></div>
+               <div class="commentBody">Thanks for the reference, but I don't think there's any good reason to move the server
+                  version of Saxon to a different programming language, and if there were a reason,
+                  I doubt Javascript would be high on my list - the thought of writing a 250K-line system
+                  sofware package in a language with no strong typing and no integer arithmetic horrifies
+                  me. Javascript has some very nice features and I'm sure I'll warm to it as I get to
+                  know it better, but I doubt it will ever be my first choice.</div>
+            </div>
+         </div><a name="1381558"></a><div id="cid_1381558" class="comment">
+            <div class="commentIndent2">
+               <div class="commentTitle">Re: Re: Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by trygve on Tue 23 Nov 2010 00:42 GMT |  Profile |  <a href="#1381558">Permanent Link</a></div>
+               <div class="commentBody">I was perhaps a bit vague in my initial post, but I do not suggest a rewrite of Saxon
+                  to JavaScript. Such a task does horrify me too. ¶Node have support for bindings. For
+                  instance there are bindings to several applications
+                  such as memcached (https://github.com/vanillahsu/node-memcache), mysql, postgress
+                  etc.. ¶What I intended to say was that I would love to see a Saxon binding to Node
+                  with a
+                  JavaScript API so one can pass XML and XSLT to Saxon from JavaScript in Node and have
+                  the transformed document back. ¶From what I've seen most Node bindings are written
+                  in C so I have no idea how it would
+                  be to add a binding to JAVA. Tough this blog post display an example of a Node - JAVA
+                  communication: http://blog.james-carr.org/2010/09/09/rabbitmq-nodejs-and-java-goodness/ ¶I
+                  hope this explain my initial suggestion.</div>
+            </div>
+         </div><a name="1381559"></a><div id="cid_1381559" class="comment">
+            <div class="commentIndent2">
+               <div class="commentTitle">Re: Re: Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by trygve on Tue 23 Nov 2010 00:43 GMT |  Profile |  <a href="#1381559">Permanent Link</a></div>
+               <div class="commentBody">I was perhaps a bit vague in my initial post, but I do not suggest a rewrite of Saxon
+                  to JavaScript. Such a task does horrify me too. ¶Node have support for bindings. For
+                  instance there are bindings to several applications
+                  such as memcached (https://github.com/vanillahsu/node-memcache), mysql, postgress
+                  etc.. ¶What I intended to say was that I would love to see a Saxon binding to Node
+                  with a
+                  JavaScript API so one can pass XML and XSLT to Saxon from JavaScript in Node and have
+                  the transformed document back. ¶From what I've seen most Node bindings are written
+                  in C so I have no idea how it would
+                  be to add a binding to JAVA. Tough this blog post display an example of a Node - JAVA
+                  communication: http://blog.james-carr.org/2010/09/09/rabbitmq-nodejs-and-java-goodness/ ¶I
+                  hope this explain my initial suggestion.</div>
+            </div>
+         </div><a name="1382313"></a><div id="cid_1382313" class="comment">
+            <div class="commentIndent3">
+               <div class="commentTitle">Re: Re: Re: Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by Christopher Sahnwaldt on Tue 23 Nov 2010 13:52 GMT |  Profile |  <a href="#1382313">Permanent Link</a></div>
+               <div class="commentBody">In the RabbitMQ/Node.js example, the communication between Java and JavaScript is
+                  done over AMQP on top of TCP/IP. For a Saxon (or general Java) binding to Node.js,
+                  some other form of inter-process communication would probably be preferable. With
+                  the other bindings, library code written in C simply runs in the same process as Node.js,
+                  but that's probably not possible with Java code.</div>
+            </div>
+         </div><a name="1391065"></a><div id="cid_1391065" class="comment">
+            <div class="commentIndent4">
+               <div class="commentTitle">Re: Re: Re: Re: Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by Sarah on Wed 15 Dec 2010 23:50 GMT |  Profile |  <a href="#1391065">Permanent Link</a></div>
+               <div class="commentBody">For anyone who hasn't read it, I highly recommend "JavaScript: The Good Parts," also
+                  by Douglas Crockford and published by O'Reilly. It's a short read and looks good on
+                  a Kindle (or other e-reader). ¶It's a great book out for those who haven't quite decided
+                  whether they like the unique
+                  taste of JavaScript's linguistic Kool-Aid. (One of the surprising things about JavaScript
+                  is how successful programmers can be without really understanding the language.) ¶Besides
+                  being a fellow Yahoo, I first saw Mr. Crockford give a talk on his book at
+                  a functional programming interest group a few years back. At the time, I had the usual
+                  feelings about JavaScript: kinda hacky, weird typing, global variables, the DOM is
+                  terrible ... yuck. He changed my mind. ¶JavaScript, for better or worse, is the most
+                  widely used programming language in the
+                  world. The work being done on JavaScript optimization is massive (and fairly interesting
+                  if you're the type of person who finds clever JIT techniques interesting). ¶I think
+                  we're approaching a point where any engineer who doesn't really understand
+                  JavaScript is in danger of falling behind. ¶PS: If you don't understand why JavaScript
+                  would be a featured topic at a functional
+                  programming interest group, you owe it to yourself to find out.</div>
+            </div>
+         </div><a name="1382391"></a><div id="cid_1382391" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Re: Cutting Saxon down to size</div>
+               <div class="commentAuthor">by claudius on Tue 23 Nov 2010 18:36 GMT |  Profile |  <a href="#1382391">Permanent Link</a></div>
+               <div class="commentBody">HI,<br />It is very nice to hear that Saxon will be also in JS!<br />I am also interested reducing the size of Saxon HE. Would you so kind to share what
+                  classes can be removed (for tests, related to Saxon EE/PE), so that to keep Saxon
+                  HE fully functional as to XQuery, XSLT, and XPath?<br />Thank you,<br />Claudius Teodorescu</div>
+            </div>
+         </div><a name="1388251"></a><div id="cid_1388251" class="comment">
+            <div class="commentIndent0">
+               <div class="commentTitle">Awesome work!</div>
+               <div class="commentAuthor">by Lech Rzedzicki on Wed 08 Dec 2010 15:47 GMT |  Profile |  <a href="#1388251">Permanent Link</a></div>
+               <div class="commentBody">Hi Mike!¶I really appreciate the effort and I'd really prefer to use a fat saxon.js
+                  than some
+                  other half-baked solution.<br />What I always treasured Saxon for is the completeness of the features, it really saves
+                  a lot of headaches to have a bug-free implementation.¶The only other thing that I
+                  would recommend is that you release an alpha of your GWT
+                  build asap so that people can try it out.<br />To be honest, I didn't do much XSL client-side, but having a downloadable js implementation,
+                  would be awesome for many of my use cases</div>
+            </div>
+         </div>
+      </div>
+   </body>
+</html>

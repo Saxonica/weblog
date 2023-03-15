@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Tuples</title>
+      <meta name="id" content="186" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2011-07-30T14:18:47" />
+      <meta name="basename" content="tuples" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Tuples</h1>
+      <p>The XQuery FLWOR expression has semantics that are defined in terms of a sequence
+         of tuples of variable bindings. This strange concept has never really had any direct
+         representation in Saxon, because it simply isn't needed. The vast majority of XQuery
+         1.0 FLWOR expressions are equivalent to a nested loop delivering a sequence of items,
+         like nested xsl:for-each instructions in XSLT. There's only one case in XQuery 1.0
+         that can't be handled using this model, and that's a FLWOR expression that has two
+         or more "for" clauses, and an "order by" clause that doesn't break down into a major
+         key that depends on the outer "for" variable, and a minor key that depends on the
+         inner "for" variable. It's actually quite hard to construct a realistic example that
+         exploits this feature, so the fact that the Saxon implementation is somewhat bizarre
+         doesn't really matter too much, because it is very rarely needed. 
+         </p>
+      <p>
+         XQuery 3.0, however, introduces several new clauses to the FLWOR expression. In fact,
+         it's no longer a FLWOR expression because it now has an optional "count" clause, an
+         optional "group by" clause, and an optional "window" clause - so it's now a FLWCGWOR
+         expression. Not a term that is very likely to catch on. However, all these new constructs
+         are defined essentially as operations that take a stream of tuples as input, and deliver
+         a stream of tuples as output. So to implement these features, Saxon really needs to
+         have some proper machinery for handling tuples. It's an odd state of affairs, having
+         these composable constructs ("clauses") that aren't actually expressions, manipulaling
+         things ("tuples") that aren't actually values, but that's the way XQuery works. It
+         seems to have something to do with a relational algebra heritage, where operations
+         defined in terms of tuples are of course the core stuff of the data model. 
+         </p>
+      <p>
+         To understand what these strange things called tuples are, it might help to start
+         with simple examples and gradually increase the complexity. Consider the expression
+         for $x in //a where $x[@b] return ($x+1)
+         Here there's only one variable, so the tuple is a 1-tuple. The formal model of FLWOR
+         expressions is that there is a sucession of values of the variable $x (as many as
+         there are elements selected by //a) acting as input to the "where" clause, and the
+         output is another succession of values of $x (this time containing as many values
+         as match the predicate [@b]). The "return" clause then takes this stream of 1-tuples
+         as input, and turns it into a sequence of items that are now regular values which
+         can be stored in variables, passed to functions, and so on. Saxon actually implements
+         this succession of 1-tuples as a sequence of items (with pipelined evaluation, of
+         course, so it never holds the whole sequence in memory); because they are 1-tuples,
+         they can be treated as regular values and don't require any special treatment. 
+         </p>
+      <p>
+         Now consider this expression:
+         for $d in //dept, $e in //empl order by $e/salary return $d/name
+         This is where things start getting weird, and where we need to understand tuples.
+         The semantics are defined as delivering a sequence of ($d, $e) pairs (one pair for
+         each department, employee combination), sorting this sequence of pairs by $e/salary,
+         and then for each pair computing $d/name. Saxon does this by exploiting the "ObjectValue"
+         class, which is a kind of XPath Item that encapsulates any Java object. It was designed
+         to allow Java extension functions to return values that can be passed transparently
+         to other Java extension functions, but it allows us to pack any kind of data we like
+         into an Item, and this enables us to reuse all the machinery for handling sequences
+         of items when we want to handle a sequence of tuples.
+         In fact Saxon doesn't just pack the values of ($d, $e) into this composite pseudo-item,
+         it also adds the values of the sort keys, and indeed the return value. Rather than
+         sorting the input stream and then computing the return value for each tuple in the
+         sorted input, we compute the return values for every item in the input before doing
+         the sort. So we end up in effect with a sequence of values each of which has the form
+         (salary, name); we sort this sequence on the value of salary, and then deliver the
+         value of name. In contrast with the model described in the spec where the tuple holds
+         the input variables ($d, $e), in the Saxon implementation the tuple holds the precomputed
+         value of the return clause. Which means it doesn't actually need to contain the input
+         values, because they will not be needed again.
+         Precomputing the return value, and sorting all the return values along with the input
+         tuples, is probably rather inefficient, at any rate in its use of memory. Also, it
+         only works because a FLOWR expression can only have a single ORDER BY clause and a
+         single RETURN clause. We therefore never need to implement a pipeline of operations
+         working on the tuple stream; we only ever do one operation, which is sorting. 
+         </p>
+      <p>
+         To implement the extended FLWOR expression, we probably need to do something that
+         is closer to the model used to describe the semantics. In this implementation the
+         "stream of tuples" can be represented simply as a pair of integers, the location on
+         stack where the values of $d and $e are held. When we ask for the next tuple, the
+         contents of these variables change, but we don't actually need to return anything:
+         it's more of an advance() operation with side-effects than a get-next() operation.
+         The evaluation of the FLWOR expression as a whole can now be modelled like this (it's
+         easiest to think of it in push mode, though Saxon will more often be using pull):
+         until (exhausted) {
+         advance();
+         return compute-result();
+         }
+         where advance() advances the tuple stream causing the values of the relevant variables
+         $d and $e to be updated on the stack, and compute-result() evaluates the return clause
+         based on these values of the variables. In the case where there's an "order by" clause,
+         the "order by" pseudo-expression works like this:
+         until exhausted() {
+         advance();
+         compute-sort-keys();
+         add-to-list(L);
+         }
+         sort(L)
+         and when it in turn is called to advance(), it gets the next tuple from the sorted
+         list, and updates the slots for $d and $e in the local stack frame. The sorted list
+         needs to contain the values of the variables ($d, $e) and the sort keys, as at present,
+         but it does not need to hold the result value; that should be computed after sorting. 
+         </p>
+      <p>
+         This looks like quite a substantial change, and it's because it feels fairly daunting
+         that we haven't implemented this part of XQuery 3.0 in Saxon yet (the GROUP BY subset
+         that's implemented in Saxon 9.3 is essentially the subset that can be implemented
+         using conventional sequences of items, without resorting to the complexities of tuples.
+         It also happens to match what XSLT implements, and what 99% of users actually need).
+         However, I think I'm starting to understand what needs to be done to make this happen.
+         Excuse me airing my thoughts in public, it always helps me to get my ideas straight
+         to try and explain them to the world! I had been thinking of putting most of this
+         off beyond Saxon 9.4, but I'm starting to feel more confident in tackling some of
+         the changes sooner. 
+         </p>
+      <p>
+         The fact that other XQuery WG members have started contributing test material is an
+         encouragement: implementation is always far easier if there are test cases available
+         before you start. 
+         </p>
+      <p>
+         POSTSCRIPT: 1 August 2011
+         I have now implemented a tuple stream pipeline that handles the for, let, where, order-by,
+         group-by, and count clauses of XQuery 3.0 - everything, in fact, except windowing.
+         It all works quite neatly. It's a pull pipeline only at the moment, and there is currently
+         no optimization. Rather than re-implement all existing optimizations of FLWOR expressions,
+         in the short term I shall probably take the new FLWOR expression and rewrite it where
+         possible into familiar forms that the optimizer already knows how to handle, so that
+         the new tuple stream evaluation strategy is used only in cases where tuples are actually
+         necessary, for example anything involving "group-by", anything with "order-by" over
+         more than one range variable, anything with a "count" clause, and so on. Adding a
+         push version of the pipeline should not be difficult, and is certainly worth doing
+         for cases where the results of the FLWOR expression are written straight to the serializer.
+         Michael Kay
+         
+         
+         
+         
+         </p>
+   </body>
+</html>

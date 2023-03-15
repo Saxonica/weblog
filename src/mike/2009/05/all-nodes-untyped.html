@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>All nodes untyped</title>
+      <meta name="id" content="163" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2009-05-14T14:18:46" />
+      <meta name="basename" content="all_nodes_untyped" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>All nodes untyped</h1>
+      <p>Users sometimes imagine that just by running an application under Saxon-SA instead
+         of Saxon-B, they will automatically get a performance boost. Sadly, this isn't the
+         case. Sometimes Saxon-SA's more powerful optimizer will give a dramatic benefit, sometimes
+         it will give none at all. In fact, sometimes if you move a workload to Saxon-SA without
+         change, you see a performance regression. This is caused by the fact that Saxon-B
+         can assume all nodes are untyped, whereas Saxon-SA can't make this assumption.</p>
+      <p>To see why it makes a difference, consider the code <code>item[@code='A1234']</code>. If the compiler knows that the element and attribute will both be untyped (that
+         is, not schema-validated), then it knows that it can simply generate code to compare
+         the string-value of the attribute with the literal 'A1234'. Equally, if there is a
+         schema that declares the attribute to be a string, the same simple code can be generated.
+         But if you run Saxon-SA without declaring any schema type information, the compiler
+         doesn't know what it will find in the <code>@code</code> attribute: it might, for example, be typed as a list of strings (in which case it
+         needs to compare each of those strings individually), or as a list of integers or
+         dates, in which case it needs to be prepared to raise a type error at run-time.</p>
+      <p>In an ideal world, the answer to this would be: use a schema, and declare the types
+         of all your variables and function parameters and results, so that the compiler has
+         as much information as possible. If you do this, Saxon-SA will almost invariably outperform
+         Saxon-B on common tasks like evaluating predicates. The problem is, the world isn't
+         ideal, and people want instant gratification. They want to just switch to the commercial
+         version of the software and see a performance improvement with no effort on their
+         part. Which is not really that unreasonable an expectation.</p>
+      <p>In Saxon 9.1, the Configuration object has a setting <code>setAllNodesUntyped(true)</code>, which if called at run-time, causes the compiler to generate code in the same way
+         as Saxon-B, that is, on the assumption that at run-time, there will be no schema validation,
+         and all nodes will be untyped. When you run Saxon-SA from the command line this is
+         called automatically if you don't select the -sa option. But that's not a very happy
+         solution, because if you don't select the -sa option then you don't get SA's souped-up
+         optimizer either. If you're calling from Java however, you can create a <code>SchemaAwareConfiguration</code> to get the benefits of the SA optimizer, and then call <code>setAllNodesUntyped(true)</code> to say that it should generate code to handle untyped input documents.</p>
+      <p>In 9.2 I'm trying to change this so the default options are the ones that give the
+         best performance. There's a factory method <code>Configuration.newConfiguration()</code> which gives you the best <code>Configuration </code>available (if you install Saxon-EE, the new name for Saxon-SA, it will give you an
+         <code>EnterpriseConfiguration</code>, which is <code>SchemaAwareConfiguration</code> under a new name). The option to say that all nodes are untyped is no longer at the
+         Configuration level, but at the level of an individual XSLT or XQuery compilation,
+         and it is now the default. If your query or stylesheet imports a schema, the setting
+         automatically changes; the only time you really need to be aware of the switch is
+         for the unusual case where you don't import a schema, but still want to handle schema-validated
+         input.</p>
+      <p>On the whole this is working well, but there are still a few glitches to be ironed
+         out. One of them is that the minimum conformance level for XQuery permits the use
+         of "construction mode preserve", which causes element nodes to be annotated as <code>xs:anyType</code> rather than <code>xs:untyped</code>. Saxon is currently disallowing this option if the "all nodes untyped" switch is
+         set, but it doesn't seem right to reject a conformant query under default configuration
+         settings. Since in the absence of validation there is almost no operational difference
+         between <code>xs:anyType</code> and <code>xs:untyped</code>, I probably need to find a way of allowing <code>xs:anyType</code> nodes to appear even when the all-nodes-untyped option is set.</p>
+   </body>
+</html>

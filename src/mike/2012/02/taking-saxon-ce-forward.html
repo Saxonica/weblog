@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Taking Saxon-CE Forward</title>
+      <meta name="id" content="189" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2012-02-22T15:35:26" />
+      <meta name="basename" content="taking_saxon-ce_forward" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Taking Saxon-CE Forward</h1>
+      <div class="asset-body">
+         <p>The work we are doing on Saxon-CE (<a class="zem_slink" href="http://en.wikipedia.org/wiki/XSLT" title="XSLT" rel="wikipedia">XSLT 2.0</a> on the 
+            browser) received a very encouraging reception at XML Prague. Our 
+            half-day tutorial/workshop was very well attended, and there was a lot 
+            of useful feedback, and new ideas which we are hoping to incorporate. 
+            Discussions in the corridors of the conference also demonstrated a lot 
+            of interest. If you're not familiar with the current status, it's now on
+            <a class="zem_slink" href="http://www.techopedia.com/definition/5935/alpha-test" title="Alpha Test" rel="techopedia">beta release</a>, and we've been doing a lot of work that can be summed up 
+            as taking it from the prototype we showed last year to an 
+            industrial-strength product with stable interfaces, a range of 
+            development and debugging and instrumentation tools, responsive 
+            performance, and full cross-browser compatibility.</p>
+         <p>There are a few technical things we need to do before the product is 
+            finished. Providing a <a class="zem_slink" href="http://en.wikipedia.org/wiki/JavaScript" title="JavaScript" rel="wikipedia">Javascript</a> <a class="zem_slink" href="http://www.techopedia.com/definition/24407/application-programming-interface-api" title="Application Programming Interface" rel="techopedia">API</a> is one; another is to provide 
+            control over management of the browser <a class="zem_slink" href="http://en.wikipedia.org/wiki/Address_bar" title="Address bar" rel="wikipedia">URL bar</a> and history, so that 
+            users can save bookmarks and use the back button in the way that they 
+            expect; and we need to enable asynchronous fetching of <a class="zem_slink" href="http://download.cnet.com/windows/xml-tools/" title="xml tools" rel="downloadcom">XML documents</a> 
+            from the server to create <a class="zem_slink" href="http://en.wikipedia.org/wiki/Ajax_%28programming%29" title="Ajax (programming)" rel="wikipedia">AJAX</a>-style applications (since the J stands 
+            for Javascript, perhaps we should call it AXAX).</p>
+         <p>We're also starting to plan the commercial side of shipping a 
+            product. That includes pricing, the logistics of licensing and selling, 
+            and some basic marketing. We're not going to give the product away: 
+            there are too many good <a class="zem_slink" href="http://en.wikipedia.org/wiki/Computer_software" title="Computer software" rel="wikipedia">software products</a> that have stalled because the 
+            value delivered to users wasn't flowing back to the developers to invest
+            in the product. At the same time, giving software away free, within 
+            limits, is by far the best way of establishing a presence in the market.</p>
+         <p>Let me share my current thinking on pricing. I'm interested in 
+            feedback, so let me know what you think: these are just current ideas, 
+            so it might turn out quite different.</p>
+         <p>Firstly, the software will be licensed by domain (the name of the <a class="zem_slink" href="http://en.wikipedia.org/wiki/Domain_name" title="Domain name" rel="wikipedia">web
+               domain</a> on which it is deployed). We've already got that mechanism in 
+            place in the beta. We're hoping it's simple, clear, and hassle-free. 
+            We're not charging per developer, because that would be complicated and 
+            because the cost isn't directly related to the value; and we're not 
+            charging per end-user or per access, because that would be madness. 
+            Perhaps for people who want to deploy on multiple domains - the IBMs of 
+            this world - we will offer some kind of discount for domains after the 
+            first.</p>
+         <p>Secondly, we'll classify users into two groups: small and large. (Not
+            "commercial" and "non-commercial" - that leaves far too many questions 
+            of definition). A small user is an individual or company or organization
+            with revenue less than $x per annum (let's say $1m for the sake of 
+            argument), and a big user is anyone else. The entity whose revenue 
+            matters is the legal owner of the domain for which the license is held, 
+            which is nice because we can look that up; in many cases we can also 
+            check the revenue from public information, so there's not too much room 
+            for cheating.</p>
+         <p>Finally, we'll give you a choice of getting a one-year license or a 
+            permanent license. A one-year license will switch off at the end of the 
+            year. We hope that's a painful enough prospect that people who are 
+            taking the software seriously will choose to pay for a permanent 
+            license, while leaving a low-cost option for those who aren't quite sure
+            yet how much commitment they want to make.</p>
+         <p>So that gives four prices, looking something like this (in GBP):    </p>
+         <table border="2">
+            
+            
+            
+            <tbody>
+               
+               
+               <tr>
+                  
+                  
+                  
+                  <th>Price</th>
+                  
+                  
+                  <th>12-month</th>
+                  
+                  
+                  
+                  <th>Permanent</th>
+                  </tr>
+               
+               
+               
+               <tr>
+                  
+                  
+                  
+                  <th>Small organization</th>
+                  
+                  
+                  <td>free
+                     </td>
+                  
+                  
+                  <td>500
+                     </td>
+                  </tr>
+               
+               
+               
+               <tr>
+                  
+                  
+                  
+                  <th>Large organization</th>
+                  
+                  
+                  <td>500
+                     </td>
+                  
+                  
+                  <td>2500
+                     </td>
+                  </tr>
+               </tbody>
+            </table>
+         <p>
+            How do we tell if we have got this right? The prices look high by some 
+            standards, low by others. I think the test whether the price is in the 
+            right ballpark is that it is (a) less than the value users are getting 
+            from the software, and (b) greater than the money we are spending on 
+            developing it. On those criteria, it looks good to me, but I welcome 
+            your views!</p>
+      </div>
+   </body>
+</html>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>How not to fold constants</title>
+      <meta name="id" content="135" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2007-01-20T14:18:44" />
+      <meta name="basename" content="how_not_to_fold_constants" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>How not to fold constants</h1>
+      <p>I'm back to work on the Java code-generation for XQuery. The challenge is to improve
+         the test coverage. With 14000 tests in the W3C test suite, one would think the coverage
+         would be pretty good; but the problem is that many of the tests use literal constants,
+         which means the whole query can be evaluated statically by the XQuery analyzer, before
+         the code generator gets a look in. Early evaluation of expressions at compile time
+         is known rather quaintly in the compiler literature as "constant folding". We should
+         be able to improve the coverage of the code generator testing simply by not doing
+         constant folding.</p>
+      <p>Of course one way to do this would be to set some diagnostic flags within the Saxon
+         optimization code. But that kind of thing is hard to maintain, and it's unsatisfactory
+         to do testing with a modified version of the product. It occurred to me that it would
+         be better to modify the queries.</p>
+      <p>Here's an example. There's a query fn-codepoints-to-string-3  that does this:</p>
+      <pre><code>fn:codepoints-to-string(49)</code></pre>
+      <p>The Java code that Saxon generates for this is (minus the boilerplate):</p>
+      <pre><code>final static StringValue constant0 =
+             StringValue.makeStringValue("1");
+
+public void process(final XPathContext context) 
+            throws XPathException {
+    SequenceReceiver out = context.getReceiver();
+    out.append(constant0, 0, 0);
+}</code></pre>
+      <p>In other words, all the hard work has already been done.</p>
+      <p>We can fix this by modifying the query to read:</p>
+      <pre><code>fn:codepoints-to-string(saxon:noop(49))</code></pre>
+      <p>Where saxon:noop is a simple extension function:</p>
+      <pre><code>public static ValueRepresentation noop(ValueRepresentation arg) {
+   return arg;
+}</code></pre>
+      <p>The optimizer of course doesn't understand extension functions and leaves them well
+         alone. So this query should compile to something much more interesting. (Some calls
+         to standard functions are simply implemented by calls to the run-time library. Others,
+         including this one, are likely to generate inline code).</p>
+      <p>It turns out that it's very easy to do this transformation of the query. That's because
+         all the queries (or the vast majority of them) have been published not only in "human-readable"
+         XQuery format, but also in an XML format, XQueryX. This is what the query looks like
+         in XQueryX:</p>
+      <pre><code>&lt;?xml version="1.0"?&gt;
+&lt;xqx:module xmlns:xqx="http://www.w3.org/2005/XQueryX"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.w3.org/2005/XQueryX
+                                http://www.w3.org/2005/XQueryX/xqueryx.xsd"&gt;
+  &lt;xqx:mainModule&gt;
+    &lt;xqx:prolog&gt;
+      &lt;xqx:varDecl&gt;
+        &lt;xqx:varName&gt;input-context1&lt;/xqx:varName&gt;
+        &lt;xqx:external/&gt;
+      &lt;/xqx:varDecl&gt;
+    &lt;/xqx:prolog&gt;
+    &lt;xqx:queryBody&gt;
+      &lt;xqx:functionCallExpr&gt;
+        &lt;xqx:functionName xqx:prefix="fn"&gt;codepoints-to-string&lt;/xqx:functionName&gt;
+        &lt;xqx:arguments&gt;
+          &lt;xqx:integerConstantExpr&gt;
+            &lt;xqx:value&gt;49&lt;/xqx:value&gt;
+          &lt;/xqx:integerConstantExpr&gt;
+        &lt;/xqx:arguments&gt;
+      &lt;/xqx:functionCallExpr&gt;
+    &lt;/xqx:queryBody&gt;
+  &lt;/xqx:mainModule&gt;
+&lt;/xqx:module&gt;</code></pre>
+      <p>The XQueryX specification comes with an XSLT stylesheet that converts this parse tree
+         into the human-readable XQuery syntax. All we need to do is to add an overlay to this
+         stylesheet that adds one or two rules, for example:</p>
+      <pre><code>&lt;xsl:import href="xqueryx.xsl"/&gt; 
+
+&lt;xsl:template match="xqx:integerConstantExpr
+    | xqx:decimalConstantExpr
+    | xqx:doubleConstantExpr"&gt;
+  &lt;xsl:text&gt;saxon:noop(&lt;/xsl:text&gt;
+  &lt;xsl:value-of select="xqx:value"/&gt;
+  &lt;xsl:text&gt;)&lt;/xsl:text&gt;
+&lt;/xsl:template&gt;</code></pre>
+      <p>and the modified stylesheet produces the query that we want. Add to this Saxon's ability
+         using the collection() function (together with xsl:result-document) to transform all
+         the files held in a directory structure, and the conversion of the whole test suite
+         becomes extremely easy.</p>
+      <p>Two observations:</p>
+      <p>(1) I've often been very critical of XQueryX, feeling that there really wasn't a strong
+         enough need for it to justify making it a W3C standard. Well, I'm going to have to
+         eat my words at least partially. This particular exercise would not have been nearly
+         as easy if the tests hadn't been published in XQueryX format, and that wouldn't have
+         happened if it hadn't been a W3C spec.</p>
+      <p>(2) It's interesting to note how hard it would be to do this in XQuery. The main XQueryX
+         stylesheet certainly benefits immensely from XSLT's top-down apply-templates processing
+         model, but in theory it could have been written in XQuery. The modification layer,
+         however, that changes the behaviour of the transformation to do something slightly
+         different, would be quite impossible to add without modifying the source code of the
+         original query. This is an observation I've made in a number of larger applications:
+         once you want to write code that can be reused for more than one task, XSLT has quite
+         a few features that make it a stronger candidate for the job than XQuery.</p>
+      <p>Having done this conversion, I've now realized that the Java code-generator doesn't
+         yet handle calls to extension functions. Well, I tested the coverage of the code-generator
+         in a way that I didn't quite anticipate!</p>
+   </body>
+</html>

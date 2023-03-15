@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>XSLT in MicroXML?</title>
+      <meta name="id" content="197" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2013-02-10T10:52:19" />
+      <meta name="basename" content="xslt_in_microxml" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>XSLT in MicroXML?</h1>
+      <p>Listening to Uche Ogbuji's talk at XML Prague this morning, it was
+         great news to hear that namespaces are being thrown out of the
+         window[1]. The complexity that namespaces add to the XML stack is
+         vast, and the value they add is tiny.
+         </p>
+      <p>But it raises the question, can one represent an XSLT stylesheet as
+         an XML document without using namespaces? Clearly there needs to be
+         some way to distinguish XSLT instructions from literal result
+         elements, and this seems to be one of the more justifiable uses of
+         namespaces.
+         </p>
+      <p>My immediate thought is, let the outermost element of an XSLT stylesheet be
+         </p>
+      <pre>&lt;xxx.transform&gt;</pre>
+      <p>where xxx is any prefix you care to choose; and then let all XSLT
+         instructions in the stylesheet use the same prefix "xxx". For most
+         people "xsl" would be a suitable prefix, so you would write
+         </p>
+      <pre>&lt;xsl.transform&gt;
+  &lt;xsl.template match="/"&gt;
+    &lt;out&gt;
+      &lt;xsl.copy-of select="."/&gt;
+    &lt;/out&gt;
+ &lt;/xsl.template&gt;
+&lt;/xsl.transform&gt;
+</pre>
+      <p>it takes a bit of getting used to typing "." instead of ":", but
+         apart from that, it seems to work perfectly well. And you don't need
+         xsl:namespace-alias any more to read or write XSLT stylesheets, which
+         must be good: you simply use a different prefix for the output
+         stylesheet.
+         </p>
+      <p>Norm Walsh tweeted that XSLT was claiming ownership of all names
+         ending in ".transform". But that's not the case. The name doesn't have
+         global significance; it only has significance in the context of the
+         input supplied to an XSLT processor. Names are local and contextual,
+         that's the point. Arguably there is still more redundancy than we need
+         - we know the document we are reading is a stylesheet, so why do we
+         need a top-level element to confirm the fact? (That's not to say all
+         redundancy is bad, just to make the point that it's redundant).
+         </p>
+      <p>[1] Defenestration seems the thing to do when in Prague
+         </p>
+      <p><b>Further thoughts</b></p>
+      <p>It's not only the XSLT namespace and its use in XSLT instructions
+         that needs to be addressed, of course.
+         </p>
+      <p>Namespaces in the names of variables, templates, modes, keys,
+         decimal formats and so on can safely be ignored. Hardly anyone uses
+         them anyway.
+         </p>
+      <p>Functions are a bit more awkward. XSLT has never seriously
+         committed to the use of the "fn" namespace for system functions (it's
+         always the default, so no prefix is ever needed), but it does require
+         user-written functions to be in a namespace to distinguish them from
+         system-supplied functions; and external function libraries also use
+         namespaces in a similar way. I've always felt the right approach for
+         resolving function names is a search list - it shouldn't be necessary
+         to prefix each function name to identify its library, rather it should
+         be possible to define a list of function libraries to be searched when
+         looking for functions with a given local name. The MicroXML philosophy
+         would suggest getting rid of URIs from function names entirely, but
+         that's a big change; transitionally, a list of URIs to be searched
+         plus the XSLT 3.0 EQName facility if you need to be more explicitly
+         would probably meet the requirement.
+         </p>
+      <p>Step back, however. What are we trying to achieve? If we want to
+         eliminate namespaces entirely from the whole stack, then we need to
+         think about a namespace-less XSD (shudder!) or a typeless XSLT (losing
+         integers and dates would be a big step back). If our goals are less
+         ambitious, then what are they? Being able to transform MicroXML
+         documents doesn't require an XSLT change at all.
+         </p>
+      <p>I think MicroXML is a first step along a road that is not well
+         charted. While the goals are laudable, the route to a simpler cleaner
+         world is not a straightforward one.</p>
+   </body>
+</html>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Experiments with Compilation</title>
+      <meta name="id" content="121" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-07-24T14:18:43" />
+      <meta name="basename" content="experiments_with_compilation" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Experiments with Compilation</h1>
+      <p>Some XSLT processors (XSLTC for example) compile stylesheets into Java bytecode (or
+         equivalently, other intermediate codes such as CIL on .NET). I believe the technique
+         is also used by some XQuery processors. Some users assume that a product that compiles
+         to bytecode will be necessarily faster than an interpreter. I've tended to argue that
+         high-level optimizations are more important, and that compiling expressions to bytecode
+         might reduce the scope for high-level optimizations, if only by making them more complex
+         to implement and debug.</p>
+      <p>I set out today to do some experiments. First I wrote, by hand, the Java code that
+         I would expect a bytecode compiler to generate in order to evaluate the path expression
+         /site/regions/namerica/item against the XMark benchmark dataset. I did most of my
+         experiments with the 10Mb version of this dataset, in which the above path expression
+         selects 1000 elements. Then I tried to compare the performance of this hand-written
+         code with the way that Saxon evaluates this expression.</p>
+      <p>First problem: building the 10Mb tree takes around 1.4 seconds, while evaluating the
+         path expression takes about 0.2ms. So we can immediately see that we're not going
+         to get any worthwhile savings from compiled path expressions unless we execute a very
+         large number of them. So I wrote code the execute the path expression repeatedly N
+         times, with N going up to 50,000.</p>
+      <p>Next problem: when the path expression was embedded in XSLT or XQuery, Saxon worked
+         very hard to avoid evaluating it repeatedly. I found myself having a real struggle
+         constructing an expression that defeated the optimizer and the lazy evaluation logic;
+         in my early attempts, evaluating the path expression 50,000 times took no longer than
+         evaluating it once. This rather verifies my earlier point that high-level optimizations
+         are more important.</p>
+      <p>When I finally found a way of constructing the loop that was too convoluted for the
+         optimizer to do anything with, the problem was that I was executing a lot more code
+         than the basic path expression. I solved this by modifying Saxon internally so that,
+         while executing the XSLT code, it artificially invoked my hand-written code for this
+         specific path expression rather than the general path expression code. This made the
+         results for XSLT interpretation and the pretend-compiled code finally comparable.</p>
+      <p>The pure handwritten code for the path expression took 5448ms for 50,000 iterations
+         (each selecting 1000 nodes, remember): that's about 9 million nodes per second. Incorporating
+         this into the stylesheet increased the time to 7591ms, because of the anti-optimization
+         logic. The pure XSLT stylesheet took 10264ms. </p>
+      <p>So, my conclusion is that there's potential to increase the speed of evaluation of
+         path expressions by about 25% by compiling them down to bytecode or CIL. However,
+         the typical stylesheet spends only a small amount of its time executing path expressions.
+         The end-to-end benefit for most users is therefore likely to be rather smaller: perhaps
+         10% at best.</p>
+      <p>Perhaps there's also scope for compilation in other parts of the code, for example
+         serialization. It's not obvious, though. More promisingly, perhaps there are higher
+         savings to be made with more complex path expressions. As the academics say when applying
+         for grant money, further research is needed.</p>
+   </body>
+</html>

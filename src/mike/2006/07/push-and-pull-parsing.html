@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Push and Pull parsing</title>
+      <meta name="id" content="104" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-07-03T14:18:43" />
+      <meta name="basename" content="push_and_pull_parsing" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Push and Pull parsing</h1>
+      <p>Saxon has supported the StAX interface for pull parsing for a while now, but I've
+         seen little evidence that people are using it; and in fact generally the scene seems
+         to have gone rather quiet. There's talk that a future JAXP release will require support
+         for StAX as well as SAX input, and on .NET the standard System.Xml parser is a pull
+         parser, so I thought I'd take a look at relative performance - perhaps the time might
+         even come when it's appropriate to use a StAX parser as the default.</p>
+      <p>I wrote a little program to build a Saxon tree using various parsers: two pull and
+         two push. These were the results, all timings in milliseconds:</p>
+      <pre><code>Input size (Mb)    Xerces  Piccolo  SJSXP  Woodstox
+     6.8    1200     1320    1270     1030
+    14.0    2400     2670    2640     2033</code></pre>
+      <p>Xerces and Piccolo are SAX (push) parsers; SJSXP and Woodstox are StAX (pull) parsers.
+         So there's certainly no reason from these figures (or from any other considerations
+         really) to believe that pull is intrinsically faster than push. But it's interesting
+         (a) that Woodstock does appear to have a demonstrable edge (20%) on all the others
+         at least on this sample -- one would have to test a variety of other XML documents
+         to be sure that it's sustainable, and (b) that Piccolo doesn't beat Xerces in this
+         test, though they claim to be twice as fast in other tests.</p>
+      <p>I'm not recommending that everyone switches over immediately to Woodstox - as often
+         happens, they seem to have achieved some of the speed by taking short cuts on conformance,
+         especially checking the detailed rules for valid names and valid characters. But if
+         the 20% matters to you and you know the XML is valid already, it may be worth considering.</p>
+   </body>
+</html>

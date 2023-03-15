@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Diagnostics on Type Errors</title>
+      <meta name="id" content="222" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2018-03-16T15:50:27" />
+      <meta name="basename" content="diagnostics_on_type_errors" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Diagnostics on Type Errors</h1>
+      <p>Providing good diagnostics for programming errors has always been a high priority
+         in Saxon, second only to conformance with the W3C specifications. One important area
+         of diagnostics is reporting on type errors: that is, cases where a particular context
+         requires a value of a given type, and the supplied value is the wrong type. A classic
+         example would be providing a string as the first argument to format-date(), which
+         requires an xs:date to be supplied.
+         </p>
+      <p>
+         Of course, the more programmers follow the discipline of declaring the expected types
+         of function parameters and variables, the more helpful the compiler can be in diagnosing
+         programming errors caused by supplying the wrong type of value.<br />
+         Type errors can be detected statically or dynamically. Saxon uses "optimistic type
+         checking". 
+         </p>
+      <p>
+         At compile time, it a value of type R is required in a particular context, and the
+         expression appearing in that context is E, then the compiler attempts to infer the
+         static type of expression E: call this S. Sometimes this is straightforward, for example
+         if E is a call on the node-name() function, then it knows that S is xs:QName. In other
+         case the compiler has to be smarter: for example it knows that the static type of
+         a call on remove() is the same as the static type of the first argument, with an adjustment
+         to the occurrence indicator.
+         
+         </p>
+      <p>
+         Optimistic type checking reports an error at compile time only if there is nothing
+         in common between the required type R and the inferred static type of E: that is,
+         if there is no overlap between the set of instances of the two types. That would mean
+         that a run-time failure is inevitable (assuming the code actually gets executed),
+         and the W3C specifications allow early reporting of such an error.
+         </p>
+      <p>
+         There's another interesting case where the types overlap only to the extent that both
+         allow an empty sequence: for example if the required type is (xs:string*) and the
+         supplied type is (xs:integer*). That's almost certainly an error, but W3C doesn't
+         allow an error to be reported here because there is a faint chance that execution
+         could succeed. So Saxon reports this as a warning. With maps and arrays, incidentally,
+         there are analogous situations where the only overlap is an empty map or array, but
+         Saxon isn't yet handling that case specially.
+         </p>
+      <p>
+         If the types aren't completely disjoint, there are two other possibilities: the required
+         type R might subsume the supplied type S, meaning that no run-time type checking is
+         needed because the call will always succeed. The other possibility is that the types
+         overlap: evaluating the supplied expression E might or might not produce a value that
+         matches the required type R. In this case Saxon generates code to perform run-time
+         type checking. (This is one reason why declaring the types of parameters and variables
+         is such good practice: the code runs faster because there is no unnecessary run-time
+         checking.)
+         </p>
+      <p>
+         Until recently, the error message for a type error takes the form:
+         </p>
+      <p>
+         Required item type of CCC is RRR; supplied value has item type SSS
+         </p>
+      <p>
+         For example:
+         </p>
+      <p>
+         <b>Required item type of first argument to format-date() is xs:date; supplied value has
+            item type xs:string</b>
+         </p>
+      <p>
+         which works pretty well in most cases. However, I'm finding that as I write more complex
+         code involving maps and arrays, it's no longer good enough. The problem is that as
+         the types become more complex, simply giving the required and actual types isn't enough
+         to make it clear why they are incompatible. You end up with messages like this one:
+         </p>
+      <p>
+         
+         <b>Required item type of first argument of local:x() is map(xs:integer, xs:date); </b><b>supplied value has item type map(xs:anyAtomicType, xs:date).</b>
+         
+         </p>
+      <p>
+         where an expert user can probably work out that the problem is that the supplied map
+         contains an entry whose key is not an integer; but it doesn't exactly point clearly
+         to the source of the problem.
+         </p>
+      <p>
+         The problem comes to a head particularly when tuple types are used (see <a href="/mike/2016/09/tuple-types-and-type-aliases.html">here</a>). If the required type is a tuple type, reporting the supplied type as a map type
+         is particularly unhelpful.
+         </p>
+      <p>
+         I'm therefore changing the approach: instead of reporting on the supplied type of
+         the value (or the inferred type of the expression, in the case of static errors),
+         I'm reporting an explanation of why it doesn't match. Here's the new version of the
+         message:
+         </p>
+      <p>
+         
+         <b>The required item type of the first argument of local:x() is map(xs:integer, </b><b>xs:date); the supplied value map{xs:date("2018-03-16Z"):5, "x":3} does not match.
+            The map </b><b>contains a key (xs:date("2018-03-16Z")) of type xs:date that is not an instance of
+            the </b><b>required type xs:integer.</b>
+         
+         </p>
+      <p>
+         So firstly, I'm outputting the actual value, or an abbreviated form of it, rather
+         than just its type (that only works, of course, for run-time errors). And secondly,
+         I'm highlighting how the type-checker worked out that the value doesn't match the
+         required type: it's saying explicitly which rule was broken.
+         </p>
+      <p>
+         (Another minor change you can see here is that I'm making more effort to write complete
+         English sentences.)
+         </p>
+      <p>
+         This doesn't just benefit the new map and array types, you can also see the effect
+         with node types. For example, if the required type is document-node(element(foo)),
+         you might see the message:
+         </p>
+      <p>
+         
+         <b>The required item type of the first argument of local:x() is </b><b>document-node(element(Q{}foo)); the supplied value doc() does not match. The supplied </b><b>document node has an element child (&lt;bar&gt;) that does not satisfy the element test.
+            The </b><b>node has the wrong name.</b>
+         
+         </p>
+      <p>
+         Another change I'm making is to distribute type-checking into a sequence constructor.
+         At present, if a function is defined to return (say) a list of element nodes, and
+         the function body contains a sequence of a dozen instructions, one of which returns
+         a text node, you get a message saying that the type of the function result is wrong,
+         but it doesn't pinpoint exactly why. By distributing the type checking (applying the
+         principle that if the function must return element nodes, then each of the instructions
+         must return element nodes) we can (a) identify the instruction in error much more
+         precisely, and (b) avoid the run-time cost of checking the results of those instructions
+         that we know statically are OK.
+         </p>
+      <p>
+         Interestingly, all these changes were stimulated by my own recent experience in writing
+         a complex stylesheet. I described the plans for this <a href="/mike/2018/02/could-we-write-an-xsd-schema-processor-in-xslt.html">here</a> and the coding has now been completed (I'll report on the outcome later). It's a
+         classic case of dogfood: if you use your own products in anger, you find ways of improving
+         them that you wouldn't have thought of otherwise, and that users wouldn't have suggested
+         because they don't know what's possible.
+         </p>
+   </body>
+</html>

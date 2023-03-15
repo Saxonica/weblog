@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Could we write an XSD Schema Processor in XSLT?</title>
+      <meta name="id" content="221" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2018-02-10T18:58:46" />
+      <meta name="basename" content="could_we_write_an_xsd_schema_processor_in_xslt" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Could we write an XSD Schema Processor in XSLT?</h1>
+      <p>Many computing platforms are not
+         well-served by up to date XML technology, and in consequence Saxonica
+         has been slowly increasing its coverage of the major platforms:
+         extending from Java to .NET, C++, PHP, Javascript using a variety of
+         technical approaches. This makes it desirable to implement as much as
+         possible using portable languages, and if we want to minimize our
+         dependence on third-party technologies (IKVMC, for example, is now
+         effectively unsupported) we should be writing in our own languages,
+         notably XSLT.</p>
+      <p>This note therefore asks the question,
+         could one write an XSD Schema 1.1 processor in XSLT?</p>
+      <p>In fact a schema processor has two
+         parts, compile time (compiling schema documents into the schema
+         component model and SCM) and run-time (validating an instance
+         document using the SCM).
+         </p>
+      <p>The first part, compiling, seems to
+         pose no intrinsic difficulty. Some of the rules and constraints that
+         need to be enforced are fairly convoluted, but the only really tricky
+         part is compiling grammars into finite-state-machines, and checking
+         grammars (or the resulting finite-state-machine) for conformance with
+         rules such as the Unique Particle Attribution constraint. But since
+         we already have a tool (written in Java) for compiling schemas into
+         an XML-based SCM file, and since it wouldn't really inconvenience
+         users too much for this tool to be invoked via an HTTP interface, the
+         priority for a portable implementation is really the run-time part of
+         the processor rather than the compile-time part. (Note that this means ignoring xsi:schemaLocation,
+         since that effectively causes the run-time validator to invoke the schema compiler.)</p>
+      <p>There are two ways one could envisage
+         implementing the run-time part in XSLT: either with a universal
+         stylesheet that takes the SCM and the instance document as inputs, or
+         by generating a custom XSLT stylesheet from the SCM, rather as is
+         done with Schematron. For the moment I'll keep an open mind which of
+         these two approaches is preferable.</p>
+      <p>Ideally, the XSLT stylesheet would use
+         streaming so the instance document being validated does not need to
+         fit in memory. We'll bear this requirement in mind as we look at the
+         detail.</p>
+      <p>The XSLT code, of course, cannot rely
+         on any services from a schema processor, so it cannot be
+         schema-aware.</p>
+      <p>Let's look at the main jobs the
+         validator has to do.</p>
+      <p><b>Validating strings against simple types</b></p>
+      <p>Validating against a primitive type can
+         be done simply using the XPath castable operator.</p>
+      <p>Validating against a simple type
+         derived by restriction involves checking the various facets. For the
+         most part, the logic of each facet is easily expressed in XPath.
+         There are a few exceptions:</p>
+      <p>
+         
+         
+         
+         <ul>
+            <li>
+               
+               
+               <p>Patterns (regular expressions).
+                  The XPath regular expression syntax is a superset of the XSD syntax.
+                  To evaluate XSD regular expressions, we either need some kind of
+                  extension to the XPath matches() function, or we need to translate
+                  XSD regular expressions into XPath regular expressions. This
+                  translation is probably not too difficult. It mainly involves
+                  rejecting some disallowed constructs (such as back-references,
+                  non-capturing groups, and reluctant quantifiers), and escaping "^"
+                  and "$" with a backslash.</p>
+               </li>
+            <li>
+               
+               
+               <p>Length facets for hexBinary and
+                  base64Binary. Base646Binary can be cast to hexBinary, and the length
+                  of the value in octets can be computed by converting to string and
+                  dividing the string length by 2.</p>
+               </li>
+         </ul>
+         
+         </p>
+      <p>Validating against a list type can be
+         achieved by tokenizing, and testing each token against the item type.</p>
+      <p>Validating against a union type can be
+         achieved by validating against each member type (and also validing
+         against any constraining facets defined at the level of the union
+         itself).</p>
+      <p><b>Validating elements against complex
+            types</b></p>
+      <p>The only difficult case here is complex
+         content. It should be possible to achieve this by iterating over the
+         child nodes using xsl:iterate, keeping the current state (in the FSM)
+         as the value of the iteration parameter. On completion the element is
+         valid if the state is a final state. As each element is processed, it
+         needs to be checked against the state of its parent element's FSM,
+         and in addition a new validator is established for validating its
+         children. This is all streamable.</p>
+      <p><b>Assertions and Conditional Type
+            Assignment</b></p>
+      <p>Evaluating XPath expressions can be
+         achieved using xsl:evaluate. The main difficulty is setting up the
+         node-tree to which xsl:evaluate is applied. This needs to be a copy
+         of the original source subtree, to ensure that the assertion cannot
+         stray outside the relevant subtree. Making this copy consumes the
+         source subtree, which makes streaming tricky: however, the ordinary
+         complex type validation can also happen on the copy, so I think
+         streaming is possible.</p>
+      <p><b>Identity constraints (unique, key,
+            keyref)</b></p>
+      <p>This is where streaming really gets
+         quite tricky - especially given the complexity of the specification
+         for those rare keyref cases where the key is defined on a different
+         element from the corresponding keyref.</p>
+      <p>The obvious XSLT mechanism here is
+         accumulators. But accumulator rules are triggered by patterns, and
+         defining the patterns that correspond to the elements involved in a
+         key definition is tricky. For example if sections nest recursively, a
+         uniqueness constraint might say that for every section, its child
+         section elements must have unique @section-number attributes. A
+         corresponding accumulator would have to maintain a stack of sections,
+         with a map of section numbers at each level of the stack, and the
+         accumulator rule for a section would need to check the section number
+         of that section at the current level, and start a new level.</p>
+      <p>A further complication is that there
+         may be multiple (global and/or local) element declarations with the
+         same name, with different unique / key / keyref constraints. Deciding
+         which of these apply by means of XSLT pattern matching is certainly
+         difficult and may be impossible.</p>
+      <p>The multiple xs:field elements within a
+         constraint do not have to match components of the key in document
+         order, but a streamed implementation would still be possible using
+         the map constructor, which allows multiple downward selections -
+         provided that the xs:field selector expressions are themselves
+         streamable, which I think is probably always the case.</p>
+      <p>The problem of streamability could
+         possibly be solved with some kind of dynamic pipelining. The "main"
+         validation process, when it encounters a start tag, is able to
+         establish which element declaration it belongs to, and could in
+         principle spawn another transformation (processing the same input
+         stream) for each key / unique constraint defined in that element
+         declaration: a kind of dynamic xsl:fork.</p>
+      <p>I think as a first cut it would
+         probably be wise not to attempt streaming in the case of a schema
+         that uses unique / key / keyref constraints. More specifically, if
+         any element has such constraints, it can be deep-copied, and
+         validation can then switch to the in-memory subtree rather than the
+         original stream. After all, we have no immediate plans to implement
+         streaming other than in the Java product, and that will inevitably
+         make an XSLT-based schema processor on other platforms unstreamed
+         anyway.</p>
+      <p><b>Outcome of validation</b></p>
+      <p>There are two main scenarios we should
+         support: validity checking, and type annotation. With validity
+         checking we want to report many invalidities in a single validation
+         episode, and the main output is the validation report. With type
+         annotation, the main output is a validated version of the instance
+         document, and a single invalidity can cause the process to terminate
+         with a dynamic error.</p>
+      <p>It is not possible for a
+         non-schema-aware stylesheet to add type annotations to the result
+         tree without some kind of extensions. The XSLT language only allows
+         type annotations to be created as the result of schema validation. So
+         we will need an extension for this purpose: perhaps a
+         saxon:type-annotation="QName" attribute on instructions
+         such as xsl:element, xsl:copy, xsl:attribute.</p>
+      <p>For reporting validation errors, it's
+         important to report the location of the invalidity. This also
+         requires extensions, such as saxon:line-number().</p>
+      <p><b>Conclusion</b></p>
+      <p>I don't think there are any serious
+         obstacles to writing a validation engine in XSLT. Making it
+         streamable is harder, especially for integrity constraints. A couple
+         of extensions are needed: the ability to add type annotations to the
+         result tree, and the ability to get line numbers of nodes in the
+         source.</p>
+      <p>I still have an open mind about whether
+         a universal stylesheet should be used, or a generated stylesheet for
+         a particular schema.</p>
+   </body>
+</html>

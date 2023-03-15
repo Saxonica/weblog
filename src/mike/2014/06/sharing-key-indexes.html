@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Sharing key indexes</title>
+      <meta name="id" content="205" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2014-06-04T23:10:24" />
+      <meta name="basename" content="sharing_key_indexes" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Sharing key indexes</h1>
+      <p>For ever and a day, Saxon has tried to ensure that when several transformations are
+         run using the same stylesheet and the same source document(s), any indexes built for
+         those documents are reused across transformations. This has always required some careful
+         juggling of Java weak references to ensure that the indexes are dropped from memory
+         as soon as either the executable stylesheet or the source document are no longer needed.
+         </p>
+      <p>
+         I've now spotted a flaw in this design. It wasn't reported by a user, and it didn't
+         arise from a test case, it simply occurred to me as a theoretical possibility, and
+         I have now written a test case that shows it actually happens. The flaw is this: if
+         the definition of the key includes a reference to a global variable or a stylesheet
+         parameter, then the content of the index depends on the values of global variables,
+         and these are potentially different in different transformations using the same stylesheet.
+         </p>
+      <p>
+         Fixing this is not easy, and poses some interesting dilemmas, given that no-one has
+         hit the problem in a dozen years and it's quite likely that no-one ever will. It would
+         be nice to roll back my discovery of the problem and pretend that it doesn't exist,
+         but that's not my style.
+         </p>
+      <p>
+         One solution would be to abandon the strategy of reusing indexes. It's likely that
+         very few users have workloads that benefit from this strategy. On the other hand,
+         those that do could see a big performance hit. Removing an powerful optimization because
+         of a problem that doesn't apply to these workloads is not very friendly.
+         </p>
+      <p>
+         The right solution is to identify those key definitions that allow indexes to be shared
+         and distinguish them from indexes that can't be shared, and then manage the two kinds
+         of index differently. Both the identification and the management can be done, but
+         they introduce more complexity and hence more risk of bugs, and the whole thing feels
+         like overkill given that we don't know any users who have the problem.
+         </p>
+      <p>
+         Civil engineers design structures to withstand storms that are likely to happen more
+         than once in N years. It would be nice if we could adopt a similar approach here.
+         But software doesn't seem to be like that; it seems to follow Murphy's law, which
+         states that if something can go wrong, it will.
+         </p>
+      <p>
+         So with heavy heart, I think that there's no alternative to "doing the right thing",
+         with all the complexity it entails.
+         </p>
+      <p>
+         Reference: Saxon bug 1968; W3C test case key-085a/b.
+         </p>
+   </body>
+</html>

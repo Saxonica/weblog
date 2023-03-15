@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Beyond Saxon 9.2</title>
+      <meta name="id" content="167" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2009-08-14T14:18:46" />
+      <meta name="basename" content="beyond_saxon_92" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Beyond Saxon 9.2</h1>
+      <p>So, Saxon 9.2 is finally out. I haven't had much chance to sit back and think yet
+         - it's been a busy and stimulating week at the Balisage conference, and for some reason
+         it's also been a busy week for technical support - it's probably imaginary, but I'm
+         starting to think there's a pattern where immediately after you ship release N, you
+         get a rush of bug reports on release N-1. The new release is looking reasonably sound,
+         though I made an embarrassing faux pas in issuing duff license keys to several paying
+         customers. If you're reading this, sorry!</p>
+      <p>Regulars will know that I don't do planning, either of dates or facilities: I prefer
+         to keep the programme completely flexible, so that I can always find room to put new
+         things in if the opportunity presents itself. But it's worth thinking a little bit
+         about what's on the to-do list.</p>
+      <p>XSD 1.1 is now getting close to the finish line, and it makes sense to attempt a 100%
+         conformant implementation. I think it's a useful and important spec, and despite the
+         fact that nothing can ever really make XSD a thing of beauty, the new facilities will
+         be very handy for those who can afford to take advantage of them. Also of course,
+         the spec needs two working implementations to get to recommendation status, and Saxon
+         is likely to be one of them. We're 80% of the way there already: I think the main
+         things missing are xs:override and inheritable attributes, but there's also probably
+         a bit of work to handle edge cases on assertions, union types, and a few other things.</p>
+      <p>XQuery 1.1 is coming along, though it's not yet in the end-game. Saxon 9.2 implements
+         a few important features from the spec, but there's more to do. There's a big challenge
+         here because XQuery 1.1 is built very heavy on the concept of tuple streams, which
+         is not something Saxon really has in its architecture at all. The 1.0 spec talks about
+         them a lot, but there's only one case where they are actually needed, which is for
+         some peculiar "order by" options that no-one actually uses; so the internal Saxon
+         implementation is fairly bizarre and this will need to be changed. I fought quite
+         hard against basing everything on tuples in the spec (it seems really odd to have
+         the functionality designed around a concept that doesn't exist in the XDM data model),
+         but I was a solitary voice. I don't especially enjoy implementing facilities that
+         I would have designed differently, but conformance is king.</p>
+      <p>Then there's XSLT 2.1 with its streaming facilities. We haven't even got a first draft
+         of that out yet, but Saxon already implements some of the features. As the editor
+         (in effect, lead designer) of the language it's very useful to be developing an imlementation
+         in parallel - Norm Walsh made this point at Balisage in relationship to his XProc
+         implementation, Calabash. I think there have to be some question marks about whether
+         XSLT 2.1 will make it to the finishing line - the WG is short of resources and despite
+         IBM having now shipped its XSLT 2.0 product, there's still a woeful shortage of implementors.
+         Nevertheless, the new features are useful (streaming is proving to be a big selling
+         point for Saxon-EE) and will be useful to the user community even if they only ever
+         come out as Saxon extensions.</p>
+      <p>What else? I'm not planning to implement XQuery full text or scripting extensions,
+         unless there is a strong demand from the user community (or lots of money!), and I'm
+         not going to stray into other areas like XProc - others can build that on top.</p>
+      <p>There are always opportunities for performance work. </p>
+      <p>Allowing compilation of XQuery to Java was an enormous amount of effort a couple of
+         years ago, and it's been a bit of a disappointment: as far as I can tell, very few
+         people are using it. And the performance gains are only modest (say 25%) which isn't
+         enough to justify the inconvenience for most people. The message here is that everyone
+         likes better performance, but few people are prepared to go far out of their way to
+         achieve it. Usability comes first. I'd like to attempt some "just-in-time" compilation
+         behind the scenes, say of predicates that are frequently evaluated. This might turn
+         out to be less effort than the current code generation, since it only has to handle
+         the 20% of the language used 80% of the time - when people stray outside that, you
+         don't compile.</p>
+      <p>There's one big optimization that isn't attempted yet, namely identification of common
+         subexpressions. It shouldn't be too difficult: they have to be executed, of course,
+         in the same static and dynamic context. Similarly (and perhaps with common code) there's
+         scope for building a more intelligent decision tree for XSLT pattern matching by avoiding
+         repeated evaluation of predicates that appear in more than one pattern.</p>
+      <p>When I looked earlier this year at Saxon vs XSLTC performance (see previous blog postings),
+         I was struck that XSLTC performs better than Saxon on a "null" transformation, where
+         it discards all the input and does nothing. That can't be due to compiling: it must
+         mean that there is less context-switching overhead between the XML parser and the
+         transformation engine. Perhaps they are using private knowledge or interfaces into
+         Xerces, I don't know. I need to resume conversations with Tatu Saloranta to see whether
+         we can do some tight integration between Saxon and his XML parser technology.</p>
+      <p>Other things on the performance agenda are some kind of multithreading to take advantage
+         of multi-core CPUs, and some re-engineering of the NamePool to reduce contention in
+         high throughput workloads.</p>
+      <p>No doubt there are many things I've forgotten here, or not thought about yet, which
+         will come up during development. If there are burning things you need, let me know.</p>
+      <p> </p>
+   </body>
+</html>

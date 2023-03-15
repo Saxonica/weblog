@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Saxon repackaging</title>
+      <meta name="id" content="165" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2009-06-19T14:18:46" />
+      <meta name="basename" content="saxon_repackaging" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Saxon repackaging</h1>
+      <p>Saxon9.2-EE is out on beta release, so the release process has finally started. It
+         was beginning to feel as if the light at the end of the tunnel was an optical illusion.
+         I decided not to change the licensing. GPL is just too distasteful, and other licenses
+         that prevent use with commercial products just seem too burdensome. So here's what
+         I've decided to do.</p>
+      <p>There will be three Saxon editions: home, professional, and enterprise (HE, PE, EE).
+         The enterprise edition is just a renaming of Saxon-SA, the change in name reflecting
+         the fact that Saxon-EE now offers a lot more than just schema-awareness. For example,
+         the streaming capabilities are now one of the major reasons people buy the product.
+         The home edition, Saxon-HE, will continue to be open source, under the Mozilla Public
+         License, but it will remove some of the added-value goodies that have previously been
+         offered in Saxon-B. For example, there will be fewer Saxon-specific extensions, and
+         less user-extensibility. The change in name, and the removal of advanced features,
+         are both designed to reduce the amount of freeloading, that is, to persuade commercial
+         users who are making money out of the technology to get their wallets out and feed
+         some of that money back to Saxonica; while at the same time providing enough open-source
+         capability for the 80% of users who only need 20% of the functionality, and who provide
+         the potential market into which the commercial products sell.</p>
+      <p>The professional edition will be priced at around $80 for an individual license, or
+         $1500 for a site license or distribution license. That represents two target markets:
+         the individual user who needs a bit more capability than they can get from the home
+         edition, and might well be paying out of their own pocket; and the corporate users
+         who don't want to spend a lot of money and do want to keep the contractual side very
+         simple.</p>
+      <p>Of course, this won't satisfy everyone. There may be quite a few people who stick
+         with Saxon-B for the time being rather than "squeezing into" the smaller Saxon-HE
+         or explaining to their boss why they need Saxon-PE (I'm well aware that it's not the
+         money that's the issue for most people, it's the hassle of justifying it. As soon
+         as you tell the bean-counters you want to spend some money, they ask for a business
+         case, and that's three days out of your life that could be used for something more
+         productive. Very few organizations measure the cost of the three days.) </p>
+      <p>And of course there are the people who will only use open source on principle. In
+         some cases that's because their own product and business model hinges on open source,
+         which is fair enough. In some cases it's a technical argument based on the superior
+         quality of open source software. In some cases it's just meanness (like the people
+         who try to ensure that it's always someone else who pays for the next round of drinks).
+         If I make some of these people unhappy, I'm sorry (unless you're in the third group,
+         of course). But I don't feel I owe them anything. Just because a bank has been offering
+         free current accounts for the last ten years doesn't mean it has to keep doing it
+         for ever. It's not as if I'm taking anything away: Saxon-B 9.1 will still be there
+         as an option, and there was never any guarantee of a next release.</p>
+      <p>With open source there's always the risk that if you don't keep your users happy,
+         someone will fork the code. However, Saxon is now 200K lines of code, so that's a
+         formidable undertaking. One of the reasons I've never published the test suite is
+         that I wanted to make forking difficult for people. I find it hard to imagine that
+         anyone would have the stamina to make a success of it, or to win the trust of a significant
+         number of users.</p>
+      <p>The backdrop to all this, of course, is that Saxon - certainly as an XSLT 2.0 processor
+         - has very little competition. Basically, it's too big a product for the weekend amateur
+         to produce, and it's too big a financial drain for the big boys to be interested (presumably
+         this is why Intel pulled out). IBM, I see, have finally launched their XSLT 2.0 processor
+         as an integral part of Websphere, where prices are five-figure integers: that's a
+         realistic measure of the value people are getting, and a reasonable price point at
+         which IBM can expect to recover their investment. I think, quite honestly, that open
+         source did a great job in kick-starting the XML market, but is now starting to damage
+         it. If customers expect free beer, they must expect that there will be fewer pubs.
+         It's time the pendulum swung back a bit: some of the value that users are getting
+         needs to be ploughed back into software development.</p>
+   </body>
+</html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Join optimization</title>
+      <meta name="id" content="111" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2008-09-20T14:18:43" />
+      <meta name="basename" content="join_optimization" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Join optimization</h1>
+      <p>People ask me from time to time whether they can expect a performance gain from moving
+         to Saxon-SA. The answer is: it depends!</p>
+      <p>The <a href="http://monetdb.cwi.nl/xml/">Xmark benchmark</a> is a case in point. It's not a very satisfactory benchmark in many ways, because
+         the queries are very "relational" in style, but there are some people with that kind
+         of workload and so long as one accepts that it's not typical of every kind of workload,
+         it's not a bad test.</p>
+      <p>Here's how Saxon-B and Saxon-SA compare for the twenty queries in the test suite.
+         This is version 8.7.1 (not yet released), running against a 10Mb data file, with timings
+         in milliseconds.</p>
+      <pre><code>Query    Saxon-SA    Saxon-B
+  1           8           6
+  2           6           6
+  3          25          22
+  4          24          21
+  5           8           8
+  6           4           4
+  7          32          31
+  8          38       11196
+  9          50       14023
+ 10         104        1435
+ 11       13686       13005
+ 12        4296        3335
+ 13           3           3
+ 14         120         116
+ 15           4           4
+ 16           8           8
+ 17          11          11
+ 18          13          13
+ 19          66          66
+ 20          38          38</code></pre>
+      <p>What do these numbers tell us? Firstly, the difference between 8ms and 6ms simply
+         isn't statistically significant. So for 15 out of these 20 tests, the performance
+         under Saxon-SA is essentially identical to that under Saxon-B. Then there are three
+         tests (Q8, Q9, and Q10) where the performance under Saxon-SA is dramatically better
+         (and the bigger the data file, the bigger the difference becomes. This is where the
+         Saxon-SA optimizer has found a better strategy for evaluating a join.</p>
+      <p>If we look at one of these queries Q8, it's like this:</p>
+      <pre><code>(: Q8.  List the names of persons and the number of items they bought.
+--     (joins person, closed\_auction)} :)
+
+for $p in (:document("auction.xml"):)/site/people/person
+let $a := for $t in (:document("auction.xml"):)/site
+/closed_auctions/closed_auction
+             where $t/buyer/@person = $p/@id
+             return $t
+return &lt;item person="{$p/name}"&gt; {count ($a)} &lt;/item&gt;</code></pre>
+      <p>The important thing is that "where" condition relating the two range variables $t
+         and $p, both of which are defined in a "for" expression. Saxon-B here does two nested
+         loops, testing each ($t, $p) pair to see if the condition is satisfied. Saxon-SA,
+         by contrast, decides to build a hash index which avoids having to loop over all the
+         $t items once for every $p.</p>
+      <p>There are two join queries in the collection where Saxon-SA didn't make any difference,
+         in fact things got slightly worse: Q11 and Q12.</p>
+      <p>In Q11 and Q12, the join condition is</p>
+      <pre><code>where $p/profile/@income &gt; (5000 * $i)</code></pre>
+      <p>and Saxon at present isn't doing any optimization for non-equijoins (joins where the
+         operator isn't "=" or "eq"). At present I don't know why Saxon-SA is performing worse
+         for these two queries: it's not a major difference, but it's sufficiently significant
+         to be worth investigating.</p>
+      <p>The bottom line is: most queries probably run at about the same speed with Saxon-B
+         and Saxon-SA. A few queries run dramatically faster with Saxon-SA.</p>
+   </body>
+</html>

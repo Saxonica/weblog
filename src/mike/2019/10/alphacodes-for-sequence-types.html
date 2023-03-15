@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Alphacodes for Sequence Types</title>
+      <meta name="id" content="228" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2019-10-15T14:06:31" />
+      <meta name="basename" content="alphacodes_for_sequence_types" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Alphacodes for Sequence Types</h1>
+      <p>In the next releases of Saxon and Saxon-JS we have devised a compact notation for
+         representation of <code><b>SequenceType</b></code> syntax in the exported SEF file. This note is to document this syntax.</p>
+      <p>The main aims in devising the syntax were compactness, together with fast generation
+         and fast parsing. In addition it has the benefit that some operations are possible
+         on the raw lexical form without doing a full parse.</p>
+      <p>The syntax actually handles <b>ItemTypes</b> as well as <b>SequenceTypes</b>; and in addition, it can handle the two examples of <b>NodeTests</b> that are not item types, namely<i> *:local</i> and <i>uri:*</i>. It can therefore be used in the SEF wherever a <b>SequenceType</b>, <b>ItemType</b>, or <b>NodeTest</b> is required.</p>
+      <p>The first character of an alphacode is the occurrence indicator. This is one of: *
+         (zero or more), + (one or more), ? (zero or one), 0 (exactly zero), 1 (exactly one).
+         If the first character is not one of these, then "1" is assumed; but the occurrence
+         indicator is generally omitted only when representing an item type as distinct from
+         a sequence type.</p>
+      <p>The occurrence indicator is immediately followed by the "primary alphacode" for the
+         item type. These are chosen so that <i>alphacode(T)</i> is a prefix of <i>alphacode(U)</i> if and only if <i>T</i> is a supertype of <i>U</i>. For example, the primary alphacode for <b>xs:integer</b> is "ADI", and the primary alphacode for <b>xs:decima</b>l is "AD", reflecting the fact that <b>xs:integer</b> is a subtype of <b>xs:decimal</b>. The primary alphacodes are as follows:</p>
+      <p>"" (zero-length string): item()</p>
+      <p>A: xs:anyAtomicType<br />
+         AB: xs:boolean</p>
+      <p>AS: xs:string<br />
+         ASN: xs:normalizedString<br />
+         ASNT: xs:token<br />
+         ASNTL: xs:language<br />
+         ASNTM: xs:NMTOKEN<br />
+         ASNTN: xs:Name<br />
+         ASNTNC: xs:NCName<br />
+         ASNTNCI: xs:ID<br />
+         ASNTNCE: xs:ENTITY<br />
+         ASNTNCR: xs:IDREF</p>
+      <p>AQ: xs:QName<br />
+         AU: xs:anyURI<br />
+         AA: xs:date<br />
+         AM: xs:dateTime<br />
+         AMP: xs:dateTimeStamp<br />
+         AT: xs:time<br />
+         AR: xs:duration<br />
+         ARD: xs:dayTimeDuration<br />
+         ARY: xs:yearMonthDuration<br />
+         AG: xs:gYear<br />
+         AH: xs:gYearMonth<br />
+         AI: xs:gMonth<br />
+         AJ: xs:gMonthDay<br />
+         AK: xs:gDay</p>
+      <p>AD: xs:decimal<br />
+         ADI: xs:integer<br />
+         ADIN: xs:nonPositiveInteger<br />
+         ADINN: xs:negativeInteger<br />
+         ADIP: xs:nonNegativeInteger<br />
+         ADIPP: xs:positiveInteger<br />
+         ADIPL: xs:unsignedLong<br />
+         ADIPLI: xs:unsignedInt<br />
+         ADIPLIS: xs:unsignedShort<br />
+         ADIPLISB: xs:unsignedByte<br />
+         ADIL: xs:long<br />
+         ADILI: xs:int<br />
+         ADILIS: xs:short<br />
+         ADILISB: xs:byte</p>
+      <p>AO: xs:double<br />
+         AF: xs:float<br />
+         A2: xs:base64Binary<br />
+         AX: xs:hexBinary<br />
+         AZ: xs:untypedAtomic</p>
+      <p>N: node()<br />
+         NE: element(*)<br />
+         NA: attribute(*)<br />
+         NT: text()<br />
+         NC: comment()<br />
+         NP: processing-instruction()<br />
+         ND: document-node()<br />
+         NN: namespace-node()</p>
+      <p>F: function(*)<br />
+         FM: map(*)<br />
+         FA: array(*)</p>
+      <p>E: xs:error</p>
+      <p>X: external (wrapped) object<br />
+         XJ: external Java object<br />
+         XN: external .NET object<br />
+         XS: external Javascript object</p>
+      <p>Every item belongs to one or more of these types, and there is always a "most specific"
+         type, which is the one that we choose.</p>
+      <p>Following the occurrence indicator and primary alphacode are zero or more supplementary
+         codes. Each is preceded by a single space, is identified by a single letter, and is
+         followed by a parameter value. For example the sequence type "element(BOOK)" is coded
+         as "1NE nQ{}BOOK" - here 1 is the occurrence indicator, NE indicates an element node,
+         and nQ{}BOOK is the required element name. The identifying letter here is "n". The
+         supplementary codes (which may appear in any order) are as follows:</p>
+      <p>n - Name, as a URI-qualified name. Used for node names when the primary alphacode
+         is one of (NE, NA, NP). Also used for the XSD type name when the type is a user-defined
+         atomic or union type: the basic alphacode then represents the lowest common supertype
+         that is a built-in type.  (Note: we assume that type names are globally unique. This
+         cannot be guaranteed when deploying a SEF file: the schema at the receiving end might
+         vary from that of the sender.) Also used for the class name in the case of external
+         object types (in this case the namespace part will always be "Q{}"). Note that strictly
+         speaking, the forms <i>*:name</i> and <i>name:*</i> can appear in a <b>NameTest</b>, but never in a <b>SequenceType</b>. However, they can be represented in alphacodes using the syntax <b>"n*:name"</b> and <b>"nQ{uri}*"</b> respectively. The syntax <b>"~localname"</b> is used for a name in the XSD namespace. </p>
+      <p>c - Node content type (XSD type annotation), as a URI-qualified name optionally followed
+         by "?" to indicate nillable. The syntax "~localname" is used for a name in the XSD
+         namespace. Optionally present when the basic code is (NE, NA); omitted for NE when
+         the content is <b>xs:untyped</b>, and for NA when the content is <b>xs:untypedAtomic</b>. Only relevant for schema-aware code.</p>
+      <p>k - Key type, present when the basic code is FM (i.e. for maps), omitted if the key
+         type is <b>xs:anyAtomicType</b>. The value is the alphacode of the key type, enclosed in square brackets: it will
+         always start with "1A".</p>
+      <p>v - Value type, present when when the basic code is (FM, FA) (i.e. for maps and arrays),
+         omitted if the value type is <b>item()*</b>. The value is the alphacode of the value type, enclosed in square brackets. For example
+         the alphacode for <b>array(xs:string+)* </b>is "*FA v[+AS]".</p>
+      <p>r - Return type, always present for functions. The value is the alphacode of the return
+         type, enclosed in square brackets.</p>
+      <p>a - Argument types, always present for functions. The value is an array of alphacodes,
+         enclosed in square brackets and separated by commas. For example, the alphacode for
+         the function <b>fn:dateTime#2</b> (with signature <i>($arg1 as xs:date?, $arg2 as xs:time?) as xs:dateTime?)</i> is "1F r[?AM] a[?AA,?AT]"</p>
+      <p>m - Member types of an anonymous union type. The value is an array of alphacodes for
+         the member types (these will always be atomic types), enclosed in square brackets
+         and comma-separated. The basic code in this case will be "A", indicating xs:anyAtomicType.
+         This is not used for the built-in union type xs:numeric, nor for user-defined atomic
+         types defined in a schema; it is used only for anonymous union types defined using
+         the Saxon extension syntax "union(a, b, c)".</p>
+      <p>e - Element type of a document-node() type, present optionally when the basic code
+         is ND. The value is an alphacode, which will always start with "1NE".</p>
+      <p>t - Components of a tuple type (Saxon extension). The value is an array of tokens,
+         enclosed in square brackets, where each token comprises the name of the component
+         (an NCName), a colon, and the alphacode of the component type.</p>
+      <p>i, u, d - Venn type. The item type is the intersection, union, or difference of two
+         item types. The letter "i", "u", or "d" indicates intersection, union, or difference
+         respectively, followed by a list of (currently always two) item types enclosed in
+         square brackets and separated by a comma. The principal type will typically be "N"
+         or "NE". Saxon uses venn types internally to give a more precise inferred type for
+         expressions; it is probably largely unused at run-time, and can therefore be safely
+         ignored when reading a SEF file.</p>
+      <p>Named union types have a basic alphacode of "A", followed by the name of the union
+         type in the form "A nQ{uri}local". The syntax "~localname" is used for a name in the
+         XSD namespace, so the built-in union types xs:numeric and xs:error are represented
+         as "A n~numeric" and "A n~error" respectively.</p>
+      <p><i>TODO: the documentation for union types is not aligned with the current implementation</i></p>
+      <p>Examples:</p>
+      <p>0 - empty-sequence()</p>
+      <p>1AS - xs:string</p>
+      <p>1N - node()</p>
+      <p>1 - item()</p>
+      <p>* - item()*</p>
+      <p>1NE nQ{}item - element(item)</p>
+      <p>1ND e[1NE nQ{}item] - document-node(element(item))</p>
+      <p>*FM k[1AS] v[?AS] - map(xs:string, xs:string?)*</p>
+      <p>1F a[?AS,*AO] r[1AB] - function(xs:string?, xs:double*) as xs:boolean</p>
+      <p>Version: 2019-10-30</p>
+   </body>
+</html>

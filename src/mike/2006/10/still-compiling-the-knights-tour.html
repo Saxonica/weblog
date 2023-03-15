@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Still Compiling the Knight's Tour</title>
+      <meta name="id" content="127" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-10-03T14:18:44" />
+      <meta name="basename" content="still_compiling_the_knights_tour" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Still Compiling the Knight's Tour</h1>
+      <p>I wrote on 20 September that I was getting the compiled Knight's Tour stylesheet to
+         run in 39.3 ms, compared with 45.9 ms for the interpreted code, and that I didn't
+         think it would be hard to improve on this. Well, it's now down to 9.41 ms. (Thie compares
+         with the figure of 900 ms given in my book, for an earlier version of Saxon and a
+         previous laptop.) But a lot depends on what you mean by "hard".</p>
+      <p>One of the difficulties is simply getting reproducible performance results. I got
+         figures around the 9.5 ms mark 20 minutes ago, but when I run the same code now, I'm
+         getting 18 ms. I really need a dedicated machine that isn't polling for email, checking
+         for viruses, and changing its CPU speed because it's getting too hot, all at unpredictable
+         times. I miss the old ICL mainframes where you could get an accurate and reproducible
+         count of the actual number of instructions executed.</p>
+      <p>Another of the difficulties is that things that should improve the performance don't
+         always succeed. It's conventional wisdom that lazy evaluation improves performance
+         of functional programs: well, I implemented it, and the performance of this query
+         got worse. But that doesn't mean you can throw away the conventional wisdom and decide
+         it's not worth doing. It may be that the query you're currently profiling is exceptional;
+         or it might be that the facility is needed to avoid pathological worst-case performance
+         even though it actually decreases average performance. One of the main benefits of
+         lazy evaluation is perhaps in memory usage, and savings in memory usage don't help
+         performance unless you're short of memory. Alternatively, it's possible that performance
+         didn't get worse with lazy evaluation at all, and I was simply seeing a measurement
+         glitch.</p>
+      <p>Sometimes, just occasionally, you get a big improvement from a small change, and you
+         know it's sound. I found that the code for building a sequence was doing an item-by-item
+         copy from a list to an array, and I got the elapsed time down from 19 ms to 9.5 just
+         by changing that to use List.toArray(). Perhaps the figures aren't right and perhaps
+         they won't benefit everyone that much, but it's definitely worth doing, and (like
+         a number of changes I've made in this exercise) it benefits the interpreted code as
+         well as the compiled code.</p>
+      <p>Saxon has several ways of executing a given expression, and compilation is adding
+         to the range of choices in most areas, though it does mean that the choice always
+         has to be made at compile time. The choices include pull and push mode, eager versus
+         lazy evaluation, saving results in memory versus re-evaluating them when needed. What's
+         difficult now is to come up with criteria for choosing one strategy rather than another.
+         Sometimes it makes very little difference; sometimes it makes a big difference, but
+         it's hard to establish the factors in favour of one approach rather than another.
+         It's all very empirical at the moment, and needs a much better analytical model of
+         what's going on: where the costs are, and what the costs depend on. I'm some way yet
+         from having that level of understanding of cause and effect, which is frustrating.
+         Meanwhile, though, even if it's empirical, the numbers are getting inexorably better
+         all the time.</p>
+      <p>Queries like the Knight's Tour and the 8-Queens are probably among those that will
+         show the greatest benefit from compilation, because they are computation-intensive
+         rather than data-intensive. Many more typical queries and stylesheets spend a lot
+         of their time down in the TinyTree code navigating the input document, or in the output
+         pipeline serializing the result tree, and these aren't going to benefit so much. But
+         I'm becoming reasonably confident that there'll be a worthwhile benefit across the
+         board. Currently I'm compiling about half the constructs that the front-end expression
+         processor generates, which is enough to process about 95% of all queries (XQuery is
+         a smaller language than XSLT so I'm doing it first). Doing the other 50% is going
+         to be rather tedious work. Testing isn't easy, if only because vast chunks of the
+         XQTS test suite contain constant expressions that can be evaluated statically, long
+         before the Java code generator gets anywhere near them. I think I'm going to have
+         to find some way of switching off the early evaluation of such expressions, just for
+         test purposes.</p>
+   </body>
+</html>

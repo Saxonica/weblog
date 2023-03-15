@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Experiences with XSLTForms and Servlex</title>
+      <meta name="id" content="198" />
+      <meta name="author" content="O’Neil Delpratt" />
+      <meta name="pubdate" content="2013-03-08T15:04:28" />
+      <meta name="basename" content="experiences_with_client-side_xsltforms_and_server-side_servlex" />
+      <meta name="blog-id" content="6" />
+   </head>
+   <body>
+      <h1>Experiences with XSLTForms and Servlex</h1>
+      <p>At Saxonica, we have for a long time now used a tailor-made java application to create
+         and issue licenses for all commercial products we develop. There is no real database
+         at the back-end, but just a local XML file with customer details and copies of the
+         licenses created and issued. For a one man company this poses no real problem, but
+         inevitably as the company has expanded over the last two years this has been a major
+         concern.</p>
+      <p>Early last year Mike Kay presented me with the task to create a new saxon-license
+         application with the following requirements:</p>
+      <ul>
+         <li>Accessible  to all employees, preferable web-based</li>
+         <li>Core Java tool should remain intact </li>
+         <li>Centralised store, must be XML-based</li>
+         <li>Secure application</li>
+      </ul>
+      <p>From the outset we thought that for such a tool which heavily relies on XML and XSLT
+         at its core, that requirements would be best met using XSLTForms and Servlex to develop
+         the tool.</p>
+      <p>In this blog post I would like to share my own experiences in the development of the
+         saxon-license webapp using Servlex and XSLTForms. In the discussion I include how
+         we stitched on our existing back-end core Java tool and challenges faced with encoding.
+         Specific details of the features and functions are not that important here, only the
+         engineering process is of interest.</p>
+      <p>On the client-side we write XForms [1] documents, which are manipulated by XSLTForms
+         [2] (created by Alain Couthures)  to render in the browsers. XSLTForms is an open
+         source client-side implementation, not a plug-in or install, that works with all major
+         browsers.</p>
+      <p>On the server-side we integrate the core Saxon-license tool in a Servlex webapp [3]
+         as Saxon extension functions called from within XSL. The Servlex is an open-source
+         implementation of the EXPath webapp framework [4] based on Saxon and Calabash as its
+         XSLT, XQuery and XProc processors.  Servlex provides a way to write web applications
+         directly in XSLT. It is developed as a Java EE application requiring Servlet technology,
+         sitting on tomcat for binding to HTTP server-side.</p>
+      <h3>Saxon License-tool functionality</h3>
+      <p>The server-side Servlex works as a dispatching and routing
+         mechanism to components (implementation as XSLT stylesheets), applying
+         a configuration-based mapping between the request URI and the
+         component used to process that URI. The container communicates with
+         the components by means of an XML representation of the HTTP request,
+         and receives in turn XML data with HTML at the request body with
+         XForms content and XSLTForms references to render the page.  The
+         representation of the HTTP response is sent back to the client. There
+         are buttons on the forms, which if pressed trigger the action HTTP PUT
+         request; made through the client-side XSLTForms. These requests are
+         handled by Servlex.</p>
+      <p>There are 7=5 main XSLT functions described below, which map the
+         URIs to generate the various XForms to tunnel the instance data
+         between the XForms. These functions all make calls to the core
+         Saxon-license tool written in Java, made available as a Saxon
+         extensions calls from the XSLT:</p>
+      <ol>
+         <li>
+            
+            <p>fnRunMainForm: A request to serve the main form is made with the following URI pattern:
+               </p>
+            
+            <pre>http://192.168.0.2:8080/app/license-tool/main</pre>
+            
+            
+            <p>License
+               requests are usually made through the main saxonica website either for
+               evaluation or paid order (See:
+               <a href="http://www.saxonica.com/download/download.xml">http://www.saxonica.com/download/download.xml</a> and
+               <a href="http://www.saxonica.com/purchase/purchase.xml">http://www.saxonica.com/purchase/purchase.xml</a>, respectively), these
+               orders are receives as an email, which are then copied and pasted on the
+               main form. This data is sent in the form of a XForms
+               instance in a web request, picked up by servlex.</p>
+            </li>
+         <li>
+            
+            <p>fnManualEntry: Manual Entry form for manual creation of the customer
+               details to create a license. A request is made to servlex with the
+               following URI
+               pattern:http://192.168.0.2:8080/app/license-tool/manualEntry</p>
+            </li>
+         <li>
+            
+            <p>fnFetchRecord: Existing licenses created we can retrieve and re-issue. A
+               request is made to Servlex with the following URI pattern. We observe
+               the parameter after the ? Is the license number to fetch:</p>
+            
+            
+            <pre>http://192.168.0.2:8080/app/license-tool/fetchRecord?Select=X002110</pre>
+            </li>
+         <li>
+            
+            <p>fnReport: This function generates an HTML page containing all license created or such
+               the last 20.</p>
+            
+            <pre>http://192.168.0.2:8080/app/license-tool/report</pre>
+            </li>
+         <li>
+            
+            <p>fnEditParseRequest: Manual Entry form: The manual form
+               with the client data populated. The order request from the main form is
+               parsed and returned as a Xforms instance data which is used to generate
+               the form on the server. A request is made to Servlex with the following
+               URI pattern:</p>
+            
+            
+            <pre>http://192.168.0.2:8080/app/license-tool/editParseRequest</pre>
+            </li>
+      </ol>
+      <p>Securing access to the saxon-license webapp is achieved through
+         apache2 configuration.</p>
+      <h3>Encoding problem</h3>
+      <p>A long-standing problem we faced in this application was the handling of non-ASCII
+         characters. We raised this issue with Alain and Florent the creators of XSLTForms
+         and Servlex, respectively, to get to the bottom of this problem.</p>
+      <p>Basically, if the user enters data on a form, we're sending it back to the server
+         in a url-encoded POST message, and it's emerging from Servlex in the form of XML presented
+         as a string, and if there are non-ASCII characters then they are miscoded. In the
+         form we set the submission method attribute to 'xml-urlencoded-post' to guarantee
+         that the next page will fully replace the current one: XMLHttpRequest is not used
+         in this case. </p>
+      <p>We were seeing the typical pattern that you get when the input characters are encoded
+         as a UTF-8 byte sequence and the byte sequence is then decoded to characters by someone
+         who believes it to be 8859-1. We were not able to work out where the incorrect decoding
+         was happening. We originally circumvented the problem by reversing the error: we converted
+         the string back to bytes treating each char as a byte, and then decoded the bytes
+         as UTF-8.</p>
+      <p>A feature of XSLTForms is the profiler (enabled by pressing F1 or setting debug='yes'
+         in the xsltforms-options process instruction). The profiler allows the inspection
+         of the instance data. Another mechanism is to inspect the requests sent by the browser
+         with the network profiler of a debugger.</p>
+      <p>We established that on the client side, there is an HTML Form Element that gets built,
+         and just before the submit() method gets called on this object, the data appears to
+         be OK. But when we look at the Tomcat log of the POST request, it's wrong. Somewhere
+         between the form.submit() on the client and the logging of the message on the server,
+         it's getting corrupted. We can't actually see where the encoding and decoding is happening
+         between these two points. </p>
+      <p>To tackle this problem Florent provided a development version of Servlex, which added
+         logging of the octets as they are read from the binary stream (the logger org.expath.servlex
+         must be set to trace, which should be the default in that version).  In addition to
+         logging the raw headers, as they are read by Tomcat.</p>
+      <p>With this new version of Servlex in place I inputted the following data on the main
+         form. We observe the euro symbol at the end of my first name 'O'Neil' is a non-ASCII
+         character which needs to be preserved:</p>
+      <pre>First Name: O'Neil€
+Last Name: Delpratt
+Company: Saxonica
+Country: United Kingdom
+Email Address: oneil@saxonica.com
+Phone:
+Agree to Terms: checked </pre>
+      <p>After submitting this data to the URI pattern: .../app/license-tool/editParseRequest 
+         we see below the the log data reported by tomcat. What is interesting is the line
+         'DEBUG [2013-03-04 18:06:34,281]: Request - header   : content-type / application/x-www-form-urlencoded'. 
+         Also at this stage the input to the receiving form has been corrupted to 'O'Neilâ‚¬'
+         which should be 'O'Neil€' :</p>
+      <pre>DEBUG [2013-03-04 18:06:34,279]: Request - servlet  : parseRequest
+DEBUG [2013-03-04 18:06:34,280]: Request - path     : /parseRequest
+DEBUG [2013-03-04 18:06:34,280]: Request - method   : POST
+DEBUG [2013-03-04 18:06:34,280]: Request - uri      : http://localhost:8080/app/license-tool/parseRequest
+DEBUG [2013-03-04 18:06:34,280]: Request - authority: http://localhost:8080
+DEBUG [2013-03-04 18:06:34,280]: Request - ctxt_root: /app/license-tool
+DEBUG [2013-03-04 18:06:34,280]: Request - param    : postdata / &lt;Document&gt;&lt;Data&gt;First Name: O'Neilâ‚¬
+Last Name: Delpratt
+Company: Saxonica
+Country: United Kingdom
+Email Address: oneil@saxonica.com
+Phone:
+Agree to Terms: checked &lt;/Data&gt;&lt;Options&gt;&lt;Confirmed&gt;false&lt;/Confirmed&gt;&lt;Create&gt;false&lt;/Create&gt;&lt;Send&gt;false&lt;/Send&gt;&lt;Generate&gt;false&lt;/Generate&gt;&lt;Existing/&gt;&lt;/Options&gt;&lt;/Document&gt;
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : host / localhost:8080
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : user-agent / Mozilla/5.0 (X11;
+      Ubuntu; Linux i686; rv:18.0) Gecko/20100101 Firefox/18.0
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : accept / text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : accept-language / en-gb,en;q=0.5
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : accept-encoding / gzip, deflate
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : referer / http://localhost:8080/app/license-tool/main
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : connection / keep-alive
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : content-type / application/x-www-form-urlencoded
+DEBUG [2013-03-04 18:06:34,281]: Request - header   : content-length / 482
+DEBUG [2013-03-04 18:06:34,281]: Raw body content type: application/x-www-form-urlencoded
+TRACE [2013-03-04 18:06:34,281]: TraceInputStream(org.apache.catalina.connector.CoyoteInputStream@771eeb)
+TRACE [2013-03-04 18:06:34,282]: read([B@1a70476): -1</pre>
+      <p>Florent made the following observations:</p>
+      <ol>
+         <li>The content-type is application/x-www-form-urlencoded, which should conform to http://www.w3.org/TR/xforms/#serialize-urlencode,
+            but seems not to: the XML seems to be passed as is, instead of been split into individual
+            elements and their string values. But I am not an expert on XForms so I might be wrong.¶</li>
+         <li>Still about application/x-www-form-urlencoded and the same section, it says that the
+            non-ASCII characters are replaced based on the octets of their UTF-8 representation,
+            so the encoding should not be used here.  This content-type does not carry any charset
+            parameter anyway, if I am right.</li>
+         <li>Again about application/x-www-form-urlencoded, it is actually handled by Java EE as
+            parameters, instead of simply giving the raw POST entity content.  I am not sure exactly
+            how it works WRT the encoding.</li>
+      </ol>
+      <p>Alain provided the following example to test the assumptions made by Florent.</p>
+      <p>Encoding.xhtml:</p>
+      <pre>&lt;html xmlns="http://www.w3.org/1999/xhtml" xmlns:xf="http://www.w3.org/2002/xforms"&gt;
+    &lt;head&gt;
+        &lt;title&gt;Encoding Test&lt;/title&gt;
+        &lt;xf:model&gt;
+            &lt;xf:instance&gt;
+                &lt;data/&gt;
+            &lt;/xf:instance&gt;
+            &lt;xf:submission id="s01" method="xml-urlencoded-post" replace="all" action="http://www.agencexml.com/xsltforms/dump.php"&gt;
+                &lt;xf:message level="modeless" ev:event="xforms-submit-error"&gt;Submit error.&lt;/xf:message&gt;
+            &lt;/xf:submission&gt;
+        &lt;/xf:model&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;xf:input ref="."&gt;
+            &lt;xf:label&gt;Input:&lt;/xf:label&gt;
+        &lt;/xf:input&gt;
+        &lt;xf:submit&gt;
+            &lt;xf:label&gt;Save&lt;/xf:label&gt;
+        &lt;/xf:submit&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+      <p>dump.php:</p>
+      <pre>&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+    &lt;head&gt;
+        &lt;title&gt;HTTP XML POST Dump&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h1&gt;HTTP XML POST Dump&lt;/h1&gt;
+        &lt;h2&gt;Raw Data :&lt;/h2&gt;
+        &lt;?php
+        $body = file_get_contents("php://input");
+        echo strlen($body);
+        echo " bytes: &lt;br/&gt;";
+        echo "&lt;pre&gt;$body&lt;/pre&gt;";
+        if(substr($body,0,9) == "postdata=") {
+            $body = urldecode(substr($body,strpos($body,"=")+1));
+        }
+        $xml = new DOMDocument();
+        $xml-&gt;loadXML($body);
+        $xslt = new XSLTProcessor();
+        $xsl = new DOMDocument();
+        $indent = "&lt;xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\"&gt;&lt;xsl:output method=\"xml\" indent=\"yes\" encoding=\"UTF-8\"/&gt;&lt;xsl:template match=\"@*|node()\"&gt;&lt;xsl:copy-of select=\".\"/&gt;&lt;/xsl:template&gt;&lt;/xsl:stylesheet&gt;";
+        $xsl-&gt;loadXML($indent);
+        $xslt-&gt;importStylesheet($xsl);
+        $result = $xslt-&gt;transformToXml($xml);
+        $result = substr($result, strpos($result,"?&gt;")+3);
+        echo "&lt;h2&gt;Indented XML :&lt;/h2&gt;&lt;pre&gt;".htmlspecialchars($result, ENT_QUOTES)."&lt;/pre&gt;";
+        ?&gt;
+    &lt;/body&gt;
+&lt;/html&gt;</pre>
+      <p>When submitting '€', I get this:</p>
+      <pre>HTTP XML POST Dump
+Raw Data :
+41 bytes:
+postdata=%3Cdata%3E%E2%82%AC%3C%2Fdata%3E
+Indented XML :
+&lt;data&gt;€&lt;/data&gt;</pre>
+      <p>and with Firebug, I can see following, which is correct:</p>
+      <p>
+         <img alt="saxon-license img3" src="http://dev.saxonica.com/img/license-tool-dump.png" /></p>
+      <p>Florent states:</p>
+      <p>What should be in the content of the HTTP request is %E2%82%AC to represent the Euro
+         symbol as URL- encoded (because that represents the 3 octets of  in UTF-8).<br />Because of the "automatic" handling of that Content-Type by Java EE, I am afraid the
+         only way to know for sure what is on the wire is to actually look into it (using a
+         packet sniffer, like Wireshark for instance).</p>
+      <p>At this stage it was important to check what packets are being sent. The following
+         is a snippet of the reports from Wireshark, with the data format correct at this point.</p>
+      <pre>HTTP    1207    POST /app/license-tool/parseRequest HTTP/1.1  (application/x-www-form-urlencoded)
+[truncated] postdata=%3CDocument+xmlns%3D%22%22%3E%3CData%3EFirst+Name%3A+O%27Neil
+%E2%82%AC%0D%0A%0D%0ALast+Name%3A+Delpratt%0D%0A%0D%0ACompany%3A+Saxonica
+%0D%0A%0D%0ACountry%3A+United+Kingdom%0D%0A%0D%0AEmail+Address%3A+oneil
+%40saxonica.c
+...</pre>
+      <p>Florent discovered using Alain's test case that it was actually Tomcat itself interpreting
+         the %xx encoding as Latin-1!  More infos at:</p>
+      <p><a href="http://wiki.apache.org/tomcat/FAQ/CharacterEncoding">http://wiki.apache.org/tomcat/FAQ/CharacterEncoding</a></p>
+      <p>In summary, the message is the decoding was done using 8859-1 not UTF-8 as one would
+         expect.</p>
+      <p>To overcome the problem Florent created a new config property for Servlex, which is
+         named org.expath.servlex.default.charset, the value of which can be set to "UTF-8"
+         in Tomcat's conf/catalina.properties. If set, it's value is used as the charset for
+         requests without an explicit charset in Content-Type.</p>
+      <p>Thanks to Florent, Alain and Mike the encoding problem has now been resolved. The
+         lesson learnt in all, is that tracking down encoding problems can still be very hard
+         work.</p>
+      <p>References<br />[1] XForms. W3C. <a href="http://www.w3.org/MarkUp/Forms/">http://www.w3.org/MarkUp/Forms/</a><br />[2] XSLTForms. Alain Couthures. <a href="http://www.agencexml.com/xsltforms">http://www.agencexml.com/xsltforms</a><br />[3] Servlex. Florent George. Gihub: <a href="https://github.com/fgeorges/servlex">https://github.com/fgeorges/servlex</a>  Google Project: <a href="http://code.google.com/p/servlex/">http://code.google.com/p/servlex/</a><br />[4] EXPath Webapp.<b> </b><a href="http://expath.org/wiki/Webapp">http://expath.org/wiki/Webapp</a></p>
+   </body>
+</html>

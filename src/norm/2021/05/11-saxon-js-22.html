@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Saxon-JS 2.2</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2021-05-11T12:00:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+</head>
+<body>
+<h1>Saxon-JS 2.2</h1>
+
+<p>Saxon-JS 2.2
+has been published on
+<a href="https://saxonica.com/saxon-js/">Saxonica.com</a> and to the
+<a href="https://www.npmjs.com/package/saxon-js">npm registry</a>!</p>
+
+<p>This is a maintenance release that fixes a few bugs. The big one, to my mind, is resolving
+the “global object” bug in Node.js. Previous releases of Saxon-JS always
+created a global object named “<code>SaxonJS</code>”. This isn’t best practice on
+Node.js and interfered with some platforms like
+<a href="https://en.wikipedia.org/wiki/Electron_(software_framework)">Electron</a>
+and <a href="https://en.wikipedia.org/wiki/Webpack">Webpack</a>.</p>
+
+<p>Starting with 2.2, on Node.js, the global object no longer gets created.
+If you’ve consistently used</p>
+
+<pre><code>const SaxonJS = require('saxon-js');</code></pre>
+
+<p>to load Saxon-JS, you’ll be fine. If you’ve used some other name
+for the object, make sure that you refer to Saxon-JS exclusively by
+that name. For example:</p>
+
+<pre><code>const <b>sjs</b> = require('saxon-js');
+const six = <b>sjs</b>.XPath.evaluate("3+3");
+console.log(`six = ${six}`)</code></pre>
+
+<p>We fixed a few other bugs as detailed in the
+<a href="https://www.saxonica.com/saxon-js/documentation/index.html#!changes">change history</a>.
+Thanks to everyone who took the time to report them!
+</p>
+
+</body>
+</html>

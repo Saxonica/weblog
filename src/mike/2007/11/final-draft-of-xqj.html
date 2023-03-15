@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Final Draft of XQJ</title>
+      <meta name="id" content="143" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2007-11-21T14:18:45" />
+      <meta name="basename" content="final_draft_of_xqj" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Final Draft of XQJ</h1>
+      <p>A "Final Draft" of XQJ has been published (<a href="http://jcp.org/en/jsr/detail?id=225">http://jcp.org/en/jsr/detail?id=225</a>). There aren't many changes, but this time the specification is accompanied by actual
+         interface definitions, and by a test suite.</p>
+      <p>Swapping in the published interface definitions for my previous handmade versions
+         proved no trouble - one or two discrepancies as regards which methods throw exceptions,
+         and one or two methods that have had an extra argument added.</p>
+      <p>Running the test suite is likely to be a bit more effort. Problems so far:</p>
+      <p>(a) The spec generally requires an XQException to be raised when arguments to methods
+         are null. I was generally ignoring that requirement, often throwing a NullPointerException
+         instead (which is more usual).</p>
+      <p>(b) The test suite takes the rules on closed connections very seriously. I had previously
+         treated this as a bit of a nonsense - there's no real connection in Saxon, so closing
+         it doesn't mean very much, and if things still work after you've closed it, then no-one
+         is going to complain. Except the test suite, that is... A particular problem is that
+         closing a connection requires invalidating all expressions created using that connection.
+         That means Saxon is going to have to retain a reference to all such expressions, which
+         is likely to result in the expressions and quite possibly their results being locked
+         in memory for the duration of the session unless I can find a way of doing it using
+         weak references. That's a lot of work to satisfy a pointless requirement, but unfortunately
+         the spec and the test suite leave no latitude here.</p>
+      <p>(c) More seriously, there are rules on the manipulation of the static context that
+         the Saxon implementation wasn't following (it's possible these rules have been tightened
+         up in the latest draft, I'm not sure). For example when you set the static context
+         on the connection, the connection is supposed to take a snapshot of the state of the
+         static context, and subsequent changes to the static context object are supposed to
+         have no effect. Also, options like ordering mode have to be respected in the API even
+         though the actual XQuery implementation is allowed to ignore them.</p>
+      <p>So far the test suite has found perhaps three or four bugs that real live users would
+         notice and complain about, and perhaps 150 errors (like throwing the wrong exception
+         on null arguments, or delivering a successful result when a closed connection is used)
+         that can be treated as trivial - though of course they will all need to be fixed.</p>
+      <p>Postscript (2007-11-23)</p>
+      <p>I've now run all the tests - with just a couple of failed tests left where there was
+         clearly a discrepancy between the test result and the spec. Apart from the issues
+         highlighted above, there were one or two problems to be sorted out with StAX (XMLStreamReader)
+         interfaces (caused largely by the woeful inadequacy of the StAX specification itself),
+         and quite a few details especially with the XQItemType interface where it only became
+         clear from reading the tests what the specification authors had really had in mind
+         (baseType() in XQJ, for example, means something that you couldn't possibly guess
+         from the XQuery and XML Schema uses of the term).</p>
+      <p>The change that will probably have most impact on users is the rules on a forwards-only
+         result sequence that say (with one or two exceptions) that you're only allowed to
+         access each item once. There's a workaround - you call getItem() to grab a copy of
+         the item and that counts as your one access - but it's not very natural.</p>
+      <p>It's painful having to add lots of code to prevent users doing useful things that
+         the implementation previously allowed, but one just has to breathe deeply and remember
+         that conformance comes first.<br /></p>
+   </body>
+</html>

@@ -1,0 +1,216 @@
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://dev.saxonica.com/maven" }
+  }
+
+  dependencies {
+    classpath group: 'net.sf.saxon', name: 'Saxon-HE', version: saxonVersion
+  }
+}
+
+plugins {
+  id "java"
+  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.10.2'
+}
+
+import com.nwalsh.gradle.saxon.SaxonXsltTask
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+configurations.all {
+  resolutionStrategy {
+    force 'xml-apis:xml-apis:1.4.01'
+  }
+}
+
+configurations {
+  saxonee.extendsFrom(implementation)
+  validateRuntime.extendsFrom(implementation)
+  projectImplementationClasspath.extendsFrom(implementation)
+  projectRuntimeClasspath.extendsFrom(runtimeOnly)
+}
+
+dependencies {
+  implementation (
+    [group: 'net.sf.saxon', name: 'Saxon-HE', version: saxonVersion],
+  )
+}
+
+defaultTasks 'publishWeblog'
+
+def weblogAuthors = ['mike': 'michael-kay',
+                     'oneil': 'oneil-delpratt',
+                     'norm': 'norm-tovey-walsh']
+
+def gitRef(post) {
+  def ref = ""
+  def proc = "git log -1 --format=\"%aI %h\" src/${post}".execute()
+  proc.in.eachLine { line ->
+    ref = line
+  }
+  proc.err.eachLine { line ->
+    println(line)
+  }
+  proc.waitFor()
+  ref
+}
+
+def heAvailable=true
+def eeAvailable=false
+def peAvailable=false
+configurations.saxonee.each { it ->
+  def filename = it.toString().toLowerCase()
+  eeAvailable = eeAvailable || filename.contains("saxon-ee")
+  peAvailable = peAvailable || filename.contains("saxon-pe")
+}
+configurations.compileClasspath.each { it ->
+  def filename = it.toString().toLowerCase()
+  eeAvailable = eeAvailable || filename.contains("saxon-ee")
+  peAvailable = peAvailable || filename.contains("saxon-pe")
+}
+
+if (saxonEE == "true" && !(eeAvailable || peAvailable)) {
+  println("Request for SAXON EE ignored; neither EE nor PE appear to be available")
+}
+
+// This is all a complete hack that I worked out by trial and error
+def EXCP="${projectDir}/build/classes/java/main"
+if (saxonEE != "false" && (eeAvailable || peAvailable)) {
+  configurations.saxonee.each { it ->
+    EXCP += ":" + it
+  }
+} else {
+  configurations.compileClasspath.each { it ->
+    EXCP += ":" + it
+  }
+}
+
+task publishHtml() {
+  // nop
+}
+
+def weblogPosts = [:]
+weblogAuthors.each { item ->
+  def author = item.key
+  def basepath = "${projectDir}/src/${author}/"
+  def baselen = basepath.length()
+  fileTree(dir: "src/${author}").each { file ->
+    def path = file.toString().substring(baselen)
+    if (path ==~ /(\d+)\/(\d+)\/.*\.html$/) {
+      // A proper string, not a Groovy GString
+      def key = "${author}/${path}".toString()
+      weblogPosts.put(key, file.toString())
+
+      def taskId = key.replace("/", "_").replace("-", "_")
+      Task t = task "${taskId}"(type: SaxonXsltTask, dependsOn: ["updateNavigation"]) {
+        inputs.file "${buildDir}/navigation.xml"
+        inputs.file "${projectDir}/xslt/format.xsl"
+
+        input file.toString()
+        output "${buildDir}/docs/${key}"
+        stylesheet "${projectDir}/xslt/post.xsl"
+      }
+      publishHtml.dependsOn t
+    }
+  }
+}
+
+def everythingElse = []
+fileTree(dir: "src/").each { file ->
+  def baselen = "${projectDir}/src".length() + 1
+  def path = file.toString().substring(baselen)
+  if (!weblogPosts.containsKey(path)) {
+    everythingElse += path
+  }
+}
+
+task configureEnvironment() {
+  def envVars = [:]
+  envVars['SAXON_CP'] = EXCP
+  envVars['VERBOSE'] = verbose
+  tasks.withType(Exec) {
+    environment << envVars
+  }
+}
+
+task copyResources(type: Copy) {
+  from "src/"
+  into "${buildDir}/docs/"
+  include everythingElse
+  doFirst {
+    mkdir "${buildDir}/docs"
+  }
+}
+
+task updateNavigation(type: SaxonXsltTask) {
+  inputs.files weblogPosts.values()
+
+  stylesheet "${projectDir}/xslt/navigate.xsl"
+  output "${buildDir}/navigation.xml"
+  args(["-it"])
+}
+
+task atomize(type: SaxonXsltTask, dependsOn: ["updateNavigation"]) {
+  input "${buildDir}/navigation.xml"
+  stylesheet "${projectDir}/xslt/atom.xsl"
+  output "${buildDir}/docs/atom/index.xml"
+}
+
+weblogAuthors.each { item ->
+  def blog = item.key
+  def aid = item.value
+  task "atomize-${blog}"(type: SaxonXsltTask, dependsOn: ["updateNavigation"]) {
+    input "${buildDir}/navigation.xml"
+    stylesheet "${projectDir}/xslt/atom.xsl"
+    output "${buildDir}/docs/${blog}/atom.xml"
+    parameters([
+      'author-id': aid
+    ])
+  }
+  atomize.dependsOn("atomize-${blog}")
+}
+
+task gitData(type: Exec) {
+  inputs.files fileTree(dir: "src")
+  inputs.file "bin/git-data"
+  outputs.file "build/git-data.txt"
+  commandLine "bin/git-data", "${buildDir}/git-data.txt"
+  doFirst {
+    mkdir("build")
+  }
+}
+
+task sitemap(type: SaxonXsltTask, dependsOn: ["gitData"]) {
+  inputs.file "${buildDir}/git-data.txt"
+  
+  stylesheet "${projectDir}/xslt/sitemap.xsl"
+  output "${buildDir}/docs/sitemap.xml"
+  args(['-it'])
+}
+
+task publishWeblog(
+  type: SaxonXsltTask,
+  dependsOn: ["copyResources", "atomize",
+              "publishHtml", "sitemap"]
+) {
+  outputs.file "${buildDir}/docs/index.html"
+  outputs.file "${buildDir}/docs/archive.html"
+
+  input "${buildDir}/navigation.xml"
+  stylesheet "${projectDir}/xslt/indexes.xsl"
+}
+
+task server(type: Exec, dependsOn: ["publishWeblog"]) {
+  commandLine "${pythonExecutable}",
+    "-m", "http.server",
+    "--directory", "${buildDir}/docs",
+    serverPort
+  doFirst {
+    println("Starting web server; open http://localhost:${serverPort}/ in your browser")
+  }
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Finite State Machines</title>
+      <meta name="id" content="107" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-02-25T14:18:43" />
+      <meta name="basename" content="finite_state_machines" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Finite State Machines</h1>
+      <p>Saxon 8.7 is out of the door now, and I'll have a few things to say about that in
+         due course. But the thing that's been exercising my mind the last few days is a bug
+         in schema validation.</p>
+      <p>It's a very simple content model:</p>
+      <pre><code>    &lt;xs:choice maxOccurs="2"&gt;
+      &lt;xs:element name="a" type="xs:string" minOccurs="0"/&gt;
+      &lt;xs:element name="b" type="xs:string" minOccurs="0"/&gt;
+    &lt;/xs:choice&gt;</code></pre>
+      <p>but Saxon was reporting validation errors on instances that were actually valid. I
+         fixed it in 8.7 with a rewrite that says if any of the branches of a choice are optional,
+         then make the choice itself optional (and the branches mandatory): but I had a worrying
+         niggle that this wasn't the whole solution. And sure enough (with some help from Henry
+         Thompson and Richard Tobin) I established that the algorithm I use for determinizing
+         a finite state automaton isn't actually equivalent to the textbook algorithm published
+         by Aho and Ullman.</p>
+      <p>I've reimplemented the algorithm sticking more closely to the textbook, and it now
+         gets this case right. It also delivers the same result as the previous algorithm for
+         all my test cases (nearly 5000 of them). Unfortunately it's less efficient, in particular,
+         it can use a lot more memory. Correctness, of course, comes before performance; but
+         if my faster algorithm was getting 4898 out of 4899 test cases correct, then it must
+         have something going for it, and it would be nice to find out the preconditions under
+         which it is actually correct.</p>
+      <p>The reason I had felt I could depart from the textbook algorithm was that it's designed
+         to handle regular expression grammars with ambiguity and backtracking that can't arise
+         in XML Schema because of the infamous UPA constraint. I thought this meant I could
+         remove some of the complexity. But it seems there's just enough residual ambiguity
+         in the grammar given above to make the simplification invalid.</p>
+   </body>
+</html>

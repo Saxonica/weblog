@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Push and Pull</title>
+      <meta name="id" content="119" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-07-03T14:18:43" />
+      <meta name="basename" content="push_and_pull" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Push and Pull</h1>
+      <p>Alain Frisch of INRIA has been doing some work on streaming transformations, including
+         the development of a <a href="http://yquem.inria.fr/%7Efrisch/xstream/">language called XStream</a>. The project itself appears to be rather academic for the time being (for example,
+         the language apparently doesn't support namespaces yet) but in the meantime there
+         are some interesting <a href="http://yquem.inria.fr/%7Efrisch/xstream/bench.html">performance numbers</a> relevant to Saxon that are worth studying.</p>
+      <p>In terms of competition, the numbers seem to confirm that Saxon is in the top tier
+         of processors for both XQuery and XSLT. It's good to note that Saxon is the only processor
+         tested whose throughput handling an 80Mb input file was higher than the 40Mb result.</p>
+      <p>What's really interesting, though, is the fact that the Saxon XSLT performance is
+         so much better than the XQuery figure. (2.21 vs 1.52 Mb/sec); and also the observation
+         that this transformation benefited (in the case of XQuery) from using the -pull option
+         on the command line.</p>
+      <p>I've written a test data generator in XSLT so that I could investigate further, and
+         I found that my results were very similar. I worked mainly with an input file of 23Mb
+         - with smaller files, the results are too sensitive to Java startup costs, while with
+         larger files, the need for large amounts of memory can cause thrashing unless you
+         control very carefully what else is running on the machine. For this file, the best
+         XSLT transformation time I achieved was 9.003 sec. The best XQuery time without the
+         -pull option was 18.317 sec (half the speed), which improved to 14.571 sec with -pull.</p>
+      <p>Why is XQuery slower? The answer is that XSLT templates are always executed in "push"
+         mode: instructions that create new nodes are implemented by sending SAX-like events
+         to the current output destination. In this example the current output destination
+         is always the serializer, which means that the "result tree" doesn't in fact exist:
+         everything is serialized as soon it is written. In XQuery, the code is written in
+         terms of functions, and functions are evaluated in "pull" mode: the caller iterates
+         over the items in the sequence supplied by the function. In this case, the function
+         call constructs and returns a new element node. This element node is physically constructed
+         in memory, the node is returned to the calling function , which then copies the new
+         element into the tree it is creating. Since the function is actually recursive, this
+         results in a great deal of copying of temporary trees.</p>
+      <p>What effect does "-pull" have? In fact, the option -pull on the command line is not
+         particularly well named. It has two effects: firstly, it sets what in the API is called
+         "lazy construction mode". Secondly, it means that the top-level query expression (see
+         class XQueryExpression) is evaluated using the pull() method instead of the run()
+         method. The pull() method delivers the result of the query as a stream of StAX-like
+         events, whereas run() causes the result to be pushed to the serializer as a sequence
+         of SAX-like events.</p>
+      <p>The key thing here is lazy construction mode. When a function body consists, as here,
+         of an element constructor, then in lazy construction mode, the function call does
+         not return a fully-constructed element, it instead returns a "virtual" element (class
+         UnconstructedElement) which is really just a pointer to the instructions and data
+         needed to construct the element when it is eventually needed. What happens next depends
+         on what the caller of the function decides to do with the node. If it tries to evaluate
+         a path expression, for example, then the node immediately gets built in memory, so
+         nothing has been saved. In this benchmark, however, the caller adds the node to a
+         new parent element, which, because the function is recursive, it itself a virtual
+         element. So the effect of calling pull() on the top-level query expression is to immediately
+         return a virtual element whose content is delivered recursively in terms of other
+         virtual elements. The control code then reads StAX-like pull events representing this
+         virtual element, and this can be done without ever constructing the element in memory.
+         These events are then translated into push events and sent to the serializer. The
+         net effect is to do much the same as the XSLT solution: instructions write events
+         directly to the serializer, and the result tree is never materialized in memory. But
+         it's still slower than the XSLT solution, probably because the logic of building virtual
+         trees is more convoluted.</p>
+      <p>What improvements are possible? It would be nice to get the XQuery speed up to the
+         same level as the XSLT speed, and this clearly could be done if we could execute functions
+         in the same way as XSLT executes templates, in push mode. Generally Saxon's strategy
+         is to evaluate subexpressions in the same mode as the containing expression where
+         possible: a simple "for" expression, for example, is executed in pull mode or push
+         mode depending on the mode of the caller. If we made function calls amenable to processing
+         in either mode, then this whole query would execute in push mode if started in push
+         mode. The other thing we could try is to select "lazy construction mode" automatically
+         when appropriate, rather than relying on a user switch. The reason we don't do this
+         at present is that it sometimes performs far worse. But the rule suggested by this
+         benchmark is: if the body of a function consists of an element constructor, use lazy
+         construction mode for that function.</p>
+      <p>Thanks to Alain for setting off this stream of thought. There have been few measurements
+         comparing XSLT and XQuery performance on comparable tasks, and new measurements always
+         yield new insights.</p>
+   </body>
+</html>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Thoughts on schema-awareness</title>
+      <meta name="id" content="103" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2006-02-08T14:18:43" />
+      <meta name="basename" content="thoughts_on_schema-awareness" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Thoughts on schema-awareness</h1>
+      <p>Spent an hour this morning (with a client) tracking down an elusive bug in a stylesheet.
+         As described in my <a href="http://www.stylusstudio.com/schema_aware.html">Stylus Studio article</a>, it was one of those classic problems where a path expression or match pattern selects
+         nothing: and if the stylesheet had been schema-aware we would have found the problem
+         in no time. So why wasn't it? Answer: because it was cobbled together quickly, and
+         it was the second transformation in a pipeline, and the intermediate format was ad-hoc
+         and local. But we could have generated a schema from the instance document after running
+         the first step in the pipeline. Resolution: I must learn to take my own medicine.</p>
+   </body>
+</html>

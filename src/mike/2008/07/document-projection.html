@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Document Projection</title>
+      <meta name="id" content="141" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2008-07-25T14:18:45" />
+      <meta name="basename" content="document_projection" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Document Projection</h1>
+      <p>Document Projection [1] is a technique invented by Amlie Marian and Jrme
+         Simon designed to reduce the amount of memory occupied by a source document used by
+         a query or transformation. The idea is to analyze the query and determine what nodes
+         it is capable of accessing, and then while parsing and building the document, to filter
+         out all those nodes that the query can never access. I decided to have a go at implementing
+         this in Saxon.</p>
+      <p>In fact, the exercise started with a different purpose. The Orbeon XForms engine makes
+         use of Saxon for evaluating XPath expressions, and when the user changes any field,
+         all the path expressions have to be re-evaluated to check that field contents are
+         still valid and to do all the other clever things that XForms engines do in response
+         to user input. With a complex form this can get quite time-consuming, so I spent a
+         couple of days working with Erik Bruchez of Orbeon (encouraged and funded by a mutual
+         customer) to see if we could find a way of statically analyzing the XPath expressions
+         to see which changes to the form could affect the results of which XPath expressions,
+         and thus avoid reevaluating the expressions whose value could not be affected by the
+         change. It turns out that the path analysis to do this is exactly the same as that
+         needed for document projection (as I discovered after my first two attempts to devise
+         a suitable algorithm on my own).</p>
+      <p>As always with research papers, you find that the problem has been simplified. Marian
+         and Simon do the analysis after the query has been reduced to a subset language they
+         call "XQuery core", which eliminates many of the problems such as working out which
+         nodes are atomized, how to handle backwards axes, and so on. Some of the assumptions
+         are stated, some are left implicit. For example, a query might select a set of nodes
+         in the source document. Document projection can be done in such a way that the same
+         nodes are guaranteed to be selected, but if the user application is going to do any
+         further processing of those nodes, then you have to make assumptions about what processing
+         it will do. Very often the result of the query will be serialized, in which case you
+         want to retain the complete subtree rooted at any selected node.</p>
+      <p>Another assumption seems to be that the context node for the query will be a document
+         root. And there are difficulties if the query calls the doc() function with arguments
+         computed at run-time, because this means you don't know whether two different calls
+         on doc() might select the same document, in which case you would have to form the
+         union of the nodes reachable from each call.</p>
+      <p>After a few false starts I found that it wasn't too hard to get the path analysis
+         right, though at present I don't attempt to follow links through user-defined functions.
+         There are still one or two glitches with non-downward axes, but it should be possible
+         to sort them out. For example, given the query .//E[following-sibling::E], it's not
+         good enough to just retain the E elements, because that leaves you no way to determine
+         from the projected document which E elements are siblings of each other. The projection
+         has to include the parent of the E elements as well. At present, I'm not doing any
+         lookahead or backtracking, so when I encounter an element in the SAX event stream
+         I don't know whether it is the parent of an E element or not. So I have to keep it,
+         just in case. Although this makes document projection ineffective for this example,
+         it seems that such cases are rather few and far between, so this seems to be an acceptable
+         compromise.</p>
+      <p>The second phase of processing, using the results of the path analysis to drive a
+         SAX filter that actually projects out the unwanted nodes, turned out to be relatively
+         straightforward - one of those bits of code that is quite short, but rather mind-blowing
+         to work out how it works. I started writing the code as my Eurostar train pulled out
+         of London Waterloo station and it was working by the time we reached Brussels.</p>
+      <p>How effective is document projection in real life? For queries like the ones in the
+         XMark benchmark, it works superbly well - many of the documents reduce to 5% or less
+         of their original size, making it feasible for the first time to run Saxon against
+         the 1Gb version of this benchmark. It remains to be seen, however, how typical this
+         benchmark is of real life. Certainly for document and message transformations, where
+         most of the input data finds its way through to the output, projection by definition
+         won't be much help.</p>
+      <p>So far I've only attempted the path analysis for XQuery and not for XSLT. Static analysis
+         of XSLT stylesheets is notoriously difficult because you often can't decide at compile
+         time which templates will be invoked by which apply-template calls. (And even if you
+         could, that would only reduce it to the same problem as function calls, which I'm
+         not tackling yet in XQuery.) Nevertheless, I think it may be possible to do something
+         useful for special cases such as a single-template stylesheet, and this will still
+         be useful if one can explain to users how to write their code to take advantage of
+         the facility.</p>
+      <p>[1] Amlie Marian and Jrme
+         Simon. VLDB'2003, Berlin, Germany, September 2003. <a href="http://www-db.research.bell-labs.com/user/simeon/xml_projection.pdf">http://www-db.research.bell-labs.com/user/simeon/xml_projection.pdf</a></p>
+   </body>
+</html>

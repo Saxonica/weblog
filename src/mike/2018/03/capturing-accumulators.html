@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <title>Capturing Accumulators</title>
+      <meta name="id" content="223" />
+      <meta name="author" content="Michael Kay" />
+      <meta name="pubdate" content="2018-03-28T08:09:03" />
+      <meta name="basename" content="capturing_accumulators" />
+      <meta name="blog-id" content="3" />
+   </head>
+   <body>
+      <h1>Capturing Accumulators</h1>
+      <p>A <a href="https://stackoverflow.com/questions/48983320/conditional-streaming-accumulator-in-xslt-3/48985112">recent post on StackOverflow</a> made me realise that streaming accumulators in XSLT 3.0 are much harder to use than
+         they need to be.
+         </p>
+      <p>
+         
+         
+         A reminder about what accumulators do. The idea is that as you stream your way through
+         a large document, you can have a number of tasks running in the background (called
+         accumulators) which observe the document as it goes past, and accumulate information
+         which is then available to the "main" line of processing in the foreground. For example,
+         you might have an accumulator that simply keeps a note of the most recent section
+         heading in a document; that's useful because the foreground processing can't simply
+         navigate around the document to find the current section heading when it finds that
+         it's needed.
+         </p>
+      <p>
+         Accumulator rules can fire either on start tags or end tags or both, or they can be
+         associated with text nodes or attributes. But there's a severe limitation: a streaming
+         accumulator must be motionless: that's XSLT 3.0 streaming jargon to say that it can
+         only see what's on the parser's stack at the time the accumulator triggers. This affects
+         both the pattern that controls when the accumulator is triggered, and the action that
+         it can take when the rule fires.
+         </p>
+      <p>
+         
+         
+         For example, you can't fire a rule with the pattern <code>match="section[title='introduction']"</code> because navigation to child elements (title) is not allowed in a motionless pattern.
+         Similarly, if the rule fires on  <code style="font-size: 13px;">match="section"</code>, then you can't access the title in the rule action (<code>select="title"</code>) because the action too must be motionless. In some cases a workaround is to have
+         an accumulator that matches the text nodes (<code>match="section/title/text()[.='introduction']"</code>) but that doesn't work if section titles can have mixed content.
+         </p>
+      <p>
+         
+         
+         It turns out there's a simple fix, which I call a <i>capturing accumulator rule</i>. A capturing accumulator rule is indicated by the extension attribute <code>&lt;xsl:accumulator-rule saxon:capture="yes" phase="end"&gt;</code>, which will always be a rule that fires on an end-element tag. For a capturing rule,
+         the background process listens to all the parser events that occur between the start
+         tag and the end tag, and uses these to build a snapshot copy of the node. A snapshot
+         copy is like the result of the fn:snapshot function - it's a deep copy of the matched
+         node, with ancestor elements and their attributes tagged on for good measure. This
+         snapshot copy is then available to the action part of the rule processing the end
+         tag. The match patterns that trigger the accumulator rule still need to be motionless,
+         but the action part now has access to a complete copy of the element (plus its ancestor
+         elements and their attributes).
+         </p>
+      <p>
+         Here's an example. Suppose you've got a large document like the XSLT specification,
+         and you want to produce a sorted glossary at the end, and you want to do it all in
+         streamed mode. Scattered throughout the document are term definitions like this:
+         </p>
+      <pre>&lt;termdef id="dt-stylesheet" term="stylesheet"&gt;A  &lt;term&gt;stylesheet&lt;/term&gt; consists of one or more packages: specifically, one
+   &lt;termref def="dt-top-level-package"&gt;top-level package&lt;/termref&gt; and zero or
+   more &lt;termref def="dt-library-package"&gt;library packages&lt;/termref&gt;.&lt;/termdef&gt;</pre>
+      <p>
+         
+         Now we can write an accumulator which simply accumulates these term definitions as
+         they are encountered:
+         
+         
+         </p>
+      <pre>&lt;xsl:accumulator name="terms" streamable="yes"&gt;
+    &lt;xsl:accumulator-rule match="termdef" phase="end" select="($value, .)" saxon:capture="yes"/&gt;
+&lt;/xsl:accumulator&gt;</pre>
+      <p>
+         (the <code>select</code> expression here takes the existing value of the accumulator, <code>$value</code>, and appends the snapshot of the current termdef element, which is available as the
+         context item ".")
+         </p>
+      <p>
+         And now, at the end of the processing, we can output the glossary like this:
+         
+         </p>
+      <pre>&lt;xsl:template match="/" mode="streamable-mode"&gt;
+    &lt;html&gt; 
+        &lt;!-- main foreground processing goes here --&gt;
+        &lt;xsl:apply-templates mode="#current"/&gt;
+        &lt;!-- now output the glossary --&gt;
+        &lt;div id="glossary" class="glossary"&gt;
+            &lt;xsl:apply-templates select="accumulator-after('terms')" mode="glossary"&gt;
+                &lt;xsl:sort select="@term" lang="en"/&gt;
+            &lt;/xsl:apply-templates&gt;
+        &lt;/div&gt;
+    &lt;/html&gt;
+&lt;/xsl:template&gt;</pre>
+      <p>
+         The value of the accumulator is a list of snapshots of termdef elements, and because
+         these are snapshots, the processing at this point does not need to be streamable (snapshots
+         are ordinary trees held in memory).
+         </p>
+      <p>
+         The amount of memory needed to accomplish this is whatever is needed to hold the glossary
+         entries. This follows the design principle behind XSLT 3.0 streaming, which was not
+         to do just those things that required zero working memory, but to enable the programmer
+         to do things that weren't purely streamable, while having control over the amount
+         of memory needed.
+         </p>
+      <p>
+         I think it's hard to find an easy way to tackle this particular problem without the
+         new feature of capturing accumulator rules, so I hope it will prove a useful extension.
+         </p>
+      <p>
+         I've implemented this for Saxon 9.9. Interestingly, it only took about 25 lines of
+         code: half a dozen to enable the new extension attribute, half a dozen to allow it
+         to be exported to SEF files and re-imported, two or three to change the streamability
+         analysis, and a few more to invoke the existing streaming implementation of the snapshot
+         function from the accumulator watch code. Testing and documenting the feature was
+         a lot more work than implementing it.
+         </p>
+      <p>
+         Here's a complete stylesheet that fleshes out the creation of a (skeletal) glossary:
+         </p>
+      <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:package
+  name="http://www.w3.org/xslt30-test/accumulator/capture-203"
+  package-version="1.0"
+  declared-modes="no"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:f="http://accum001/"
+  xmlns:saxon="http://saxon.sf.net/"
+  exclude-result-prefixes="#all" version="3.0"&gt;
+
+  &lt;!-- Stylesheet to produce a glossary using capturing accumulators --&gt;
+  
+  &lt;!-- The source document is a W3C specification in xmlspec format, containing
+    term definitions in the form &lt;termdef term="banana"&gt;A soft &lt;termref def="fruit"/&gt;&lt;/termdef&gt; --&gt;
+  
+  &lt;!-- This test case shows the essential principles of how to render such a document
+    in streaming mode, with an alphabetical glossary of defined terms at the end --&gt;
+  
+  &lt;xsl:param name="streamable" static="yes" select="'yes'"/&gt;
+  
+  &lt;xsl:accumulator name="glossary" as="element(termdef)*" initial-value="()" streamable="yes"&gt;
+    &lt;xsl:accumulator-rule match="termdef" phase="end" saxon:capture="yes" select="($value, .)"/&gt;
+  &lt;/xsl:accumulator&gt;
+
+  &lt;xsl:mode streamable="yes" on-no-match="shallow-skip" use-accumulators="glossary"/&gt;
+  
+  &lt;xsl:template name="main"&gt;
+    &lt;xsl:source-document href="xslt.xml" streamable="yes" use-accumulators="glossary"&gt;
+      &lt;xsl:apply-templates select="."/&gt;
+    &lt;/xsl:source-document&gt;
+  &lt;/xsl:template&gt;
+  
+ &lt;xsl:template match="/"&gt;
+    &lt;out&gt;
+      &lt;!-- First render the body of the document --&gt;
+      &lt;xsl:apply-templates/&gt;
+      &lt;!-- Now generate the glossary --&gt;
+      &lt;table&gt;
+        &lt;tbody&gt;
+          &lt;xsl:apply-templates select="accumulator-after('glossary')" mode="glossary"&gt;
+            &lt;xsl:sort select="@term" lang="en"/&gt;
+          &lt;/xsl:apply-templates&gt;
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/out&gt;
+  &lt;/xsl:template&gt;
+  
+  &lt;xsl:template match="div1|inform-div1"&gt;
+    &lt;div id="{@id}"&gt;
+      &lt;xsl:apply-templates/&gt;
+    &lt;/div&gt;
+  &lt;/xsl:template&gt;
+  
+  &lt;!-- Main document processing: just output the headings --&gt;
+  
+  &lt;xsl:template match="div1/head | inform-div1/head"&gt;
+    &lt;xsl:attribute name="title" select="."/&gt;
+  &lt;/xsl:template&gt;
+  
+  &lt;!-- Glossary processing --&gt;
+  
+  &lt;xsl:mode name="glossary" streamable="no"/&gt;
+  
+  &lt;xsl:template match="termdef" mode="glossary"&gt;
+    &lt;tr&gt;
+      &lt;td&gt;
+        &lt;xsl:value-of select="@term"/&gt;
+      &lt;/td&gt;
+      &lt;td&gt;
+        &lt;xsl:value-of select="."/&gt;
+      &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/xsl:template&gt;
+
+&lt;/xsl:package&gt;</pre>
+   </body>
+</html>
