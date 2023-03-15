@@ -1,0 +1,95 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Saxon vs Xalan Performance; and DOM</title>
+      <meta name="id" content="138">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2007-03-31T14:18:44">
+      <meta name="basename" content="saxon_vs_xalan_performance_and_dom">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Saxon vs Xalan Performance; and DOM</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2007-03"><span class="date" time="2007-03-31T14:18:44">March&nbsp;31, 2007 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I had an email from a customer the other day that started "It is quite unusual for
+         Saxon's performance to be worse than Xalan's. In this 
+         case it's consistently more than twice as slow...". So of course I asked for details.
+         It turned out to be an XSLT stylesheet that was taking (on my machine) around 3950ms
+         under Saxon, and just 1370ms under Xalan. In both cases memory usage was about 22Mb
+         (for a 2Mb source document). Not good news.</p>
+      <p>A quick look at the application showed that it was using a DOMSource and a DOMResult.
+         I changed that to use a Saxon TinyTree for both the source and result (which only
+         involved changing a couple of lines of code) and the Saxon timings came down to about
+         400ms, with memory usage down to 9Mb. Pride restored. But I can't really say the problem
+         is solved because some users will compare the products on their DOM performance, however
+         much I tell them Saxon isn't optimized for that environment.</p>
+      <p>There are several lessons from this exercise:</p>
+      <ol>
+         <li>I knew that Saxon performance on a DOM was much slower than on the TinyTree,
+            but I hadn't realized it was a factor of ten worse. Perhaps there is something specific
+            to this stylesheet that makes the ratio worse than usual.</li>
+         <li>It's so easy to get comparative measurements wrong (or at any rate, to produce
+            comparative measurements that unintentionally show products performing far worse than
+            they should). One of the reason that comparisons published by vendors are so questionable
+            is that you don't make mistakes when running your own product, but you can easily
+            make big mistakes when running other peoples'. But the same applies to independent
+            benchmarks, except that then there's an equal chance of mistakes for all products.</li>
+         <li>Despite the availability of much better tree models like JDOM and XOM, use of
+            DOM is pretty well entrenched as the default.</li>
+      </ol>
+      <p>I thought I would give it a try on XOM, to see how much the overhead was caused by
+         the "node wrapping" technique whereby a DOM or XOM node is encapsulated in a NodeWrapper
+         object that implements the Saxon NodeInfo interface. This proved a bit more difficult
+         than expected (I found a bug in my current development build whereby XSLT keys on
+         a XOM document don't work&nbsp; if the document is&nbsp; transformed a second time using the
+         same stylesheet - caused by confusion about whether it's the same document or not).
+         But on fixing this, the elapsed time is a respectable 730ms, much better than the
+         4s achieved with DOM. So: either DOM really is just big and ugly, or Saxon isn't using
+         it very efficiently.</p>
+      <p>A long time ago I made a design decision that I wasn't going to try and design Saxon
+         to give optimum performance on DOM - it would involve too many compromises. However,
+         it's an unfortunate fact that many users do use Saxon with the DOM, sometimes out
+         of necessity, and sometimes because they simply don't know any better. It would be
+         nice if we could get the performance to rather more reasonable levels - or at the
+         least, to understand quite why it's so bad. Until recently I thought that a major
+         factor in the poor performance was the use of Java reflection, designed to get around
+         the incompatibilities in the DOM interface between JDK 1.4 and JDK 1.5. But that's
+         gone from the current code (which only works with the JAXP 1.3 DOM) so it can't be
+         the true explanation.</p>
+      <p>One possibility is to go back to handling a DOMSource by converting it to a TinyTree.
+         That option is still there in the product (you invoke it by creating an AugmentedSource
+         with setWrapDocument(Boolean.FALSE), and in this case it gives much better performance
+         than the wrapped DOM - about 1050ms. Whether that's the case for all applications
+         I don't know. But if I changed the default, applications that call extension functions
+         and expect the extension functions to see the original DOM nodes would start failing.</p>
+      <p><strong>Followup (2007-04-02):</strong> it seems that the extra cost of the DOM version of the application compared with
+         the XOM version is that many more node wrappers are being created - about 10m versus
+         700k objects. In turn, this is largely due to the way the DOM interface deals with
+         the need to concatenate adjacent text nodes, which involves a lot of look-ahead when
+         processing the child axis. So it looks as if there's scope for a substantial speed-up.</p>
+      <p><strong>An hour or two later: </strong>the stylesheet was doing child::element[1] to select the first element of a couple
+         of thousand siblings; the implementation was generating node wrappers for all the
+         siblings, which were not actually being used. I've changed the implementation of the
+         child axis so it now wraps nodes "on demand"; the number of node wrappers created
+         is now the same as XOM. The bottom line is that the elapsed time for the transformation
+         is now around 1600ms, which compares with 400ms for the TinyTree and 730ms for XOM.
+         That's still moderately high (and still a little higher than the Xalan figure), but
+         a lot better than it was.</p>
+      <p>In the Java profile, we're now seeing performance dominated by calls on NodeList.getLength()
+         and NodeList.item(N). Avoiding repeated calls on getLength() cuts the elapsed time
+         to 1430ms.</p>
+      <p>Another thing that appears quite high in the profile is a call on String.indexOf()
+         called from getLocalPart(), which gets the local part of the node name. This is happening
+         whenever Saxon tests that a node found on an axis matches the name specified in the
+         associated NameTest. The DOM method getLocalName() returns null, but Saxon is then
+         calling the DOM method getNodeName() and parsing the result. The Javadoc says that
+         getLocalName() returns null in the case of "nodes created with a DOM Level 1 
+         method, such as <code>Document.createElement()</code>". Of course, Saxon has no idea how the node was created,
+         so it has to cater for all possibilities - this is the kind of thing that makes DOM
+         both slow and buggy. There really doesn't seem to be any alternative here to retrieving
+         the qualified name of the node and parsing it. One thought is, when matching nodes,
+         instead of using (localName.equals(node.getLocalPart())), use something along the
+         lines of (node.getDisplayName().endsWith(localName) - but it's not clear that this
+         would help much, and it penalizes models such as XOM where getting the local name
+         is more efficient than getting the display name.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2007/03/assertions-in-xml-schema.html">Assertions in XML Schema</a></div><div class="next-uri"><a href="/mike/2007/04/path-expressions-revisited.html">Path Expressions Revisited</a></div></footer></body>
+</html>

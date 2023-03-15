@@ -1,0 +1,24 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Just-in-Time Optimization</title>
+      <meta name="id" content="152">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-09-20T14:18:45">
+      <meta name="basename" content="just-in-time_optimization">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Just-in-Time Optimization</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-09"><span class="date" time="2008-09-20T14:18:45">September&nbsp;20, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Rereading my last post on compile-time performance, the thought leaps out at me: if
+         I don't want to rely on users setting a switch to control whether optimization happens
+         or not, then I should only optimize functions or templates if I know they are going
+         to be used often enough to justify it. That strongly suggests I ought to be doing
+         lazy (or just-in-time) optimization. It doesn't seem difficult in principle: just
+         count entries to a function or template and invoke the optimizer when the counter
+         hits (say) 50. Need to be careful about multithreading, but I'm sure it can be done.
+         There are a few optimizations, like extracting global variables, that aren't local
+         to a template or function, and this complicates the issue a little, but it doesn't
+         sound all that hard.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/09/join-optimization.html">Join optimization</a></div><div class="next-uri"><a href="/mike/2008/09/a-stylesheet-conversion.html">A stylesheet conversion</a></div></footer></body>
+</html>

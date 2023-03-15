@@ -1,0 +1,69 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>XML Schema: allowing new lexical forms</title>
+      <meta name="id" content="154">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-10-23T14:18:45">
+      <meta name="basename" content="xml_schema_allowing_new_lexical_forms">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>XML Schema: allowing new lexical forms</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-10"><span class="date" time="2008-10-23T14:18:45">October&nbsp;23, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>In a suggestion to the XML Schema Working Group[1], Axel Dahmen suggested defining
+         a facet that allows the introduction of new lexical forms for existing data types.
+         This would allow you, for example, to write a decimal value as "1,23", or a date as
+         "12DEC2008", or a boolean as "yes". The Schema WG has already put out two "last call"
+         drafts of the XSD 1.1 spec [2], so it's not really welcoming ideas for new features
+         at the moment, but I thought I would take a look at this one independently.</p>
+      <p>It so happens that the XSD 1.1 draft has introduced the possibility of vendor-defined
+         primitive types, and also vendor-defined facets for restricting types. This was done
+         partly as a way of deflecting pressure to add new primitive or built-in types to the
+         core specification: it means that vendors who badly want a new type can be allowed
+         to add it to their own product, and the WG can then incorporate it into the base specification
+         if it proves popular with users. (The addition of precisionDecimal to the spec has
+         been pretty controversial, and vendor extensibility was thought to be a way of easing
+         such conflicts in future.)</p>
+      <p>So I thought I would see what could be done to implement Dahmen's idea as a vendor-defined
+         facet in Saxon. And it seems to work quite nicely. I've done it with XPath expressions
+         rather than regular expressions as Dahment proposed. Here's an example:</p>
+      <pre><code>&lt;xs:simpleType name="euroDecimal"&gt;
+&nbsp; &lt;xs:restriction base="xs:decimal"&gt;
+&nbsp;&nbsp;&nbsp; &lt;saxon:preprocess action="translate($value, ',', '.')"/&gt;
+&nbsp; &lt;/xs:restriction&gt;
+&lt;/xs:simpleType&gt;</code></pre>
+      <p>Here the action attribute of the new facet describes a conversion of the string as
+         written from the lexical space of the restricted type to the lexical space of the
+         base type, in the form of an XPath expression. The new facet, like xs:whiteSpace,
+         is a "pre-lexical" facet rather than a constraining facet. The specification recognizes
+         that there might be other pre-lexical facets other than whiteSpace, partly because
+         the WG was planning to add one to do Unicode normalization. As it happens, the Saxon
+         extension can do this easily: action="normalize-unicode($value, 'NFC')". It can also
+         be used to normalize case or for many other similar operations.</p>
+      <p>As far as schema validation is concerned, it's already easy enough to define a type
+         that allows decimal numbers in the form "1,20", or dates in the form "12DEC1980",
+         by using the pattern facet. The difference is that when you do this with the pattern
+         facet, the value is still an xs:string, not an xs:decimal or xs:date. With the saxon:preprocess
+         facet, the value will be typed as an xs:decimal or xs:date, which means it can be
+         manipulated as such in schema-aware queries and stylesheets.<br></p>
+      <p>In the above examples, the derived type expands the lexical space of the base type
+         but it still accepts all the lexical forms that the base type accepts. Of course,
+         this won't always be the case. If the euroDecimal example had been specified with
+         action="translate($value, '.,', ',.')", then values containing a "." as the decimal
+         point would no longer be accepted. In
+         this case there seems to be a need to define a reverse transformation as well. This
+         isn't needed for schema processing, but it is needed when typed values are serialized
+         as strings during schema-aware XSLT and XQuery processing. It seems possible to provide
+         this by another attribute:</p>
+      <pre><code>&lt;saxon:preprocess action="translate($value, '.,', ',.')"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reverse="</code><code>translate($value, '.,', ',.')"/&gt;</code></pre>
+      <p>There are a few details I still have to work out, such as how this facet should apply
+         to list and union types. But on the whole it seems a very simple and powerful mechanism.
+         Of course, like all extensions, it suffers from the problem that many users will steer
+         clear of it because it sacrifices portability. But there are new features in XSD 1.1,
+         rather like the xsl:use-when mechanism in XSLT 2.0, that can help with that. So it
+         seems a good candidate for
+         the next Saxon release.</p>
+      <p>[1] <a href="http://www.w3.org/Bugs/Public/show_bug.cgi?id=6155">http://www.w3.org/Bugs/Public/show_bug.cgi?id=6155</a><br>[2] <a href="http://www.w3.org/TR/xmlschema11-1/">http://www.w3.org/TR/xmlschema11-1/</a></p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/10/software-patents.html">Software Patents</a></div><div class="next-uri"><a href="/mike/2008/11/tei-conference.html">TEI Conference</a></div></footer></body>
+</html>

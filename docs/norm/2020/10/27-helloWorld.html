@@ -1,0 +1,73 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>helloWorld.Saxon-JS</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2020-10-27T12:30:00">
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/norm-tovey-walsh.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/norm/">Saxon Chronicles</a></h1><div class="tagline">( in a Norman style )</div></div><h2>helloWorld.Saxon-JS</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2020-10"><span class="date" time="2020-10-27T12:30:00">October&nbsp;27, 2020 at 12:30p.m.</span></a></div></header><main>
+
+
+<p>What happened was, last Friday I decided to make my first foray
+into using <a href="https://www.saxonica.com/saxon-js/">Saxon-JS</a>.
+I have in mind a personal project that would use it for rendering and
+I wanted to get my feet wet.</p>
+
+<p>I was able to follow <a href="https://www.saxonica.com/saxon-js/documentation/">the
+documentation</a> and pretty quickly I had it up and running. But
+along the way, I stumbled a couple of times. I didn’t read the documentation
+carefully enough in one case and in another, I introduced a typo into a URI.</p>
+
+<p>What I would have liked was a simple project that pulled all the
+pieces together, one where I could build it and see it working, and
+then begin to hack on it.</p>
+
+<p>Since I didn’t find one of those, I built one:
+<a href="https://github.com/Saxonica/helloWorldJS">https://github.com/Saxonica/helloWorldJS</a>.
+</p>
+
+<p>On the plus side, this project demonstrates both replacing and
+appending to web page content with an XSLT transformation, responding
+to user events, and calling external JavaScript libraries.</p>
+
+<p>On possibly the less plus side, I’ve used Gradle to pull all the
+pieces together. You might argue that obfuscates things a little bit,
+if you aren’t familiar with Gradle, but I wanted to put things in the
+context of an actual project build and that’s what I use for builds
+these days. PRs for branches that demonstrate Make or Ant or your
+build tool of choice are welcome. That’s not meant to be the
+interesting part.</p>
+
+<p>There are three branches.</p>
+
+<dl>
+<dt><code>main</code></dt>
+<dd>This branch is the simplest. The HTML page fires off a Saxon JS stylesheet
+that transforms an XML document and updates the page with the result.
+</dd>
+<dt><code>use-script</code></dt>
+<dd>This branch does basically the same thing, but instead of loading the XML
+document by making another request to the server, the document is embedded in the
+initial HTML document in a <code>script</code> element. It was an experiment I wanted
+to try. It avoids a round trip to the server to get the XML document at the cost
+of having to extract and parse the document from the HTML.
+</dd>
+<dt><code>render-commonmark</code></dt>
+<dd>The personal project I’m thinking of converting to use Saxon-JS
+stores some content in <a href="https://commonmark.org/">CommonMark</a>.
+I thought it would be interesting to see if I could call an external JavaScript library
+to convert that into HTML and then transform it. Yes, I can.
+The JavaScript in <code>src/main/js/start.js</code> is a bit cleaner in this
+branch, too.
+</dd>
+</dl>
+
+<p>All three branches include a button that responds (by running an XSLT template
+in the stylesheet) when you click it.</p>
+
+<p>I’ve <a href="https://saxonica.github.io/helloWorldJS/">published</a>
+the simplest version online, if you just want to see it in all it’s dull glory.</p>
+
+</main><footer><div class="prev-uri"><a href="/norm/2020/10/06-atom.html">Atom feeds</a></div><div class="next-uri"><a href="/norm/2020/10/29-maven.html">More Maven experiments</a></div></footer></body>
+</html>

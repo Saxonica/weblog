@@ -1,0 +1,153 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Analyzing dependencies in a class library: a use case for XSLT streaming</title>
+      <meta name="id" content="166">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2009-09-26T14:18:46">
+      <meta name="basename" content="analyzing_dependencies_in_a_class_library_a_use_case_for_xslt_streaming">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Analyzing dependencies in a class library: a use case for XSLT streaming</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2009-09"><span class="date" time="2009-09-26T14:18:46">September&nbsp;26, 2009 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I'm in the middle of building Saxon 9.2 for the .NET platform, and part of that was
+         to move forward to the latest IKVM release. IKVM (in version 0.40) now has much more
+         complete coverage of the Java class library, but an unfortunate consequence of this
+         is that the libraries have become rather large. They clearly contain main things Saxon
+         doesn't need - for example the XML part of the class library is over 8Mb, containing
+         the whole of Xerces, Xalan, XSLTC, a streaming parser, RelaxNG, fast infoset, JAXP
+         databinding, SOAP, web services and so on. All we need is Xerces (and possibly not
+         even that).</p>
+      <p>To cut down the size of the library, we need to understand the dependencies between
+         its parts. My first attempt to partition the library based on knowledge of the functionality
+         yielded JAR files (and hence DLLs) with suprising dependencies, for example a reference
+         from the Xerces library into Xalan.</p>
+      <p>After looking at a couple of dependency analysis tools, I decided it would be useful
+         to have something that essentially just collects the raw data, allowing me to analyze
+         it myself. So I downloaded Dependency Finder from depfind.sourceforge.net, and ran
+         its analysis tool on the OpenJDK library. This took a fair while, but it ran to completion,
+         and output a 230Mb XML file listing all the dependencies, at the granularity of individual
+         methods (that is, for every method, which methods it calls, and which methods it is
+         called by).</p>
+      <p>Processing a file of this size is close to the limits of what Saxon can handle on
+         my laptop (the limits of course depend on physical memory available) without using
+         streaming. So it seemed a good opportunity to apply some of the new streaming facilities
+         in Saxon 9.2. It seemed that the first useful step in processing would be to filter
+         the data (a) to remove the redundant "called-by" links, (b) to remove references to
+         classes in the "java.lang" package, since these are ubiquitous and therefore uninteresting,
+         and (c) to reduce the granularity so it only contained class-&gt;class references rather
+         than method-&gt;method references. After some experimentation using a smaller class library,
+         it proved reasonable easy to do this.</p>
+      <p>The processing falls into a very common model for streaming, whereby each &lt;class&gt;
+         element in the input file can be transformed independently. So each time a &lt;class&gt;
+         is encountered, it is copied into a variable, and conventional processing (in this
+         case, for-each-group to group dependencies over all the methods in the class) is applied
+         within that &lt;class&gt;. The resulting file is a mere 5Mb, making it much more amenable
+         to further processing.</p>
+      <p>I did hit some difficulties in achieving this. The main one was that it was working
+         in streaming mode when running inside my Java IDE (IntelliJ), but was running out
+         of memory when run on the actual Saxon 9.2 product build. Since I'm in the process
+         of validating the product for release, I couldn't let this pass without investigation.
+         It turned out that it runs out of memory when using JDK 1.6 with its built-in version
+         of Xerces, but works fine on JDK 1.5, or on JDK 1.6 with the Apache release of Xerces.
+         I've already seen so many bugs in the Sun JDK 1.6 Xerces version that I recommend
+         people never to use it for production work - this seems to be yet another reason to
+         avoid it. </p>
+      <p>So I've now got a 5Mb XML file holding the class-&gt;class dependencies, and that's as
+         far as I've got today. The next step is to understand specific cross-package dependencies.
+         </p>
+      <p>(continuing the story)</p>
+      <p>My next step was to reduce the graph of class-&gt;class dependencies to a graph of package-&gt;package
+         dependencies. In fact I initially attempted to find the transitive dependencies between
+         packages, but this turned out not to be needed. Finding the direct package uses is
+         a simple case of stripping the package names out of the class names, and then eliminating
+         the duplicate dependencies.</p>
+      <p>We now use this to evaluate the proposed module structure of the classpath library
+         (that is, the way it is partitioned into DLL assemblies). The IKVM build uses a file
+         called (strangely) <code>response.txt</code> to define which Java packages go in which module. This is in a custom non-XML syntax,
+         but it's a simple matter using unparsed-text() and regular expressions to convert
+         it into an XML representation looking something like this:</p>
+      <p>&nbsp;<code>&nbsp; &lt;module&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;name&gt;IKVM.OpenJDK.Corba.dll&lt;/name&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;package&gt;com.sun.corba.se.impl.activation&lt;/package&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;package&gt;com.sun.corba.se.impl.copyobject&lt;/package&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;package&gt;com.sun.corba.se.impl.corba&lt;/package&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;package&gt;com.sun.corba.se.impl.dynamicany&lt;/package&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;package&gt;com.sun.corba.se.impl.encoding&lt;/package&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;package&gt;com.sun.corba.se.impl.interceptors&lt;/package&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;package&gt;com.sun.corba.se.impl.io&lt;/package&gt;<br>&nbsp;&nbsp; &lt;/module&gt;<br></code><br>And so on for each module.</p>
+      <p>We can now determine the module-&gt;module dependencies by reducing the package-&gt;package
+         dependencies in much the same way as we reduced the class dependencies to package
+         dependencies earlier; the only difference is that converting a package name to a module
+         name isn't a string manipulation, it's a look-up in this module structure file. Also,
+         the amount of data we are dealing with is now so far reduced that we don't have to
+         throw information away: we can record the way in which one module depends on another,
+         like this:</p>
+      <p><code>&lt;module name="IKVM.OpenJDK.XMLstream.dll"&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;uses-module name="IKVM.OpenJDK.XMLparse.dll"&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.dtd&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.dtd.nonvalidating&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.events&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.writers&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/uses-module&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;uses-module name="IKVM.OpenJDK.Core.dll"&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.buffer&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.buffer.sax&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.buffer.stax&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.dtd.nonvalidating&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.events&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.util&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.writers&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/uses-module&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;uses-module name="IKVM.OpenJDK.XMLapi.dll"&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.buffer&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.buffer.sax&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.buffer.stax&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.events&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.writers&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/uses-module&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;uses-module name="IKVM.OpenJDK.XMLwebservices.dll"&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.buffer.stax&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/uses-module&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;uses-module name="IKVM.OpenJDK.Misc.dll"&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;via&gt;com.sun.xml.internal.stream.buffer.stax&lt;/via&gt;</code><br><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/uses-module&gt;</code><br><code>&nbsp;&nbsp; &lt;/module&gt;</code></p>
+      <p>In theory of course we could do some kind of cluster analysis on the dependency graph
+         to automate the allocation of packages to modules. But it seems more practical to
+         do an initial modularization based on known characteristics of the software architectural
+         structure, and then analyse the structure looking for anomalies, and adjusting the
+         mapping accordingly.</p>
+      <p>(continuing the story again...)</p>
+      <p>After this it's a question of ad-hoc manual analysis. Some observations:</p>
+      <p>There are two dependencies that shouldn't be there "in theory": XMLparse -&gt; XMLwebservices,
+         and XMLsecurity -&gt; XMLtransform. Without these dependencies, there would be many fewer
+         circular dependencies between assemblies, and the story would be much cleaner.</p>
+      <p>The dependency of XMLparse (which now includes XMLstream) on XMLwebservices is via
+         package <code>com.sun.xml.internal.stream.buffer.stax</code>, which references <code>com.sun.xml.internal.org.jvnet.staxex</code>, which is part of XMLwebservices. This package appears to have no other dependencies
+         within XMLwebservices. So I've moved it into XMLparse, and this seems to solve the
+         problem: XMLparse no longer has any dependencies on other assemblies in the XML family,
+         other than XMLapi.</p>
+      <p>The dependency of XMLsecurity on XMLtransform is via two packages:</p>
+      <p><code>com.sun.org.apache.xml.internal.security.transforms.implementations</code><br><code>com.sun.org.apache.xml.internal.security.utils</code></p>
+      <p>In both cases the dependency is on XPath, not on Xalan proper. The obvious thing is
+         to split <code>com.sun.org.apache.xpath.internal</code> and its subpackages into a separate assembly (XMLxpath). When we do this we find
+         that xpath has a dependency on transform, via <code>com.sun.org.apache.xpath.internal</code> which references <code>com.sun.org.apache.xalan.internal.extensions</code>. However, <code>com.sun.org.apache.xalan.internal.extensions</code> has no dependencies on anything else in transform, so we can move it into xpath.</p>
+      <p>After this change, the dependencies within the XML family are:</p>
+      <p>&nbsp; api -&gt; (nothing)<br>&nbsp; parse -&gt; api<br>&nbsp; transform -&gt; api, parse, xpath<br>&nbsp; xpath -&gt; api, parse<br>&nbsp; binding -&gt; api, webservices, relaxng<br>&nbsp; webservices -&gt; api, parse, binding<br>&nbsp; relaxng -&gt; api<br>&nbsp; security -&gt; api, parse, xpath</p>
+      <p>leaving the only circularity within this family of assemblies as between binding and
+         webservices. </p>
+      <p>Intuitively, I would expect webservices to depend on binding and not the other way
+         around. The dependency of binding on webservices is via two packages:</p>
+      <p><code>&nbsp;</code><code>com.sun.xml.internal.bind.v2.runtime.output</code><br><code>&nbsp;com.sun.xml.internal.bind.v2.runtime.unmarshaller</code></p>
+      <p>which both reference fastinfoset. So we'll try putting the fastinfoset packages (all
+         those with "fastinfoset" in their name) into a separate assembly, and we find dependencies
+         are now:</p>
+      <p>&nbsp; binding -&gt; api, fastinfoset, relaxng<br>&nbsp; fastinfoset -&gt; api<br>&nbsp; webservices -&gt; api, parse, binding, fastinfoset</p>
+      <p>eliminating the remaining cycle. There would also be no cycles and no new dependencies
+         if fastinfoset is moved into binding, so I've done that.</p>
+      <p>The resulting DLL sizes in Kb are:</p>
+      <p>&nbsp; API&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 204<br>&nbsp; Binding&nbsp;&nbsp;&nbsp;&nbsp; 1574<br>&nbsp; Parse&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2474<br>&nbsp; RelaxNG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 262<br>&nbsp; Security&nbsp;&nbsp;&nbsp;&nbsp; 338<br>&nbsp; Transform&nbsp;&nbsp; 1845<br>&nbsp; WebServices 1377<br>&nbsp; XPath&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 448</p>
+      <p>As far as Saxon is concerned, the only assemblies from this lot that we need to issue
+         are API and Parse. In fact, at some stage I'd like to get rid of the Parse module:
+         this module holds the Sun fork of the Apache Xerces parser, which is horribly buggy;
+         I'd much rather use the Apache original which is much more reliable, or indeed make
+         everything use the Microsoft System.Xml parser (the only drawback of that is its inability
+         to report ID attributes, which an XSLT processor needs.)</p>
+      <p>Reflections: there are tools that do dependency analysis. I felt I wanted to play
+         with the raw data. The Java tool that extracted the dependency information into XML
+         proved just the right thing. Although the data was voluminous, Saxon in streaming
+         mode can be used to bring it down to a practical size. The facilities in XSLT 2.0
+         (grouping, unparsed-text, regular expressions) make ad-hoc analysis of this kind of
+         data fairly straightforward, and with an approach that relied partly on automation
+         and partly on manual analysis, it was easy to find a mapping of packages to assemblies
+         that eliminated cyclic dependencies.</p>
+      <p>Postscript: Jeroen Frijters used the packaging I proposed, and discovered using ndepend
+         that there were dependencies between the various assemblies that I had not predicted.
+         Looking back on the work, I discovered that the first stylesheet, to reduce method-&gt;method
+         dependencies to class-&gt;class dependencies, was losing some dependencies (because of
+         my inadequate understanding of the format of the output from the dependency analyzer).
+         Correcting this reveals an unfortunate dependency from the parse assembly into the
+         xpath assembly.</p>
+      <p>The dependency parse-&gt;xpath emanates from package <code>com.sun.org.apache.xml.internal.dtm.ref</code>, specifically from the fact that class <code>com.sun.org.apache.xml.internal.dtm.ref.DTMNodeProxy</code> has a reference to class <code>com.sun.org.apache.xpath.internal.NodeSet</code>. Looking at the code, this is an example of inappropriate re-use; it's using this
+         <code>NodeSet </code>class as a convenient implementation of the DOM <code>NodeList </code>interface, but one that has far more functionality than is needed to deliver the interface,
+         and that therefore creates further dependencies into the XPath package. It would be
+         trivial to replace it with a simple inline implementation of <code>NodeList</code>, but of course we want to avoid source change if possible; apart from anything else,
+         it's always conceivable that there's a client that relies on the returned <code>NodeList </code>being an instance of com.sun.org.apache.xpath.internal.NodeSet.</p>
+      <p>Without source change, I don't think we can remove this dependency. However, I think
+         it's probably still worth keeping Parse and XPath separate, because at worst in only
+         affects people using DOM parsing (as distinct from SAX or StAX parsing). I don't think
+         it's possible to separate the functionality needed for DOM out of the Parse module.</p>
+      <p>Meanwhile, as far as Saxon is concerned, this strengthens the case for shipping with
+         an IKVMC'd version of Apache Xerces, in place of the XML.Parse assembly derived from
+         OpenJDK.
+         <br>
+         
+         </p>
+      
+      
+   </main><footer><div class="prev-uri"><a href="/mike/2009/08/beyond-saxon-92.html">Beyond Saxon 9.2</a></div><div class="next-uri"><a href="/mike/2009/11/moving-forward-with-streaming-templates.html">Moving forward with streaming templates</a></div></footer></body>
+</html>

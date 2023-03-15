@@ -1,0 +1,51 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>SaxonCS for .NET 6</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2022-08-09T17:06:00">
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/norm-tovey-walsh.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/norm/">Saxon Chronicles</a></h1><div class="tagline">( in a Norman style )</div></div><h2>SaxonCS for .NET 6</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2022-08"><span class="date" time="2022-08-09T17:06:00">August&nbsp;09, 2022 at 05:06p.m.</span></a></div></header><main>
+
+
+<p>We first published SaxonCS 11.x using .NET 5. Since then, .NET 5
+has reached “end of life” and .NET 6 has become the recommended “long
+term service” release of the .NET framework.</p>
+
+<p>This puts us in a bit of a bind.</p>
+
+<p>On the one hand, we try not to make disruptive changes in a
+maintenance release if we can avoid it. Consequently, we’re
+reluctant to suddenly require all of our customers who might be
+building applications with SaxonCS 11.x to upgrade to .NET 6 just
+because they want to install a new maintenance release.</p>
+
+<p>On the other hand, it is becoming difficult to support .NET 5
+applications in some environments. Ubuntu 22.04, for example, doesn’t
+ship with the SSL libraries that .NET 5 requires. This makes it
+difficult, perhaps impossible, to deploy SaxonCS 11.x built with .NET 5 in some
+environments.</p>
+
+<p>As a compromise, we’ve published a set of SaxonCS 11.4 releases
+built against .NET 6. In order to distinguish them from their .NET 5
+counterparts, we’ve named them “SaxonCS-b6”. The “b6” is both a nod
+towards their .NET 6 provenance and a way of identifying them as
+“beta”. There are no code changes in these builds, they should perform
+exactly as the SaxonCS 11.4 release does, but they have not been
+tested extensively.</p>
+
+<p>They are identified as “SaxonCS-b6 11.4.1”. You can get the
+platform-specific release artifacts from our downloads area and the
+NuGet package has been uploaded and should be available soon.</p>
+
+<p>(Speaking of NuGet, I should also confess that I published the
+wrong SaxonCS 11.4.0 artifact. The SaxonCS 11.4.0 release on NuGet
+will only work on 64 bit platforms. I republished the corrected,
+architecture independent release as SaxonCS 11.4.1 yesterday.)</p>
+
+<p>We’ll have to cross this bridge again if we publish another Saxon
+11.x maintenance release. Please let us know what works for you, and what doesn’t.</p>
+
+</main><footer><div class="prev-uri"><a href="/norm/2022/06/15-saxonjs.html">Triaging the bug lists…</a></div><div class="next-uri"><a href="/norm/2022/12/21-net6.html">Signed, sealed, and delivered</a></div></footer></body>
+</html>

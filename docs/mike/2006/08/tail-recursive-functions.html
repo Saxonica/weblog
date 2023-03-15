@@ -1,0 +1,74 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Tail recursive functions</title>
+      <meta name="id" content="123">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-08-01T14:18:44">
+      <meta name="basename" content="tail_recursive_functions">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Tail recursive functions</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-08"><span class="date" time="2006-08-01T14:18:44">August&nbsp;01, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I made some minor changes to the details of expression evaluation a few days ago,
+         and found that this broke the code for optimizing tail calls in recursive functions.
+         Since that code has a nasty habit of breaking when I make small changes in this area,
+         I decided that it was time for an overhaul.</p>
+      <p>The basic idea of tail call optimization is that when a function calls itself as the
+         last thing that it does, you don't actually need to create a new stack frame, because
+         the old one can be reused. The main benefit is that you can recurse indefinitely deep
+         without blowing the stack. You can tell products that don't include this optimization
+         because they typically run out of stack space after 500 recursive calls or so.</p>
+      <p>In the old design, Saxon wasn't actually reusing the original stack frame (it was
+         just deleting the old stack frame before creating the new one). The tail-call was
+         recognized and marked as such at compile time, and when it was executed, instead of
+         calling the function, Saxon would create an object that encapsulated details of the
+         function to be called, its parameters, and other bits of context. This would be passed
+         down to the original caller of the recursive function, which would then execute the
+         displaced function call, and carry on doing so until a "real" result was returned.
+         The fragility of the mechanism came because there was a tendency either to intercept
+         the function call package too early on its way down the stack, or to fail to intercept
+         it when the time came for it to be caught by the original caller. </p>
+      <p>Another recognized problem with the approach was that although Saxon was conserving
+         space on the Java stack, it wasn't conserving space on the heap. Each function call
+         created a new XPathContext object, which was linked to the XPathContext of its caller,
+         leading to a chain of XPathContext objects in the heap as long as the depth of recursion.</p>
+      <p>In the new design, the tail calls are still recognized and marked at compile time.
+         In addition, if the function contains any tail calls, then its body is wrapped in
+         a new TailCallLoop object. When the tail call is executed, the parameters of the function
+         call are evaluated and written to the appropriate slots on the local stack frame.
+         A marker is set in the XPathContext object, and the function call returns an empty
+         sequence. This return value finds its way down to the TailCallLoop object, which executes
+         the "real" body of the function repeatedly so long as it finds the marker in the XPathContext
+         set to true.</p>
+      <p>The new design appears to save significantly on creation of objects during the tail-call
+         cycle, in particular the context objects and the function call package itself. It
+         also seems a lot more robust in that the number of places in the code that need to
+         understand the mechanism is much reduced. There is one downside: the old mechanism
+         handled tail calls to any function, not just directly-recursive tail calls. This was
+         sometimes useful in situations where two functions are mutually recursive.</p>
+      <p>I think the new design can be extended to handle functions that are "almost tail-recursive",
+         in that they perform a simple operation (typically a comparison, an addition, or a
+         list append) when the tail call returns. An example of such a function is:</p>
+      <p>declare function product($seq) {<br>&nbsp; if (empty($seq)) then 1 else  $seq[1]*product($seq[position()!=1])<br>}</p>
+      <p>(which can be useful in calculating compound interest)</p>
+      <p>There is a known technique to rewrite such functions as tail recursive functions by
+         adding an extra parameter:</p>
+      <p>declare function product2($seq, $n) {<br>&nbsp; if (empty($seq)) then $n else product($seq[position()!=1], $n*$seq[1])<br>
+         }</p>
+      <p>and this rewrite is now looking like a feasible proposition.</p>
+      <p>Functions of course work exactly the same way in XSLT and XQuery. In XSLT there are
+         also named templates and match templates. Saxon implements tail-call optimization
+         on these, using a similar but separate technique to the old design for functions (in
+         fact, this is where it came from). It's harder to see how these can be redesigned
+         in the same way. Named templates could perhaps be turned into functions, though the
+         need to maintain full context information, tunnel parameters and the like makes this
+         difficult. Match templates are more difficult still because it is impossible to tell
+         statically whether a tail call will be recursive or not. In any case, the implementation
+         for templates seems to be less fragile, perhaps because templates are always invoked
+         in "push" mode. In push mode, instructions don't actually return a result, instead
+         they write to the current output destination. This means that the Java return value
+         can be used to pass information about tail calls down the stack without the kind of
+         overloading that was taking place for function calls.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/07/tuning-the-chess-fo-stylesheet.html">Tuning the Chess-FO stylesheet</a></div><div class="next-uri"><a href="/mike/2006/08/zounds-i-was-never-so-bethumpd-with-words.html">Zounds! I was never so bethump'd with words</a></div></footer></body>
+</html>

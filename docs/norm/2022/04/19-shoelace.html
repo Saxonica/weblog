@@ -1,0 +1,43 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>SaxonJS with web components</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2022-04-19T18:43:00">
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/norm-tovey-walsh.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/norm/">Saxon Chronicles</a></h1><div class="tagline">( in a Norman style )</div></div><h2>SaxonJS with web components</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2022-04"><span class="date" time="2022-04-19T18:43:00">April&nbsp;19, 2022 at 06:43p.m.</span></a></div></header><main>
+
+
+<p>I haven’t worked with
+<a href="https://en.wikipedia.org/wiki/Web_Components">web components</a> very much,
+though they’ve been on my “must explore more” list for a while. A couple of days ago,
+I stumbled across <a href="https://shoelace.style/">Shoelace</a>, “a forward-thinking
+library of web components.”</p>
+
+<p>“That’d just work in SaxonJS, right?”, I asked myself.</p>
+
+<p>Yep. I updated the
+<a href="https://github.com/Saxonica/helloWorldJS">helloWorldJS</a> repository
+that I created a while back to demonstrate it.</p>
+
+<p>The new work is in the <code>shoelace</code> branch.</p>
+
+<p>There’s not much different, really.</p>
+
+<ol>
+<li>The HTML file includes the
+Shoelace scripts and styling from its CDN. (A more robust application
+would want local copies, but this is just a toy.)</li>
+<li>Instead of using a <code>button</code> element, we use the Shoelace
+web-component: <code>&lt;sl-button&gt;Click me&lt;/sl-button&gt;</code>.
+</li>
+<li>The match pattern for the onclick handler changes to
+<code>match="sl-button"</code>.</li>
+</ol>
+
+<p>That’s pretty much all there is to it. Neat. I must try out some more web
+components when I have a chance. In principle, the seem like a really good idea.</p>
+
+</main><footer><div class="prev-uri"><a href="/mike/2021/06/arrays.html">What should we do about Arrays?</a></div><div class="next-uri"><a href="/mike/2022/05/xml-vs-json.html">XML versus JSON: A Comparison using the XMark Benchmark</a></div></footer></body>
+</html>

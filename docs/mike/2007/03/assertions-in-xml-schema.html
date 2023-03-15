@@ -1,0 +1,68 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Assertions in XML Schema</title>
+      <meta name="id" content="137">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2007-03-06T14:18:44">
+      <meta name="basename" content="assertions_in_xml_schema">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Assertions in XML Schema</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2007-03"><span class="date" time="2007-03-06T14:18:44">March&nbsp;06, 2007 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I've been implementing the new facility in XML Schema 1.1 for defining assertions,
+         in terms of XPath expressions. It's a great feature. You could do something similar
+         before, of course, using Schematron - but no-one really wants to do to separate validations
+         using very different technologies. The new xs:assert clause makes it all much more
+         seamless. As one might expect in a first draft though, there are glitches in the spec.</p>
+      <p>The biggest glitch - not really a glitch in fact, more of a design disaster - is that
+         they've timidly subsetted the XPath language, so you're working with a crippled language
+         with a fraction of the expressive power that you want and need. That not only makes
+         life tough for users, it also makes things much harder for implementors because you
+         can't use an off-the-shelf XPath engine. Well, there's a handy Note in the spec that
+         says you can implement a bigger subset if you like, so I've done the obvious thing
+         and implemented the whole of XPath 2.0.</p>
+      <p>With the full language, all kinds of possibilities open up. Basically, all the old
+         problems disappear. It gives you cross-validation of elements and attributes:</p>
+      <p>&lt;xs:assert test="@price gt @discount"/&gt;</p>
+      <p>Alternative content models:</p>
+      <p>&lt;xs:assert test="not(@sex='M' and exists('maidenName'))"/&gt;</p>
+      <p>Cardinality constraints:</p>
+      <p>&lt;xs:assert test="count(move) mod 2 = 0"/&gt;</p>
+      <p>and a whole lot more. It's not just that it adds to the expressive power of the schema
+         language, it also enables you to express many existing constraints in a simpler way.
+         Someone on the xmlschema-dev list yesterday wanted to say that a value must be in
+         the range 1-100, or 999. You can do that at present by defining a union between two
+         types, one of which has minInclusive=1, maxExclusive=100, and the other has an enumeration
+         restricting its value to 999. How mich simpler just to say</p>
+      <p>&lt;xs:assert test=". = (1 to 100, 999)"/&gt;</p>
+      <p>Another exciting possibility is that by allowing XPath expressions to use the doc()
+         function, you can implement referential constraints across documents:</p>
+      <p>&lt;xs:assert test=". = doc('lookup.xml')//code"/&gt;</p>
+      <p>Finally, there's nothing to stop you calling out to Java extension functions:</p>
+      <p>&lt;xs:assert test="checksum = my:checksum(.)"/&gt;</p>
+      <p>So what have they got wrong?</p>
+      <p>First, they've crippled XPath, as described above, for no discernible reason, reducing
+         it to a pathetic subset. Many of the examples I've given aren't actually legal.</p>
+      <p>Secondly, they've defined assertions only on complex types and not on simple types.
+         [But this might be temporary, awaiting the reissue of XML Schema Part 2. There are
+         hints in the Schema for Schemas that assertions on simple types will be allowed.]</p>
+      <p>And then there are a few technicalities, like they've failed to define exactly what
+         the static and dynamic context for XPath evaluation are. No doubt this will be fixed
+         in future drafts.</p>
+      <p>Implementing this in Saxon was pretty straightforward. I don't currently attempt to
+         evaluate assertions in streaming mode: as soon as I hit an element with an assertion
+         attached, I start building a TinyTree, and then I evaluate the assertions when I hit
+         the endElement event. Assertions on nested elements can share the same tree - Saxon
+         already has a "virtual copy" mechanism so I can run an expression on a subtree of
+         the main tree without making a real copy. If someone wants to define assertions whose
+         scope is the whole document, they can, but the price is that a tree gets built. If
+         you only define assertions with a local scope (say a single "record") then trees only
+         get built for one "record" at a time, and are discarded as soon as the endElement
+         event occurs.</p>
+      <p>Of course, for users the drawback is that few people will want to commit themselves
+         to something that's currently only in one product and in a draft W3C spec. But someone
+         has to be first, and it's a good way of exerting some pressure on the working group
+         and on other vendors to speed things up a little.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2007/02/unexpected-flattery.html">Unexpected flattery</a></div><div class="next-uri"><a href="/mike/2007/03/saxon-vs-xalan-performance-and-dom.html">Saxon vs Xalan Performance; and DOM</a></div></footer></body>
+</html>

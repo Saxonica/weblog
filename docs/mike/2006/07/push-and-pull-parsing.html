@@ -1,0 +1,36 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Push and Pull parsing</title>
+      <meta name="id" content="104">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-07-03T14:18:43">
+      <meta name="basename" content="push_and_pull_parsing">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Push and Pull parsing</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-07"><span class="date" time="2006-07-03T14:18:43">July&nbsp;03, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Saxon has supported the StAX interface for pull parsing for a while now, but I've
+         seen little evidence that people are using it; and in fact generally the scene seems
+         to have gone rather quiet. There's talk that a future JAXP release will require support
+         for StAX as well as SAX input, and on .NET the standard System.Xml parser is a pull
+         parser, so I thought I'd take a look at relative performance - perhaps the time might
+         even come when it's appropriate to use a StAX parser as the default.</p>
+      <p>I wrote a little program to build a Saxon tree using various parsers: two pull and
+         two push. These were the results, all timings in milliseconds:</p>
+      <pre><code>Input size (Mb)&nbsp;&nbsp;&nbsp; Xerces&nbsp; Piccolo&nbsp; SJSXP&nbsp; Woodstox
+     6.8    1200     1320    1270     1030
+    14.0    2400     2670    2640     2033</code></pre>
+      <p>Xerces and Piccolo are SAX (push) parsers; SJSXP and Woodstox are StAX (pull) parsers.
+         So there's certainly no reason from these figures (or from any other considerations
+         really) to believe that pull is intrinsically faster than push. But it's interesting
+         (a) that Woodstock does appear to have a demonstrable edge (20%) on all the others
+         at least on this sample -- one would have to test a variety of other XML documents
+         to be sure that it's sustainable, and (b) that Piccolo doesn't beat Xerces in this
+         test, though they claim to be twice as fast in other tests.</p>
+      <p>I'm not recommending that everyone switches over immediately to Woodstox - as often
+         happens, they seem to have achieved some of the speed by taking short cuts on conformance,
+         especially checking the detailed rules for valid names and valid characters. But if
+         the 20% matters to you and you know the XML is valid already, it may be worth considering.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/07/push-and-pull.html">Push and Pull</a></div><div class="next-uri"><a href="/mike/2006/07/streaming-mode-on-large-documents.html">Streaming Mode on large documents</a></div></footer></body>
+</html>

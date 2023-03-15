@@ -1,0 +1,82 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Parameterized validation</title>
+      <meta name="id" content="180">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2010-06-29T14:18:47">
+      <meta name="basename" content="parameterized_validation">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Parameterized validation</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2010-06"><span class="date" time="2010-06-29T14:18:47">June&nbsp;29, 2010 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>
+         
+         I've been implementing an enhancement to the Saxon schema processor that has been
+         on my wish-list for a long time: it allows schema validation to be parameterized using
+         parameter values supplied on the command line or via the validation API. The parameter
+         values can be referenced from any XPath expression in the schema, for example in assertions
+         or in conditional type assignment.&nbsp;</p>
+      <p>For example, suppose you are validating invoices. Your schema might allow a wide range
+         of currencies to be used, but for a particular batch of invoices, you want the currency
+         to be USD, and in another batch, you want it to be EUR. Then you can write the schema
+         with a parameter:&nbsp;<code>&lt;saxon:param name="currency" as="xs:string" select="'USD'"/&gt;</code>; in the definition of the simple type invoice:currency you can write the assertion&nbsp;<code>&lt;xs:assert test="$value = $currency"/&gt;</code>, and when invoking the validation from the command line you can set the parameter
+         currency=EUR. The select attribute of&nbsp;<code>&lt;saxon:param&gt;</code>, as with stylesheet parameters in XSLT, defines a default value. Very simple.&nbsp;</p>
+      <p>There are of course many tricky details to be worked out. What should the scope of
+         a parameter name be? (currently, it's confined to the schema document in which it
+         is declared). But then, what if you want to reference the same parameter in more than
+         one schema document? (current thinking, you can declare it in both and the declarations
+         must be compatible). Should parameters automatically be in the target namespace of
+         their containing schema document, like other declarations in a schema? (current thinking:
+         no, follow the XSLT rules instead: no prefix means no namespace).&nbsp;</p>
+      <p>For free-standing validation from the command line or from the s9api API, it's fairly
+         easy to devise an interface for supplying parameters. It's less easy when validation
+         is invoked from XSLT or XQuery. For XSLT, a new &lt;saxon:validate&gt; instruction with
+         &lt;xsl:with-param&gt; children seems appropriate. For XQuery, it probably needs a custom
+         extension to the syntax of the validate{} expression.&nbsp;</p>
+      <p>There are many use cases for such a feature. I've often seen cases, for example, where
+         one wants to apply increasingly rigorous validation to a document at different stages
+         in its life-cycle. Another example is parameterized code-lists. With some creativity,
+         it can also be used to achieve cross-document validation: the parameters supplied
+         when validating one instance document can be taken from another instance document
+         (or indeed, an entire instance document can be supplied as a parameter value). Given
+         higher-order functions in XPath 2.1, the validation parameter can even be a dynamic
+         function that is invoked from within the assertions.&nbsp;</p>
+      <p>Currently, parameterizing a schema is often achieved using xs:redefine, and in XSD
+         1.1, the xs:override feature is designed to make this approach more flexible. However,
+         there's a big limitation with this, namely that overriding or redefining a type acts
+         globally: it affects every place the type is used. This means, for example, that you
+         can't use two different variants of a schema to validate the input and the output
+         of a transformation (for example, a transformation whose purpose is to convert documents
+         from one flavour of vocabulary X to a different flavour of the same vocabulary).&nbsp;</p>
+      <p>The mechanism allows parameters to be used anywhere schemas use XPath expressions:
+         primarily in assertions and in conditional type assignment; but also in identity constraints
+         (for which I have yet to find any practical utility) and in the saxon:preprocess extension
+         which allows you to vary the allowed lexical representations of a data type. (See&nbsp;<a href="/mike/2008/10/xml-schema-allowing-new-lexical-forms.html">saxon:preprocess blog article</a>). For example, you can already write&nbsp;<code>&lt;saxon:preprocess action="if ($value='yes') then 'true' else if ($value='no') then
+            'false' else $value"/&gt;</code>&nbsp;to create a subtype of xs:boolean that permits the lexical forms "yes" and "no";
+         with this new feature you can parameterize this to make the strings "yes" and "no"
+         parameters supplied at validation time rather than constants.&nbsp;</p>
+      <p>There's a drawback, of course, which is that this is a proprietary extension. However
+         much one takes advantage of the extensibility points provided in the specifications
+         (such as xs:appinfo in the XSD spec, or extension elements in XSLT), there's no hiding
+         the fact that an application that takes advantage of a feature like this is locking
+         itself in to Saxon as the validation technology. However, there's no harm in this:
+         many features that found their way into the standards, and into other products, were
+         first pioneered in Saxon; it's often better if products are one step ahead of the
+         standards rather than one step behind.&nbsp;</p>
+      <p>I think there would probably be some resistance to this feature in the XML Schema
+         Working Group (and not just because of timescales): there are some strongly held philosophical
+         views among WG members, and one of them is that validity is a context-free property.
+         There are reasons for this: if you validate data before sending it to me, you don't
+         want me to find that in my environment, it's not valid. Personally, I'm a pragmatist
+         on this kind of issue. If you have to change the definition of the data interchange
+         from "must conform to schema S" to "must conform to schema S with parameter settings
+         P=X, Q=Y", that's not something that worries me. On the contrary, I think it creates
+         a real opportunity for increased use of industry-standard schemas parameterized by
+         local profiles that define additional constraints to those in the standard specification.
+         
+         </p>
+      
+      
+   </main><footer><div class="prev-uri"><a href="/mike/2010/06/the-ten-most-common-xslt-programming-mistakes.html">The ten most common XSLT programming mistakes</a></div><div class="next-uri"><a href="/mike/2010/11/tpac-the-morning-after.html">TPAC: The Morning After</a></div></footer></body>
+</html>

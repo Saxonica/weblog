@@ -1,0 +1,30 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Compiling the Knight's Tour</title>
+      <meta name="id" content="126">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-09-24T14:18:44">
+      <meta name="basename" content="compiling_the_knights_tour">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Compiling the Knight's Tour</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-09"><span class="date" time="2006-09-24T14:18:44">September&nbsp;24, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>A progress report on query compilation: I've now got to the point where I can compile
+         the knight's tour query (tour.xq in the Saxon samples distribution) into Java code,
+         and execute it with correct results. It's running in 39.3ms, compared with 45.9ms
+         for the interpreted code, which isn't wildly exciting, but there's enormous scope
+         for tuning the generated code and it shouldn't be hard to improve on this figure very
+         significantly.</p>
+      <p>The 292 lines of XQuery translate into 1362 lines of Java, which will come down as
+         the code generation gets more efficient.</p>
+      <p>This is of course a very untypical query, as it has no input and generates fairly
+         minimal output: it spends most of its time doing recursive function calls. But it's
+         always been something of a torture test, so it's pleasing to have got it working (without
+         any really hard bugs to solve en route, I might add). I've also got most of the XMark
+         benchmark queries working, with speed factors varying from about 110% (compiled-to-interpreted
+         throughput ratio) to 400%.</p>
+      <p>There's still an enormous amount of work ahead though. Compiling 30% of the language
+         is enough to run 90% of queries, but it's not enough for a release.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/09/more-experiments-with-compilation.html">More experiments with compilation</a></div><div class="next-uri"><a href="/mike/2006/10/still-compiling-the-knights-tour.html">Still Compiling the Knight's Tour</a></div></footer></body>
+</html>

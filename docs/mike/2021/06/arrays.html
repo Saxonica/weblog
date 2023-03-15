@@ -1,0 +1,121 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>What should we do about Arrays?</title>
+        
+        <meta name="author" content="Michael Kay">
+        <meta name="pubdate" content="2021-06-27T15:34:00">
+
+    <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>What should we do about Arrays?</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2021-06"><span class="date" time="2021-06-27T15:34:00">June&nbsp;27, 2021 at 03:34p.m.</span></a></div></header><main>
+        
+            
+            <p>Arrays were added to the data model for XPath 3.1 (and XQuery 3.1): the main motivation 
+                was the need for faithful representation of JSON data structures, while a secondary 
+                consideration was the long-standing requirement for "sequences of sequences".
+            </p>
+            <p>Processing support for arrays in the current languages is rather limited. There's 
+                a basic set of functions available, but not much else. Support in XSLT 3.0 is 
+                particularly weak, because XSLT 3.0 was primarily designed to work with XPath 3.0 
+                (which didn't have arrays), with 3.1 support added as something of an afterthought.
+            </p>
+            <p>This note surveys where the gaps are, and how they should be filled.
+            </p>
+            <p>Many of the complications in processing arrays arise because the members of an array 
+                can be arbitrary sequences, not just single items. There were two reasons for this 
+                design. One is simply orthogonality: the principle of no unnecessary restrictions. 
+                The other was support for the JSON null value, which maps naturally to an empty 
+                sequence in XDM, but only if an array is allowed have an empty sequence as one of its members.
+            </p>
+            
+            <h2>Array Construction</h2>
+            
+            <p>XPath 3.1 offers two constructs for creating arrays: the "square" and "curly" 
+                constructors. Neither is completely general. The "square" constructor (for 
+                example <code>[$X, $Y, $Z]</code>) can construct an array with arbitrary values as its 
+                members, but the size of the array needs to be known statically. The "curly" 
+                constructor (for example <code>array{$X, $Y, $Z}</code>) can construct an array whose size 
+                is decided dynamically, but the members of the array must be singleton items 
+                (not arbitrary sequences). The WG failed to come up with a construct for creating 
+                an array where both the size of the array and the size of each member are 
+                determined dynamically. The only way to achieve this is with a fairly convoluted 
+                use of functions such as <code>array:join()</code>.
+            </p>
+            <p>XSLT 3.0 has no mechanism for array construction. An <code>xsl:array</code> instruction has 
+                been proposed, and is prototyped as <code>saxon:array</code> in current Saxon releases; 
+                but the difficulty is in defining the detail of how it should 
+                work. It makes sense for it to enclose a sequence constructor, so instructions 
+                like <code>xsl:for-each</code> and <code>xsl:choose</code> can be used when building the content. 
+                But sequence constructors deliver sequences of items, not sequences of sequences.
+                So the current proposal for <a href="https://qt4cg.org/branch/master/xslt-40/Overview.html#array-construction">XSLT 4.0</a>
+                envisages an <code>xsl:array-member</code> instruction that wraps a sequence as a zero-arity
+                function. The problem with this is that the mechanism is transparent yet arbitrary;
+                it looks like (and is) a kludge.
+            </p>
+            <h2>Array Processing</h2>
+            
+            <p>Similarly, there are limited options for processing of arrays. There's no 
+                equivalent of the "for" clause in FLWOR expressions that binds a variable 
+                to each member of an array in turn. The closest things on offer are the 
+                <code>array:filter()</code> and <code>array:for-each()</code> higher order functions – which are 
+                more useful in XQuery than in XSLT, because of the difficulty in XSLT 
+                of writing an anonymous function that constructs new XML element nodes. 
+                XSLT in particular relies heavily (in constructs such as <code>xsl:apply-templates</code>, 
+                <code>xsl:for-each</code>, <code>xsl:iterate</code>, and <code>xsl:for-each-group</code>) on binding values implicitly 
+                to the context item. But the context item is an item, not an arbitrary value, 
+                so binding members of arrays to the context item isn't an option.
+            </p>
+            <p>Generalizing "." to represent an arbitrary value rather than a single item seems 
+                an attractive idea, but it's very hard to do without breaking a lot of existing code.
+            </p>
+            <p>Iterating over an array and binding each member to a variable works well in XQuery,
+            where adding a "for member" clause to FLWOR expressions works cleanly enough. But there's
+            lots of other functionality for processing sequences that can't be translated easily
+            into equivalent mechanisms for arrays, especially in XSLT.</p>
+        
+            <h2>Parcels</h2>
+            
+            <p>It seems that a solution for both array construction and array processing is to find 
+                a way to pack an arbitrary sequence into a single item. We'll refer to a "sequence 
+                packed into an item" as a parcel. We can then construct an array from a sequence 
+                of parcels, and we can decompose an array into a sequence of parcels, allowing 
+                both operations to be implemented using all the existing machinery for handling 
+                sequences. 
+            </p>
+            <p>It seems that four operations are sufficient to fill the processing gap:
+            </p>
+            <ul><li>Wrap a sequence as a parcel</li>
+            <li>Unwrap a parcel as a sequence</li>
+            <li>Construct an array from a sequence of parcels</li>
+            <li>Decompose an array into a sequence of parcels</li>
+            </ul>
+            <p>So four functions should do the job: <code>parcel(item()*) =&gt; P</code>, 
+                <code>unparcel(P) =&gt; item()*</code>, <code>array:of(P*) as array(*)</code>, <code>array:members(array(*)) as P*</code>, 
+                where <code>P</code> is the item type of a parcel. Of course, we can also add XSLT or XQuery syntactic 
+                sugar on top of these building blocks.
+            </p>
+            <p>We now have to address the question: what kind of item is a parcel? Is it represented using something we 
+                already know and love (like an array, or a zero-arity function) or is it something new? How should 
+                the type of a parcel be represented in type signatures, and what operations (apart from the above four) 
+                should be available on them?
+            </p>
+            <p>I'm beginning to come to the conclusion that the type safety that comes from treating a parcel as a 
+                new kind of item justifies the extra complexity in the type system. If we reuse an existing 
+                kind of item (for example, zero-arity functions), then there's always going to be confusion about 
+                whether items of that type are to be treated as parcels or as their "ordinary selves".
+            </p>
+            <p>However, I'm reluctant to add yet another fundamental type. We can't keep adding fundamental 
+                types, and new syntax, every time we need something new (cf my Balisage 2020 paper on adding 
+                promises). Can't we make the type system more extensible?
+            </p>
+            <p>Pro tem, I suggest we build on the concept of "extension objects" defined in §25.1.3 of 
+                the XSLT specification. These are intended as opaque objects that can be returned by 
+                one extension function and supplied to another. This concept should really be defined 
+                in XDM rather than in XSLT. We should add that an "extension object" may be an instance 
+                of an "extension type", and that extension types are denoted in the ItemType syntax by a 
+                QName (that is, the same syntax as atomic types), with the QName being made known to the 
+                processor in some implementation-defined way. Then we reserve a namespace URI sys for 
+                "built in extension types", and define sys:parcel as such a type.
+            </p>
+            
+    </main><footer><div class="prev-uri"><a href="/norm/2021/05/11-saxon-js-22.html">Saxon-JS 2.2</a></div><div class="next-uri"><a href="/norm/2022/04/19-shoelace.html">SaxonJS with web components</a></div></footer></body>
+</html>

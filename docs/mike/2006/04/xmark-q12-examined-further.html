@@ -1,0 +1,237 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>XMark Q12 examined further</title>
+      <meta name="id" content="112">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-04-09T14:18:43">
+      <meta name="basename" content="xmark_q12_examined_further">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>XMark Q12 examined further</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-04"><span class="date" time="2006-04-09T14:18:43">April&nbsp;09, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p><span>In yesterday's posting, I showed some figures demonstrating that for most queries,
+            Saxon-B and Saxon-SA have very similar performance, but for some join queries, Saxon-SA
+            performs dramatically better. However, I left with some unexplained results for the
+            XMark query Q12. In this posting I'll explore this query in a little more detail.
+            I don't know if we'll come to any conclusions, but at the very least it's an opportunity
+            to explain how to use Saxon's "explain" output, which shows the structure of the compiled
+            expression tree, that is, the query execution plan chosen by the optimizer. You can
+            get this diagnostic output for XQuery using the -e option on the command line, or
+            for XSLT using saxon:explain="yes" typically on an xsl:template or xsl:function declaration.</span></p>
+      <p><span>Q12 reads like this:</span></p>
+      <pre><code>for $p in /site/people/person
+let $l := for $i in /site/open_auctions/open_auction/initial
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; where $p/profile/@income &gt; (5000 * $i)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return $i
+where&nbsp; $p/profile/@income &gt; 50000
+return &lt;items person="{$p/name}"&gt;{ count ($l) }&lt;/items&gt;</code></pre>
+      <p>The explain output is shown below, with comments interspersed.</p>
+      <pre><code>for $p in
+&nbsp; path /
+&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(site)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(people)
+&nbsp;&nbsp;&nbsp; child::element(person)</code></pre>
+      <p class="comment">This is a very direct translation of the
+         first "for" clause, the optimizer has done nothing clever. It's a
+         bit tricky to read, because the expression has effectively been
+         rewritten in "reverse Polish" order. But you should be able to
+         make sense of it.</p>
+      <pre><code>return
+&nbsp; if (
+&nbsp;&nbsp;&nbsp; some $qq:13419912 in
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; treat as xdt:_numeric_
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; convert untyped atomic items to xdt:_numeric_
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; atomize
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $p
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(profile)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; attribute::attribute(income)
+&nbsp;&nbsp;&nbsp; satisfies
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; operator gt
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $qq:13419912
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 50000</code></pre>
+      <p class="comment">This part is the "where" clause associated
+         with the outer FLOWR expression. I'm slightly suprised that this
+         clause wasn't turned into a filter expression, but in this case
+         that wouldn't have given any benefit, so it's nothing to worry
+         about. The "where" is being turned into a simple conditional
+         expression testing every item returned by the "for". If you look
+         ahead in the output you'll see that the "else" branch of the
+         conditional is "else ()" - when the condition is true, some
+         output is produced, otherwise nothing is produced.</p>
+      <p class="comment">The original condition <code>$p/profile/@income &gt; 50000</code>
+         has first been turned into the expression
+         <code>some $qqq in $p/profile/@income satisfies $qqq gt 50000</code>.
+         This will test each selected @income in turn against the value
+         50000, and exit as soon as one is found that satisfies the
+         condition. Of course, without a schema, the XQuery compiler
+         cannot know that each person ($p) has only one profile and
+         therefore only one income.</p>
+      <p class="comment">The other changes here implement the type-checking and
+         type-conversion rules. Reading up the tree, the @income node is
+         first atomized, to extract its typed value. The attribute could
+         be list-valued, so the typed value has to be treated as a
+         sequence. The next operation (convert) converts any untypedAtomic
+         values in this sequence to xs:double values, leaving other values
+         unchanged (it uses the internal type name xdt:_numeric_ in the
+         output, but it's actually converting to doubles). Then in
+         the "treat" operation it checks that all the values in the
+         resulting sequence (including any values that weren't untyped and
+         therefore haven't been converted) are now numeric, and raises an
+         error if this check fails. (Actually, because these operations on
+         sequences are pipelined, the error will only be raised if a
+         non-numeric value is found <em>before</em> finding a value that's
+         &gt; 50000).</p>
+      <p class="comment">At this point we see a difference in the explain output if
+         we've told Saxon that all nodes are untyped (using
+         configuration.setAllNodesUntyped(true)). In this case the
+         condition starts:</p>
+      <pre><code>if (
+&nbsp; some $qq:20324370 in
+&nbsp;&nbsp;&nbsp; convert untyped atomic items to xdt:_numeric_
+&nbsp; &nbsp; &nbsp; atomize</code></pre>
+      <p class="comment">Note the absence of the "treat" operator. This is because
+         Saxon knows that the result of atomization will always be untyped
+         atomic, and the result of the convert operator will therefore be
+         numeric, so testing the values to check that they are numeric is
+         superfluous. This is the reason that Saxon-B sometimes has a tiny
+         edge over Saxon-SA when handling untyped data.</p>
+      <p class="comment">The "then" part of the conditional represents the "let"
+         and "return" clauses of the outer FLWOR expression. It starts
+         like this:</p>
+      <pre><code>&nbsp;&nbsp;&nbsp; let $l[refCount=1] :=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let $zz:18929195[refCount=10] :=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lazy
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; atomize
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $p
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(profile)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; attribute::attribute(income)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return</code></pre>
+      <p class="comment">The [refcount=1] is an indication of how many references to a
+         variable there are (with a reference from inside a loop counting
+         as "many"). You'll never see zero, because if there are no
+         references, the expression gets optimized away. The only real
+         distinction is between one and many (represented here by a
+         nominal value of 10). The difference is that if there's only one
+         reference, then evaluation of the variable and the expression
+         that uses it can be pipelined together, with no memory allocated
+         to storage of the variable's value. The refcount is also used
+         when deciding whether to create an index for the variable.</p>
+      <p class="comment">The operator "lazy" means "evaluate this expression the first
+         time its value is needed". When an expression is pulled out of a
+         loop, it is always prefixed by this operator to ensure that in
+         cases where the loop is evaluated zero times, the extracted
+         expression isn't evaluated. The main reason for this is to avoid
+         spurious errors occurring for expressions like <code>for $x in
+            $sequence return $x + 23 div count($sequence)</code>.</p>
+      <p class="comment">The outer "let" here is for the user-defined variable $l;
+         the inner let is a system-allocated variable, which has been
+         created because the optimizer has recognized that the expression
+         <code>$p/profile/@income</code> doesn't depend on the value of
+         $i, and can therefore be pulled out of the inner "for" loop.
+         Atomization of the value (to extract the typed value of the
+         @income attribute) also happens outside the loop. (Saxon doesn't
+         however recognize that this expression appears twice in the
+         query.)</p>
+      <p class="comment">The value of $l is computed by the next subexpression:</p>
+      <pre><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; filter []
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(site)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(open_auctions)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(open_auction)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(initial)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; operator many-to-many &gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $zz:18929195
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; operator *
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5000
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; atomize singleton
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .</code></pre>
+      <p class="comment">This time the "where" clause has been turned into a filter
+         expression (represented by the operator "filter []". The
+         expression being filtered is the path expression
+         site/open_auctions/open_auction/initial, and the filter is [$zz
+         &gt; 5000*.], where $zz is the system-allocated variable we saw
+         earlier. Notice how the variable $i has disappeared and has been
+         replaced by a reference to the context item "." within the
+         predicate.</p>
+      <p class="comment">In this section of the query we see the main difference that
+         occurs when we set the allNodesUntyped() option. In that case,
+         firstly, after atomizing the value of @income outside the loop,
+         the value is converted to an xs:double with the operator</p>
+      <pre><code>convert untyped atomic items to xdt:_numeric_</code></pre>
+      <p class="comment">Secondly, the use of "operator many-to-many &gt;" is replaced by</p>
+      <pre><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; let $zz:13419912[refCount=10] :=
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; lazy
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; operator *
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5000
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; atomize
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; some $qq:8106640 in
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $zz:29131495
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; satisfies
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; operator gt
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $qq:8106640
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $zz:13419912</code></pre>
+      <p class="comment">That is, the expression <code>[$zz &gt; 5000 * .]</code> has been rewritten as
+         <code>[let $zz2 := (5000 * .) return some $qq in $zz satisfies $qq gt $zz2]</code>.</p>
+      <p class="comment">It seems that this rewrite, in this particular case, is an unwise
+         one. It's possible because in this case we have more information,
+         for example we know that the typed value of @income will always
+         be a single value, never a sequence, and as a result we don't
+         need to use the potentially very expensive "many to many &gt;"
+         operator which tests every item on the left against every item on
+         the right. But the actual performance results show that in this
+         particular case, where in fact every person has only one income
+         though we had no way of knowing this in advance, the "many to
+         many &gt;" operator actually performed better.</p>
+      <p class="comment">The final part of the explain output, for completeness,
+         represents the "return" clause of the outer FLWOR expression:</p>
+      <pre><code>
+&nbsp;&nbsp;&nbsp; return
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; element 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name items
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; content
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; attribute 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name person
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; function string-join
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; convert items to xs:string
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; atomize
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; path /
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $p
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; child::element(name)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; " "
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; function count
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $l</code></pre>
+      <p class="comment">Notice again how Saxon, without the benefit of a schema, has
+         no idea that a person has only one name. So the code
+         person={$p/name} translates into a call on string-join() to
+         output all the values of $p/name, separated by spaces.</p>
+      <p>What can we conclude so far? We've learned that for this
+         particular query, telling Saxon that all the nodes were untyped
+         had the opposite effect from that intended: it enabled Saxon to
+         perform an optimization which in this particular case was
+         counter-productive.</p>
+      <p>This doesn't actually help with our original question: why,
+         unlike the vast majority of the queries in this benchmark, does
+         Saxon-B achieve better results that Saxon-SA? It's not a big
+         difference, but it needs explaining. It turns out that
+         the "explain" output for Saxon-B is identical to the "explain"
+         output for Saxon-SA with the "all nodes untyped" option, so it
+         seems that there's something different happening at run-time.
+         Sorry to leave you with an unsolved mystery, but I don't yet know
+         what causing this!</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/03/conference-season-approaching.html">Conference Season approaching</a></div><div class="next-uri"><a href="/mike/2006/04/schema-aware-xmark.html">Schema-Aware XMark</a></div></footer></body>
+</html>

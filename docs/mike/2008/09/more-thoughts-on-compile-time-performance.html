@@ -1,0 +1,78 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>More thoughts on compile-time performance</title>
+      <meta name="id" content="151">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-09-18T14:18:45">
+      <meta name="basename" content="more_thoughts_on_compile-time_performance">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>More thoughts on compile-time performance</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-09"><span class="date" time="2008-09-18T14:18:45">September&nbsp;18, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Another user, Rudolf Weinmann, has sent me some samples of generated code (XSLT this
+         time) with a request to take a look at compile-time performance issues. Here we're
+         dealing with a single stylesheet module, 22K lines long, more or less a single fill-in-the-blanks
+         template rule. It takes about 3900ms to compile (5000ms under Saxon-SA), and the new
+         switch to suppress optimization reduces this to about 1180ms. So optimization is the
+         culprit here. The optimizer is actually making quite a few significant improvements
+         to the code, but because the source document is small and the transformation time
+         is only 75ms, the improvements are not worth the effort of making them. Also, because
+         this code is being regenerated and recompiled frequently, compile-time milliseconds
+         are just as costly as run-time milliseconds.</p>
+      <p>So the switch will be useful here. But I hate performance improvements that depend
+         on the user setting a switch, because 99% of users will never discover the switch
+         is there (and this probably includes users who run benchmarks and publish the results...).
+         So, are there opportunities to improve the compile-time performance of the optimizer?
+         You bet there are.</p>
+      <p>It turns out that the optimizer spends a lot of its time chasing around the expression
+         tree searching for things. Saxon tries to minimize this by storing redundant data
+         on the tree, and computing it lazily when first required. But this strategy has its
+         limitations, because the optimizer is constantly rearranging the tree, and this invalidates
+         such cached results. In fact, at one time Saxon maintained parent pointers in the
+         expression tree (which is a kind of redundancy), but these were eliminated because
+         of the difficulty of keeping them consistent in the face of tree rewrites.</p>
+      <p>In this particular example (with one rather large template rule containing a lot of
+         local variables), a lot of time is spent searching the tree to look for references
+         to the local variables. A fairly simple change - stopping the search when you find
+         an expression that has no dependencies on local variables - gives a significant saving
+         (down from 3900ms to 2400ms in Saxon-B). Unfortunately it also increases the optimizer's
+         dependence on the correctness of the lazily-evaluated flag saying "this expression
+         has dependencies on local variables" - and I have already found cases where this flag
+         is not being correctly re-evaluated after a rewrite of a portion of the tree.</p>
+      <p>
+         It's tempting to say that a node on the expression tree that binds a
+         local variable should contain a list of references to all the uses of
+         that variable. This would certainly save a lot of the searching. But
+         it's really hard to maintain such a list, for example if an
+         intermediate expression is removed from the tree because it turns out
+         to be unreachable or to contribute nothing to the final result.</p>
+      <p>So, we can improve performance by adding more redundant data to the tree, but every
+         time we do so, we risk introducing bugs when rewrites fail to update the redundant
+         data. A tricky engineering trade-off. It's no use hoping that the bugs will be eliminated
+         by testing - experience shows that with optimization, it's impossible to devise a
+         large enough set of test cases to get all the bugs out before release. They have to
+         be eliminated by design. And not storing redundant data (and taking a performance
+         hit) is one way of doing that.</p>
+      <p>Some parts of the optimization process get around the problem by maintaining redundant
+         data not on the tree itself, but as temporary data within the ExpressionVisitor that
+         is used to navigate the tree. Perhaps there is scope for increasing the use of this
+         technique?</p>
+      <p>Or perhaps we ought simply to make it much faster to walk the expression tree? This
+         after all is what the TinyTree does at the level of walking instance documents. The
+         difference, though, is that the TinyTree data structure is explicitly taking advantage
+         of the immutability of the tree. Here the fact that the expression tree is changing
+         is the cause of all the trouble.</p>
+      <p>Another approach would be to manage cache invalidation more robustly. The expression
+         tree is in fact a forest, each root (called a Container) representing a top-level
+         object like a function, template, global variable, or the main query body. Every time
+         we change the tree within a Container, we could increment a version number for the
+         Container, and all cached properties within a Container could be associated with the
+         version number of the Container at the time they were created. This eliminates the
+         need to preserve consistency at a fine-grained level; the only requirement is that
+         (a) anyone who makes a change to the tree should up the version, and (b) anyone who
+         uses cached properties should check the version and recompute if necessary. If we
+         had a robust mechanism like this, we could afford to risk holding more redundant data
+         on the tree.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/09/compile-time-performance.html">Compile-time Performance</a></div><div class="next-uri"><a href="/mike/2008/09/join-optimization.html">Join optimization</a></div></footer></body>
+</html>

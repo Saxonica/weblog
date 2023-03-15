@@ -1,0 +1,383 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>XML versus JSON: A Comparison using the XMark Benchmark</title>
+        
+        <meta name="author" content="Michael Kay">
+        <meta name="pubdate" content="2022-05-06T11:00:00">
+
+    <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>XML versus JSON: A Comparison using the XMark Benchmark</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2022-05"><span class="date" time="2022-05-06T11:00:00">May&nbsp;06, 2022 at 11:00a.m.</span></a></div></header><main>
+        
+        
+        <p>For many years we have used the XMark benchmark to check for performance
+        regression between Saxon releases, and to evaluate the impact of internal
+        changes on query performance.</p>
+        
+        <p>XMark originated with the MonetDB project and is described at
+            <a href="https://projects.cwi.nl/xmark/">https://projects.cwi.nl/xmark/</a>. It consists
+        of a scaleable XML data file (produced using a data generator), and a set of 20 XQuery queries
+        to be run against that data file. We have run the data generator to produce files with
+        nominal sizes of 100Kb, 1Mb, 4Mb, 10Mb, and 100Mb; we use the original queries as published,
+        except for one or two small changes to correct errors in the original publication.</p>
+        
+        <p>Recently we have converted these data files to JSON, and have produced equivalent XQuery 3.1
+        queries to deliver the same results as the original. The queries still produce XML rather than JSON
+        output, so that we can compare the results; except in a few cases where large chunks of the original
+        XML are copied to the output, which we cannot reproduce exactly because we don't have the original
+        XML available. The results also differ because JSON maps don't retain order.</p>
+        
+        <p>In this article I will report first on the data conversion; then on the query conversion;
+        and finally on performance results.</p>
+        
+        <h2>Converting the data</h2>
+        
+        <p>I didn't attempt to use any off-the-shelf XML-to-JSON conversion tools. My instinct is that they
+        wouldn't have done a very good job, and I would have needed an XSLT transformation to refine the output
+        anyway, so I decided to do the whole job using XSLT 3.0.</p>
+        
+        <p>The conversion stylesheet is not particularly interesting; in fact, it's rather tedious. A few points
+        are worth mentioning:</p>
+        
+        <ul>
+            <li><p>As mentioned in <a href="/mike/2021/06/arrays.html">What should
+            we do about arrays?</a> the XSLT 3.0 spec is weak on capabilities for constructing arrays. This
+            is the only area where we used Saxon extensions. I'm not convinced we yet have a perfect solution to this
+            problem, and I've proposed some new ideas at <a href="https://github.com/qt4cg/qtspecs/issues/113">Constructing Arrays</a>.</p></li>
+            <li><p>The XMark data files are mainly structured data, but there is some use of mixed content for narrative
+            text. Mixed content is bad news for JSON. In real life, I would probably have handled this by embedding
+            XML or HTML fragments within character strings in the JSON structure; but that seemed to be against
+            the spirit of this exercise, so I instead expanded the node structure of the mixed content using JSON
+            maps and arrays. As we'll see later, this had a severe effect on the ease of writing the queries
+            and on their performance.</p></li>
+            <li><p>Most structured data elements in the original file fall into two categories: elements
+            with homogenous element content (multiple children all having the same name), and elements
+            with heterogeous element content (multiple children with different names). These translate very
+            naturally into JSON arrays and maps respectively. A few cases weren't quite so simple: for example
+            the content model for <code>open_auction</code> has the form <code>(initial, bidder*, current,
+            privacy, seller, ...)</code>. We handle this as if there were a wrapper element <code>bidders</code>
+            around the sequence of <code>bidder</code> elements, so <code>open_auction</code> translates
+            to a map, and <code>bidders</code> converts to an array. The names of elements within an array
+            are generally dropped.</p></li>
+            <li><p>There are a few attributes in the XML; these posed no particular problem.</p></li>
+        </ul>
+        
+        <p>The nominal 10Mb file is actually 11,875,066 bytes in its XML form, and 10,464,266 bytes
+        when converted to JSON, a reduction of 13%. Some of this difference (perhaps 200Kb) is due to 
+        unnecessary whitespace in the XML; the rest is the overhead of element end tags.</p>
+        
+        <p>Parsing the XML and building a Saxon TinyTree took 353ms; parsing the JSON and building a structure
+        of XDM maps and arrays took 636ms. I haven't attempted to assess the memory usage of the two data structures,
+        but the maps and arrays are almost certainly larger. This is despite the fact that for maps derived directly
+        from JSON parsing, we use a specialized representation of maps that optimizes for the fact that all keys
+        are instances of <code>xs:string</code>, and therefore don't need to retain a type annotation.</p>
+        
+        <h2>Converting the Queries</h2>
+        
+        <p>The queries were converted by hand. Generally we tried to change the query so it continued to produce
+        the same (XML) output as the original, for ease of comparing results; but for queries whose output copies
+        sizeable chunks of the input XML, we abandoned this principle, instead replicating the intent of the query
+        as far as we could.</p>
+        
+        <p>In most cases the conversion is very straightforward. For example, this is Q3:</p>
+        
+        <pre><code>
+(: Q3. Return the IDs of all open auctions whose current
+     increase is at least twice as high as the initial increase. :)
+
+for    $b in /site/open_auctions/open_auction
+where  $b/bidder[1]/increase * 2 &lt;= $b/bidder[last()]/increase
+return &lt;increase first="{$b/bidder[1]/increase}"
+                 last="{$b/bidder[last()]/increase}"/&gt;            
+            
+        </code>           
+        </pre>
+        
+        <p>Which turns into:</p>
+        <pre><code>
+(: Q3. Return the IDs of all open auctions whose current
+     increase is at least twice as high as the initial increase. :)
+
+for    $b in ?open_auctions?*
+where  $b?bidders?*[1]?increase *2 &lt;= $b?bidders?*[last()]?increase
+return &lt;increase first="{$b?bidders?*[1]?increase}"
+                 last="{$b?bidders?*[last()]?increase}"/&gt;
+        </code>           
+        </pre>
+        
+        <p>Some observations:</p>
+        
+        <ul>
+            <li>We have to use <code>bidders?*[1]</code> rather than <code>bidders?1</code> because
+            the latter expression throws a dynamic error (rather than returning an empty sequence)
+            for an auction in which there are no bidders.</li>
+            <li>We use <code>bidders?*[last()]</code> to get the last item in an array
+            because converting the array to a sequence and using a filter is simpler than the alternative of
+            writing <code>bidders?(array:size($b?bidders))</code>.</li>
+            <li>The element name <code>site</code> is dropped because the JSON file is a map in which
+            <code>open_auctions</code> is a top-level entry.</li>
+            <li>The element name <code>open_auction</code> is dropped because the 
+                <code>open_auctions</code> entry in the JSON contains an array of objects which do
+                not need to be named; the <code>?*</code> in the JSON query corresponds to the
+                <code>/open_auction</code> in the original.</li>
+            <li>The JSON form introduces the name <code>bidders</code> as a wrapper for the group of
+            individual <code>bidder</code> elements in the XML (which become anonymous in the JSON).</li>
+        </ul>
+        
+        <p>Some specific difficulties that were encountered in converting other queries:</p>
+        
+        <ul>
+            <li>Query Q4 looks for auctions where one bid differs from a previous bid, and for this
+            purpose it uses the operator <code>&lt;&lt;</code> to test the relative order of two
+            nodes in document order. The JSON model offers no equivalent. To solve this I introduced
+            a higher-order function <code>index-where(array, predicate)</code> which returns the
+            index positions in an array of members that satisfy the given predicate; it is then possible
+            to find the required two items and compare their index positions.</li>
+            <li>For any query using the mixed content <code>description</code> field, I needed to include
+            a recursive function that reconstructs the <code>description</code> as text by flattening
+            the arrays and maps that make it up. This is tedious and expensive. Queries that do a deep dive
+            into the description, like looking for text marked up with <code>keyword</code> tags at any
+            depth, are even more complicated. The <code>map:find</code> function sometimes does what's needed,
+            but not if any context is involved (for example, finding a keyword that's nested within 
+            <code>emph</code> markup).</li>
+            <li>Debugging mistakes can be tricky. The diagnostics you get when you write 
+                <code>?closed_auctions?annotation</code> instead of <code>?closed_auctions?*?annotation</code>
+            aren't always helpful. I've tried to improve them. I've also proposed a language change so
+            the first expression becomes valid: see <a href="https://github.com/qt4cg/qtspecs/issues/115">Lookup
+            operator on arrays of maps</a>.</li>
+            <li>It's very easy to forget that if <code>$A</code> is an array, then <code>$A[$index]</code>
+            and <code>$A[condition]</code> are both valid, but neither means what you think, because they treat
+            the array as a single item, not as a collection. With arrays derived from JSON, every member of the
+            array (discounting any nulls) is a singleton, so you can always write <code>$A?*[$index]</code>
+                or <code>$A?*[condition]</code> instead.</li>
+        </ul>
+        
+        
+        
+        
+        <h2>Query Performance</h2>
+        
+        <p>For most of the queries, the JSON query was a little slower than the XML version. 
+            Queries in this category include: </p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Query</th>
+                    <th>XML timing (ms)</th>
+                    <th>JSON timing (ms)</th>
+                    <th>Ratio (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>q1</td>
+                    <td>0.2649</td>
+                    <td>0.6845</td>
+                    <td>258%</td> 
+                </tr>
+                <tr>
+                    <td>q2</td>
+                    <td>0.4861</td>
+                    <td>0.6588</td>
+                    <td>136%</td> 
+                </tr>
+                <tr>
+                    <td>q5</td>
+                    <td>0.2711</td>
+                    <td>0.3190</td>
+                    <td>118%</td> 
+                </tr>
+                <tr>
+                    <td>q8</td>
+                    <td>1.9359</td>
+                    <td>2.3572</td>
+                    <td>122%</td> 
+                </tr>
+                <tr>
+                    <td>q10</td>
+                    <td>11.3329</td>
+                    <td>14.3428</td>
+                    <td>127%</td> 
+                </tr>
+                <tr>
+                    <td>q11</td>
+                    <td>93.5360</td>
+                    <td>144.1105</td>
+                    <td>154%</td> 
+                </tr>
+                <tr>
+                    <td>q16</td>
+                    <td>0.4183</td>
+                    <td>0.8489</td>
+                    <td>203%</td> 
+                </tr>
+                <tr>
+                    <td>q17</td>
+                    <td>0.5964</td>
+                    <td>0.8887</td>
+                    <td>149%</td> 
+                </tr>
+                <tr>
+                    <td>q20</td>
+                    <td>1.2380</td>
+                    <td>2.2084</td>
+                    <td>178%</td> 
+                </tr>
+            </tbody>
+        </table>
+        
+        <p>How do we account for these numbers? My theory (based on gut feeling) is that the XML queries
+        are faster because of the use of integer fingerprints for name matching in the TinyTree. Look at
+        q1, for example, which in the original is:</p>
+        
+        <p>Q1: <code>for $b in /site/people/person[@id="person0"] return $b/name</code></p>
+        
+        <p>(The XMark queries were written by someone who felt that everything ought to be written
+        as a FLWOR expression. It can of course be simplified to a simple XPath. I'm surprised
+        they didn't use a <code>where</code> clause...)</p>
+        
+        <p>The child and attribute axis steps here (<code>child::people</code>, <code>child::person</code>, 
+            <code>attribute::id</code>etc) are implemented
+        in the TinyTree by a sequential search of node entries testing each one for an integer namecode. By contrast
+        the JSON equivalent is:</p>
+        
+        <p>Q1: <code>for $b in ?people?*[?id="person0"] return $b?name</code></p>
+        
+        <p>and this involves string-based lookups in a hash table. Because the fan-out is fairly small, the
+        sequential search wins.</p>
+        
+        <p><i>To test this theory, I ran the XML queries using DOM rather than TinyTree as the tree model. Navigation
+            in the DOM uses string matching on element and attribute names. The DOM queries
+        are dramatically slower than the TinyTree: q1: 0.2947 q2: 9.1684 q5: 5.1841 q8: 49.4798 q10: 116.8379 
+        q11: 402.2151 q16: 6.5635 q17: 44.1887 q20: 179.2854.</i></p>
+        
+        <p>In the next group of queries, the JSON query is slightly faster:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Query</th>
+                    <th>XML timing (ms)</th>
+                    <th>JSON timing (ms)</th>
+                    <th>Ratio (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>q3</td>
+                    <td>1.3507</td>
+                    <td>1.2656</td>
+                    <td>94%</td> 
+                </tr>
+                <tr>
+                    <td>q6</td>
+                    <td>0.2870</td>
+                    <td>0.0316</td>
+                    <td>11%</td> 
+                </tr>
+                <tr>
+                    <td>q9</td>
+                    <td>3.2959</td>
+                    <td>2.2320</td>
+                    <td>68%</td> 
+                </tr>
+                <tr>
+                    <td>q12</td>
+                    <td>32.3911</td>
+                    <td>29.2320</td>
+                    <td>90%</td> 
+                </tr>
+                <tr>
+                    <td>q18</td>
+                    <td>0.3134</td>
+                    <td>0.2865</td>
+                    <td>91%</td> 
+                </tr>
+                <tr>
+                    <td>q19</td>
+                    <td>4.9937</td>
+                    <td>4.6699</td>
+                    <td>93%</td> 
+                </tr>
+            </tbody>
+        </table>
+        
+        <p>Query q6 is clearly an outlier. This query counts descendants: the original XML formulation is:</p>
+        
+        <p>Q6: <code>for $b in /site/regions/* return count ($b//item)</code></p>
+        
+        <p>As it happens, <code>item</code> elements cannot appear at any depth, so the return clause
+        could equally have been written <code>count($b/item)</code>. In writing the JSON query I took
+        advantage of this knowledge, and wrote the query as:</p>
+        
+        <p>Q6: <code>map:for-each(?regions, function($k, $v){a:size($v)})</code></p>
+        
+        <p>This runs faster firstly because of this simplification, and secondly because the size of a map
+        can be determined in constant time, whereas counting the number of children of an element requires
+        actually scanning them.</p>
+        
+        <p>For the other queries where there is a small speed-up, the cause is less obvious, but it's usually
+        possible to hazard a guess. Some of them, for example, involve arithmetic and numeric comparisons,
+        and the JSON queries in such cases avoid the overhead of converting strings to numbers on the fly
+        (instead, the conversion is done during JSON parsing). We know from profiling that these conversions,
+        especially if they occur in a filter predicate, can dominate query execution time.</p>
+        
+        <p>For the final group of queries, the JSON performance is chronically worse:</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Query</th>
+                    <th>XML timing (ms)</th>
+                    <th>JSON timing (ms)</th>
+                    <th>Ratio (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>q7</td>
+                    <td>1.0953</td>
+                    <td>87.4869</td>
+                    <td>7987%</td> 
+                </tr>
+                <tr>
+                    <td>q13</td>
+                    <td>0.3635</td>
+                    <td>15.1646</td>
+                    <td>4171%</td>
+                </tr>
+                <tr>
+                    <td>q14</td>
+                    <td>12.4252</td>
+                    <td>138.0764</td>
+                    <td>1111%</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <p>These three queries all involve access to the <code>description</code> of an <code>item</code>, which in the XML representation
+        is a mixed-content field (text with inline markup). As remarked earlier, this has been represented in JSON by expanding the
+        node tree to a structure of arrays and singleton maps. As a result, a query like this one:</p>
+        
+        <p>Q14: <code>for $i in /site//item where contains ($i/description,"gold") return ($i/name, $i/description)</code></p>
+        
+        <p>becomes thoroughly contorted (and inefficient) in the JSON representation: it is necessary to write a recursive function
+        that assembles the description (sans markup) as a string before executing the <code>contains()</code> function. Even then,
+        the JSON query doesn't faithfully reproduce the original, because it outputs the description as a string, losing the internal
+        markup.</p>
+        
+        <h2>Conclusions</h2>
+        
+        <p>First, if you've got mixed content (text with inline markup) then you probably don't want to be using JSON. If you must
+        use JSON, use XML or HTML within character strings in cases where inline markup is needed.</p>
+        
+        <p>Secondly, for structured data it's a fairly even match; the differences aren't large enough to be critical for most
+        applications. In Saxon, XML does slightly better on balance. This assumes, however, that for the XML case you are using 
+        an efficient model like the Saxon TinyTree, rather than a general-purpose DOM.</p>
+        
+        <p>We found a few cases where the expressive power of XQuery 3.1 for querying JSON structures has gaps and omissions.
+        Notably, searching for descendants in the tree is difficult; operations based on ordering of items within arrays are
+        also tricky.</p>
+            
+    </main><footer><div class="prev-uri"><a href="/norm/2022/04/19-shoelace.html">SaxonJS with web components</a></div><div class="next-uri"><a href="/mike/2022/05/except-patterns.html">The pattern <code>match="para except appendix//para"</code></a></div></footer></body>
+</html>

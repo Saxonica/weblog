@@ -1,0 +1,109 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>How not to fold constants</title>
+      <meta name="id" content="135">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2007-01-20T14:18:44">
+      <meta name="basename" content="how_not_to_fold_constants">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>How not to fold constants</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2007-01"><span class="date" time="2007-01-20T14:18:44">January&nbsp;20, 2007 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I'm back to work on the Java code-generation for XQuery. The challenge is to improve
+         the test coverage. With 14000 tests in the W3C test suite, one would think the coverage
+         would be pretty good; but the problem is that many of the tests use literal constants,
+         which means the whole query can be evaluated statically by the XQuery analyzer, before
+         the code generator gets a look in. Early evaluation of expressions at compile time
+         is known rather quaintly in the compiler literature as "constant folding". We should
+         be able to improve the coverage of the code generator testing simply by not doing
+         constant folding.</p>
+      <p>Of course one way to do this would be to set some diagnostic flags within the Saxon
+         optimization code. But that kind of thing is hard to maintain, and it's unsatisfactory
+         to do testing with a modified version of the product. It occurred to me that it would
+         be better to modify the queries.</p>
+      <p>Here's an example. There's a query fn-codepoints-to-string-3&nbsp; that does this:</p>
+      <pre><code>fn:codepoints-to-string(49)</code></pre>
+      <p>The Java code that Saxon generates for this is (minus the boilerplate):</p>
+      <pre><code>final static StringValue constant0 =
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; StringValue.makeStringValue("1");
+
+public void process(final XPathContext context) 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; throws XPathException {
+&nbsp;&nbsp;&nbsp; SequenceReceiver out = context.getReceiver();
+&nbsp;&nbsp;&nbsp; out.append(constant0, 0, 0);
+}</code></pre>
+      <p>In other words, all the hard work has already been done.</p>
+      <p>We can fix this by modifying the query to read:</p>
+      <pre><code>fn:codepoints-to-string(saxon:noop(49))</code></pre>
+      <p>Where saxon:noop is a simple extension function:</p>
+      <pre><code>public static ValueRepresentation noop(ValueRepresentation arg) {
+&nbsp;&nbsp; return arg;
+}</code></pre>
+      <p>The optimizer of course doesn't understand extension functions and leaves them well
+         alone. So this query should compile to something much more interesting. (Some calls
+         to standard functions are simply implemented by calls to the run-time library. Others,
+         including this one, are likely to generate inline code).</p>
+      <p>It turns out that it's very easy to do this transformation of the query. That's because
+         all the queries (or the vast majority of them) have been published not only in "human-readable"
+         XQuery format, but also in an XML format, XQueryX. This is what the query looks like
+         in XQueryX:</p>
+      <pre><code>&lt;?xml version="1.0"?&gt;
+&lt;xqx:module xmlns:xqx="http://www.w3.org/2005/XQueryX"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; xsi:schemaLocation="http://www.w3.org/2005/XQueryX
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; http://www.w3.org/2005/XQueryX/xqueryx.xsd"&gt;
+&nbsp; &lt;xqx:mainModule&gt;
+&nbsp;&nbsp;&nbsp; &lt;xqx:prolog&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xqx:varDecl&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xqx:varName&gt;input-context1&lt;/xqx:varName&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xqx:external/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xqx:varDecl&gt;
+&nbsp;&nbsp;&nbsp; &lt;/xqx:prolog&gt;
+&nbsp;&nbsp;&nbsp; &lt;xqx:queryBody&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xqx:functionCallExpr&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xqx:functionName xqx:prefix="fn"&gt;codepoints-to-string&lt;/xqx:functionName&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xqx:arguments&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xqx:integerConstantExpr&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xqx:value&gt;49&lt;/xqx:value&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xqx:integerConstantExpr&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xqx:arguments&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xqx:functionCallExpr&gt;
+&nbsp;&nbsp;&nbsp; &lt;/xqx:queryBody&gt;
+&nbsp; &lt;/xqx:mainModule&gt;
+&lt;/xqx:module&gt;</code></pre>
+      <p>The XQueryX specification comes with an XSLT stylesheet that converts this parse tree
+         into the human-readable XQuery syntax. All we need to do is to add an overlay to this
+         stylesheet that adds one or two rules, for example:</p>
+      <pre><code>&lt;xsl:import href="xqueryx.xsl"/&gt;&nbsp;
+
+&lt;xsl:template match="xqx:integerConstantExpr
+&nbsp;&nbsp;&nbsp; | xqx:decimalConstantExpr
+&nbsp;&nbsp;&nbsp; | xqx:doubleConstantExpr"&gt;
+&nbsp; &lt;xsl:text&gt;saxon:noop(&lt;/xsl:text&gt;
+&nbsp; &lt;xsl:value-of select="xqx:value"/&gt;
+&nbsp; &lt;xsl:text&gt;)&lt;/xsl:text&gt;
+&lt;/xsl:template&gt;</code></pre>
+      <p>and the modified stylesheet produces the query that we want. Add to this Saxon's ability
+         using the collection() function (together with xsl:result-document) to transform all
+         the files held in a directory structure, and the conversion of the whole test suite
+         becomes extremely easy.</p>
+      <p>Two observations:</p>
+      <p>(1) I've often been very critical of XQueryX, feeling that there really wasn't a strong
+         enough need for it to justify making it a W3C standard. Well, I'm going to have to
+         eat my words at least partially. This particular exercise would not have been nearly
+         as easy if the tests hadn't been published in XQueryX format, and that wouldn't have
+         happened if it hadn't been a W3C spec.</p>
+      <p>(2) It's interesting to note how hard it would be to do this in XQuery. The main XQueryX
+         stylesheet certainly benefits immensely from XSLT's top-down apply-templates processing
+         model, but in theory it could have been written in XQuery. The modification layer,
+         however, that changes the behaviour of the transformation to do something slightly
+         different, would be quite impossible to add without modifying the source code of the
+         original query. This is an observation I've made in a number of larger applications:
+         once you want to write code that can be reused for more than one task, XSLT has quite
+         a few features that make it a stronger candidate for the job than XQuery.</p>
+      <p>Having done this conversion, I've now realized that the Java code-generator doesn't
+         yet handle calls to extension functions. Well, I tested the coverage of the code-generator
+         in a way that I didn't quite anticipate!</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/12/new-w3c-xml-schema-test-suite.html">New W3C XML Schema Test Suite</a></div><div class="next-uri"><a href="/mike/2007/01/xml-schema-tests-progress-report.html">XML Schema Tests: progress report</a></div></footer></body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Moving forward with streaming templates</title>
+      <meta name="id" content="169">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2009-11-26T14:18:46">
+      <meta name="basename" content="moving_forward_with_streaming_templates">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Moving forward with streaming templates</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2009-11"><span class="date" time="2009-11-26T14:18:46">November&nbsp;26, 2009 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Saxon 9.2 introduced a limited capability to do "push processing" (using template
+         rules) in streaming mode, that is, while parsing the source document, without ever
+         building a tree representation of the source document in memory. This (added to the
+         other streaming capabilities in Saxon) provides a useful capability for people who
+         have to handle very large documents, but it only supports a small subset of the language,
+         and achieving anything useful can sometimes require rather contorted programming.
+         I've been revisiting the facility with the aim of supporting a much larger subset
+         of the XSLT language in streaming mode, hopefully more like 80% rather than 20%, and
+         thus making the streaming facilities far more accessible to the average developer.</p>
+      <p>Details of the current facility (in Saxon 9.2) are at <a href="http://www.saxonica.com/documentation/sourcedocs/serial/templates.html">http://www.saxonica.com/documentation/sourcedocs/serial/templates.html</a>. Note how the documentation lists the small number of things that you are allowed
+         to do, rather than the large number of things that you aren't. One of the aims is
+         to reverse this, so the documentation only describes the list of things that aren't
+         supported in streaming mode. Hopefully this list will be as simple as possible, and
+         reflect user expectations: it's easy enough to tell people that you can't use the
+         <strong>following-sibling</strong> axis, or <strong>last()</strong>, or <strong>xsl:number</strong>, and people will understand why; but having a rule that <strong>//a</strong> is allowed but <strong>//a/b</strong> isn't is just too hard for people to work with.</p>
+      <p>Making this work has involved some fairly fundamental refactoring of the implementation.
+         Saxon has for some time supported streaming of simple path expressions in push mode.
+         This was originally introduced to support the XPath expressions allowed in XML Schema
+         identity (uniqueness and referential) constraints, which allow only very simple downward
+         paths; Saxon supports a slightly larger XPath subset than this in streaming mode,
+         but it is still very restrictive. However, the basic architecture to implement this
+         is quite powerful. When doing XSD validation, many uniqueness constraints can be in
+         force at the same time (that is, within the same region of a source document), and
+         Saxon's streaming engine therefore has the capability to distribute parsing events
+         to an arbitrary number of recipients. The component that distributes the events is
+         called the WatchManager, and each recipient is called a Watch. Watches may be added
+         or removed dynamically during the course of parsing, and are notified when events
+         occur that they have expressed an interest in.</p>
+      <p>(Note that this kind of approach is really only possible with a push architecture,
+         where the XML parser notifies events to the application. While one can envisage both
+         schema validation and streamed XPath evaluation working on a pull implementation,
+         it's very hard to see how a pull system could organize itself so multiple clients
+         are reading the same data stream in parallel.)</p>
+      <p>The WatchManager engine was used to support Saxon's initial foray into streamed XSLT
+         processing, the "streaming copy" where every element selected by a path expression
+         is copied to a mini-tree, and the mini-trees are then processed, one at a time, by
+         the rest of the stylesheet code. In Saxon 9.2 this capability is packaged in the form
+         of the <strong>saxon:stream()</strong> extension function, and is available in both XSLT and XQuery. (Details at <a href="http://www.saxonica.com/documentation/sourcedocs/serial/saxonstream.html">http://www.saxonica.com/documentation/sourcedocs/serial/saxonstream.html</a>).</p>
+      <p>The implementation of streaming templates in 9.2, however, doesn't use the WatchManager.
+         Instead, events from the SAX parser are passed to a StreamingDespatcher which keeps
+         track of which template rules are active. The template rule itself is inverted (compiled
+         into a co-routine, in the sense of Jackson Structured Programming): that is, the compiled
+         code does not issue a subroutine call in response to an apply-template instruction
+         (or other instructions that recurse down the tree, like xsl:copy-of and xsl:value-of);
+         instead, it saves its state on an application stack, and yields control to its caller
+         (the StreamingDespatcher), being called again to finish its work when the SAX parser
+         notifies the matching end tag.<br><hr style="width: 100%; height: 2px;">I've made two significant changes to this architecture this week. Firstly, I've combined
+         the functionality of the Selection objects (representing the streamable XPath expressions
+         defined originally in the XSD specification) with the Pattern objects used to represent
+         XSLT patterns. There were many similarities, and although there are also significant
+         differences, it seemed that there were many benefits in combining the implementations:
+         less code to maintain, enhancements apply to both cases, and only one set of rules
+         for users to learn. One difference in functionality is that in streaming, the expression
+         <strong>heading </strong>will select only <strong>&lt;heading&gt;</strong> elements that are children of the context node, whereas with XSLT pattern matching
+         the pattern heading will select a <strong>&lt;heading&gt;</strong> element anywhere in the tree. So there are two modes of operation, anchored and unanchored:
+         but this turns out to be a relatively minor difference. Another (larger) difference
+         is that the predicates in an XSLT pattern are unrestricted, whereas in streamed paths
+         they will be constrained, for example the predicate <strong>[following-sibling::x]</strong> will not be allowed.</p>
+      <p>The second change to the architecture is that streaming templates will use the WatchManager
+         to do the despatching, rather than having a separate StreamingDespatcher. It turns
+         out that the WatchManager engine is quite powerful enough to do the job. Essentially,
+         for each kind of construct that can appear in a streamed template and that can be
+         invoked to process the subtree of a node (including <strong>apply-templates</strong>, <strong>xsl:copy-of</strong>, <strong>xsl:value-of</strong>, operations that get the string value or the typed value of the node, and aggregate
+         functions such as <strong>count()</strong> and <strong>exists()</strong>), there is a special kind of Watch defined: the Watch defines which nodes it is interested
+         in, and what it does with them, and the WatchManager only needs to know which Watches
+         are active at any given time, and to pass them the relevant parsing events.</p>
+      <p>One of the great advantages of this approach is that the facilities are much more
+         uniform. In particular, the expressions you can write within <strong>&lt;xsl:apply-templates select="X"/&gt;</strong> or <strong>&lt;xsl:copy-of select="X"/&gt;</strong> or <strong>&lt;xsl:value-of select="X"/&gt;</strong> or <strong>&lt;xsl:sequence select="count(X)"/&gt;</strong> are exactly the same, and are essentially the same as the rules for XSLT patterns,
+         with some restrictions on what can appear in the predicates. A glance at the Saxon
+         9.2 facility shows how much of an improvement this is.</p>
+      <p>I've also introduced some machinery to allow the output of a watch to be processed
+         through a push pipeline (known as a "feed"). Currently a function such as sum() or
+         average() gets its data using a pull pipeline, a sequence of iterators each of which
+         does some processing on the items delivered by the next iterator in the chain. For
+         example, the nodes returned by an axis iterator are first atomized, then untyped values
+         are converted to numbers, then the sequence is typechecked, before finally adding
+         each number to a running total. Within a streamed template, this is reversed: each
+         of these operations is invoked in push mode as the next item of data becomes available.<br><hr style="width: 100%; height: 2px;">A consequence of allowing patterns as streamable paths is that it becomes legal to
+         evaluate something like &lt;xsl:apply-templates select="//section". The difficulty with
+         this kind of expression comes when sections are nested: while processing sections
+         that are nested three levels deep, parsing events must be sent to three different
+         activations of the corresponding template rule, and the outputs of these template
+         rules must be delivered in the correct order to the result document. Arguably this
+         is not pure streaming, because it involves some buffering (of results, not of the
+         source), but the fact is that it is very convenient to users to allow such constructs.
+         It's not possible to disallow an expression that selects nested nodes (like <strong>//section</strong>) without disallowing many useful expressions that don't (like <strong>//employee</strong>), and it makes sense here for the implementation to take the strain in the interests
+         of usability. As it turns out, there is no overhead caused by the result-buffering
+         code in the case where the node sequence turns out to contain no nesting, as in the
+         <strong>//employee</strong> example.<br><hr style="width: 100%; height: 2px;">There's still a lot of work to do to round this off and get it to production quality
+         - most particularly, on testing. However, the heavy refactoring of the last few days
+         is done, in the sense that all tests that worked before are now working again. I'll
+         report again on progress as the implementation proceeds.</p>
+      
+      
+      <div style="margin-top: 25px; margin-right: 0px; margin-bottom: 25px; margin-left: 0px; "></div>
+   </main><footer><div class="prev-uri"><a href="/mike/2009/09/analyzing-dependencies-in-a-class-library-a-use-case-for-xslt-streaming.html">Analyzing dependencies in a class library: a use case for XSLT streaming</a></div><div class="next-uri"><a href="/mike/2009/12/on-the-streamability-of-sectionhead.html">On the streamability of //section/head</a></div></footer></body>
+</html>

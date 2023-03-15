@@ -1,0 +1,43 @@
+body.oneil-delpratt {
+    background-color: #293251;
+}
+
+.oneil-delpratt header {
+    background-color: white;
+    width: var(--max-width);
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.oneil-delpratt header .banner {
+    border-top: 10px solid #8e3b03;
+    padding-left: 1em;
+    margin-left: -1em;
+    width: calc(var(--max-width) + 1em);
+    height: 6em;
+    padding-top: 1em;
+    padding-bottom: 2.5em;
+    background: #77dbfe url(/img/odheader.png) no-repeat left bottom;
+}
+
+.oneil-delpratt header .banner h1 {
+    font-size: 1.5em;
+}
+
+.oneil-delpratt main {
+    background-color: white;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.oneil-delpratt footer {
+    background-color: white;
+    width: calc(var(--max-width) + 2em);
+    margin-top: 0;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+aside.nav {
+    color: white;
+}

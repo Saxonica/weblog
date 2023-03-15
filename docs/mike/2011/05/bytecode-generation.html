@@ -1,0 +1,137 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Bytecode generation</title>
+      <meta name="id" content="185">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2011-05-17T14:18:47">
+      <meta name="basename" content="bytecode_generation">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Bytecode generation</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2011-05"><span class="date" time="2011-05-17T14:18:47">May&nbsp;17, 2011 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Since the beginning of the year a lot of our development effort has been going into
+         bytecode generation. O'Neil has been working on this full-time, concentrating on the
+         XQuery side, and I've been putting in a fair bit of time too, adding the things needed
+         for XSLT. We're making good progress, with perhaps 80% of the tests current running
+         successfully. We're publishing a paper on the subject at Balisage, but I thought it
+         would be a good idea to give a more informal progress report here.&nbsp;
+         </p>
+      <p>
+         Firstly, what are the benefits? For the user, it looks like a fairly uniform speed-up
+         of about 25%. Where we get more than that, we can usually see how the interpreter
+         is doing a poor job; if we get less than that, it's because we aren't compiling code
+         carefully enough. Comparing code that is well interpreted against code that is well
+         compiled, the difference seems to be around 25%.&nbsp;
+         </p>
+      <p>
+         For Saxonica, this is a development that works well for our business model. We want
+         users to pay us to take the commercial version of the product, and they are more likely
+         to do so if there is an immediate measurable benefit as soon as you open the box:
+         no need to write your code differently to exploit new features, no need to lock yourself
+         into schema-aware processing (which has great benefits, but does require up-front
+         investment). To some extent, the optimizer in Saxon-EE addresses the same business
+         need, but the trouble is that the benefits are non-uniform: it achieves dramatic speed-up
+         for a small number of queries and stylesheets, but for 90% of simple user code, especially
+         XSLT code that has already been hand-optimized using keys, it makes no difference.
+         As well as being the best way of getting a 25% performance boost, bytecode generation
+         has the advantage for us that the performance boost is achieved by adding code that
+         is naturally separate from and additional to the open source codebase, so we aren't
+         doing anything technically artificial to ensure the feature is available only in the
+         Enterprise edition.&nbsp;
+         </p>
+      <p>
+         Saxon has had the ability to generate Java code for some time. In fact, my first foray
+         into this area was with Saxon 4.1 back in 1999, before the XSLT 1.0 spec was even
+         finalized. But that attempt was dropped because it seemed more important to focus
+         on high-level algorithmic optimization of execution paths, which offered much better
+         gains than the 25% achievable through code generation. More recently Java source generation
+         found its way into Saxon-EE, but it hasn't been a conspicuous success (it certainly
+         hasn't repaid the months of effort that went into doing it.) I think there are a number
+         of reasons for this. One is that it only covers XQuery, whereas 90% of Saxon users,
+         especially those requiring high performance, are writing in XSLT. Another is that
+         it doesn't cover the whole of XQuery - there are various restrictions such as use
+         of collations, extension functions, and the like. But the biggest drawback is that
+         it's simply too much hassle: generating Java source code, compiling it, and then running
+         it with the configuration set up correctly just takes too much effort and thought.&nbsp;
+         </p>
+      <p>
+         So this time around we're generating bytecode directly rather than Java source code.
+         This means that it's completely transparent to the user, you simply won't see it happening.
+         We're not writing bytecode that can be serialized to .class files and executed independently;
+         it lives in memory only. This means it doesn't have to be self-contained; expressions
+         that have been compiled are linked from the expression tree and invoked when necessary
+         by the interpreter; similarly compiled expressions can refer back to interpreted code
+         or other constructs such as schema definitions, collations, and the like. So the compiled
+         code doesn't live in a separate world from interpreted code, which means we can be
+         very selective about what we compile and what we interpret. We're not doing it yet,
+         but the architecture certainly allows us to do "just-in-time" compilation of the parts
+         of the code that are getting heavily used.
+         We haven't yet tried it, but the bytecode generation should also work on .NET, in
+         conjunction with the IKVM technology which translates bytecode to IL instructions
+         as soon as a class is loaded.&nbsp;
+         </p>
+      <p>
+         The tool we are using to generate bytecode is ASM. We didn't do a detailed comparison
+         against alternatives, but it seemed to tick the right boxes and we were able to get
+         it to work very quickly. It's weakest point is probably diagnostics - it goes to enormous
+         lengths to verify that the generated bytecode is correct, and then gives you very
+         little information if it isn't. We've slowly been customizing the way we use the technology
+         to improve this - and of course, we're making fewer mistakes in the code we generate
+         as we become more experienced. Run-time diagnostics are still difficult - sadly, we
+         can't use a Java debugger to single-step through the code we have generated, but again
+         we've created a fair bit of infrastructure to allow diagnostics to be injected into
+         the generated code.&nbsp;
+         </p>
+      <p>
+         My impression is that once you get used to it, generating bytecode is no more difficult
+         than generating Java source (the only reason previous releases generated Java source
+         is that I thought it would be easier - I was wrong). In some ways working at the bytecode
+         level gives you more flexibility, because it is more composable; when generating Java
+         you always have to worry about the fact that instructions can't appear inside an expression,
+         which means you end up generating lots of unnecessary variables (which aren't necessarily
+         optimized away when the code is compiled). Bytecode being a stack machine, it lends
+         itself very well to compiling a composable expression language like XPath or XQuery.&nbsp;
+         </p>
+      <p>
+         The decision to allow compiled and interpreted code to be mixed means that we're not
+         making any changes to run-time data structures. In particular, XSLT/XQuery variables
+         are still held in XPathContext objects on the Java heap; they aren't held as local
+         variables on the Java stack.&nbsp;
+         </p>
+      <p>
+         In deciding what should be compiled and what shouldn't, one criterion is obviously
+         how heavily used the code is. But that's not the only criterion. Some code is very
+         heavily used, but simply doesn't benefit from compilation. An example is conversion
+         between doubles and strings. We could generate code to do this, but it would be no
+         faster than calling the existing routine compiled from Java source. It's only possible
+         for the compiled code to be faster if the interpreted code is doing things that don't
+         need to be done. The interpreter in fact very rarely does things that don't need to
+         be done, but it does spend a certain amount of time deciding whether it needs to do
+         them, and that's the area where the 25% speed-up comes from. In fact, it's likely
+         that nearly all the speed up comes from eliminating run-time testing of data that
+         was placed in the expression tree during compilation (for example, type information)
+         and from eliminating polymorphic method invocations (which is just another way in
+         which run-time decisions are made).&nbsp;
+         </p>
+      <p>
+         We're not compiling any code below the NodeInfo interface, which means that the compiled
+         code isn't committed to a particular tree representation. It's quite possible that
+         we could make further (small) savings by generating code that only works with (say)
+         the TinyTree, but that would reduce flexibility. We've learnt the lesson that people
+         appreciate improved performance, but they don't want to pay a heavy price for it,
+         for example in a reduced ability for a compiled query to work with any input tree.&nbsp;
+         </p>
+      <p>
+         It was definitely a good decision to delay doing bytecode generation until we had
+         a mature stable product with advanced optimizations in place. The fact that we are
+         generating bytecode makes it more difficult to change the repertoire of instructions
+         on the expression tree, and thus to introduce new optimizations, but at this stage
+         of development, we can live with that, since the major optimizations are already done.
+         <br>
+         
+         </p>
+      
+      
+   </main><footer><div class="prev-uri"><a href="/mike/2010/11/cutting-saxon-down-to-size.html">Cutting Saxon down to size</a></div><div class="next-uri"><a href="/mike/2011/07/tuples.html">Tuples</a></div></footer></body>
+</html>

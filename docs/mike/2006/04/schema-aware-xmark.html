@@ -1,0 +1,92 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Schema-Aware XMark</title>
+      <meta name="id" content="113">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-04-10T14:18:43">
+      <meta name="basename" content="schema-aware_xmark">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Schema-Aware XMark</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-04"><span class="date" time="2006-04-10T14:18:43">April&nbsp;10, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Continuing the theme of my weekend postings, it occurred to me that the really interesting
+         question is not "what happens to the performance of XMark if I run it under Saxon-SA",
+         but "what happens to the performance of XMark if I make it schema-aware?". </p>
+      <p>XMark as written has no schema, so to answer that question I had to create a schema
+         (easily done with Stylus Studio) and modify the queries to use it. For Q1 that means
+         changing:</p>
+      <p><code>for&nbsp;&nbsp;&nbsp; $b in /site/people/person[@id="person0"]</code><br>
+         <code>return $b/name</code></p>
+      <p>to</p>
+      <p>i<code>mport schema "" at "schema.xsd";</code><br><code>declare variable $in as document-node(schema-element(site)) := .;&nbsp;&nbsp; </code></p>
+      <p><code>for&nbsp;&nbsp;&nbsp; $b in $in/site/people/person[@id="person0"]</code><br><code>return $b/name</code></p>
+      <p>XMark was written by one of those people who imagines that every query needs to be
+         a FLWOR expression. This one, of course, is equivalent to the simple path expression
+         <code>/site/people/person[@id="person0"]</code><code>/name</code>. But one of the rules of running benchmarks is to run the code as written, however
+         tempted you are to improve it. As it happens, there's no performance penalty in this
+         case: though there's scope for a much bigger improvement once the query is schema-aware:
+         it could be rewritten as <code>id('person0')/name</code>.</p>
+      <p>One query, Q14, threw a type error after making this change. It turned out it was
+         using the construct <code>contains(description, ... )</code>: in the schema, description is an element with element-only content, and you aren't
+         allowed to atomize such an element, so I had to rewrite this as <code>contains(string(description), ...)</code>. </p>
+      <p>I wasn't expecting the change to make a great deal of difference to the performance,
+         and the purpose of the exercise was really to check that this assumption was valid.
+         Some researchers make great claims for the benefits that schema-awareness can give
+         in improving performance, but I think these are only likely to occur when you are
+         running against a database with pre-built indexes. In this case the type analysis
+         helps the optimizer to identify where it's possible to make use of indexes. The only
+         thing Saxon can do with the information is to eliminate a few redundant type-checking
+         and conversion steps, and these are not usually very costly. I've never claimed performance
+         improvements as the big selling-point of schema awareness: the benefits are much more
+         to do with finding bugs in your stylesheets and queries more quickly.</p>
+      <p>The first thing I found (using the -e explain output) was that Saxon wasn't doing
+         the type analysis quite as thoroughly as it should. There were a couple of places
+         where it wasn't using all the information available, and this meant that it was actually
+         generating the redundant checking and conversion code in many places. So the first
+         step was to fix that.</p>
+      <p>In the actual performance data, my expectation turned out to be correct for the most
+         part: making the queries schema-aware had little effect on their performance. But
+         there was one surprise: two of the queries, Q11 and Q12, were taking about twice as
+         long. These are the queries that do a "non-equijoin" - they use the join condition</p>
+      <p><code>where $p/profile/@income &gt; (5000 * $i)</code></p>
+      <p>which Saxon-SA can't currently optimize, so they are evaluating $p and $i using nested
+         loops.</p>
+      <p>A bit of further investigation (using the Java profiling option -Xrunhprof) showed
+         the reason for the slowdown: @income was defined in the schema as being xs:decimal,
+         and $i is also decimal, so in the schema-aware case the join condition was being
+         evaluated using decimal arithmetic, whereas the non-schema-aware case used double
+         precision floating point. Decimal is a lot slower than double, and when I changed
+         the schema to use xs:double, the difference in performance disappeared.</p>
+      <p>What have we learned from this exercise? Firstly, it showed up cases where the type
+         inferencing can be improved, and Saxon 8.7.1 will benefit from these improvements.
+         Along the way, I also improved the "explain" output so it gives more information about
+         the types that were inferred, which should help in future to identify similar opportunities
+         for further improvements.</p>
+      <p>It's interesting that decimal is so much worse than double, and this is information
+         that will come in useful when advising users how to tune their workload. It also shows
+         that simple arithmetic and comparison operations can account for a lot of the query
+         execution cost, which suggests that this is an area that deserves more attention in
+         Saxon. Saxon actually stores nodes with their string value rather than their typed
+         value. In a case like this that involves n^2 comparisons, this means there's a big
+         potential saving in only doing the string-to-number conversion for each value once.
+         It might be possible to achieve this simply by making it an explicit operation on
+         the expression tree, in which case it will automatically get moved out of the loop.
+         There's an alternative solution, which is to hold typed values on the TinyTree. I've
+         been hesitant to do that because for many use cases it would impose a significant
+         cost with no corresponding benefit, but it might be worth doing under control of a
+         new configuration option. (But I hate configuration options. Each such option doubles
+         the testing load, and 99% of the users will never know the option exists because the
+         documentation is far too big already).</p>
+      <p>For Q11 and Q12, however, this doesn't get to the core of the issue. The top priority
+         for these queries is to use a better join algorithm than nested loop. That means looking
+         at some kind of sort-merge approach.</p>
+      <p>One final idea: the first query we looked at, Q1, is equivalent to a call on the id()
+         function. Could we automate this rewrite? It certainly looks possible: Saxon is already
+         doing the same kind of thing in XSLT if there is an xsl:key index defined. The simplest
+         way of doing that is to handle id() the way we already handle idref(), as a special
+         case of the XSLT key() function using a system-defined internal key definition. </p>
+      <p>There's never any shortage of opportunities for improving the product! Anyone care
+         to sponsor any of these developments?</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/04/xmark-q12-examined-further.html">XMark Q12 examined further</a></div><div class="next-uri"><a href="/mike/2006/04/how-not-to-manage-crypto-keys.html">How not to manage crypto keys</a></div></footer></body>
+</html>

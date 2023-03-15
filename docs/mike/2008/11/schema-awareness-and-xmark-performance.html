@@ -1,0 +1,88 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Schema-Awareness and XMark performance</title>
+      <meta name="id" content="156">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-11-30T14:18:45">
+      <meta name="basename" content="schema-awareness_and_xmark_performance">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Schema-Awareness and XMark performance</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-11"><span class="date" time="2008-11-30T14:18:45">November&nbsp;30, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>When people ask what performance benefits they can expect from using schema-aware
+         transformations and queries, I've often replied in a way that avoids setting expectations
+         too high. Some queries can benefit significantly, others actually slow down because
+         the extra cost of validating the input is not recovered by improvements in query execution
+         speed. I've often stressed that the main benefit of schema-awareness is in the speed
+         and ease of debugging and testing the query, not primarily in performance. But I've
+         been taking another look at it, and I think I can probably start to be a bit more
+         up-beat.</p>
+      <p>We need to distinguish the performance boost you get from Saxon-SA, from the performance
+         boost you get by making your queries schema-aware. Saxon-SA has an improved optimizer
+         which will often give you benefits whether or not you use a schema. Let's focus on
+         a couple of the queries in the XMark benchmark: q9, which is simple equi-join, and
+         q11, which is a non-equijoin (it joins two node sequences, comparing nodes using the
+         "&lt;" operator). Here are the figures for Saxon-B against the 1Mb and 10Mb versions
+         of the database:</p>
+      <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1Mb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10Mb<br>q9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 39ms&nbsp;&nbsp;&nbsp; 3533ms</code><br><code>q11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 26ms&nbsp;&nbsp;&nbsp; 2447ms</code></p>
+      <p>Clearly both queries show quadratic performance: ten times the data size, 100 times
+         the execution time.</p>
+      <p>Now run the same queries with Saxon-SA:</p>
+      <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1Mb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10Mb<br>
+            q9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.7ms&nbsp;&nbsp;&nbsp;&nbsp; 19ms</code><br>
+         <code>q11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 27ms&nbsp;&nbsp;&nbsp; 2429ms</code></p>
+      <p>An enormous improvement for q9, showing the effects of the equijoin optimization in
+         Saxon-SA; but no impact at all on q11.</p>
+      <p>Now let's see what happens if we make the queries schema-aware. The benchmark rules
+         don't actually allow us to change the queries, but we're not trying to score benchmark
+         points here, we're trying to improve our understanding of Saxon performance. To make
+         the queries schema-aware we first have to write a schema for the XMark database, and
+         then we have to add a few type declarations to the query source text. For example,
+         q9 is changed to start:</p>
+      <pre><code>import schema "" at "schema.xsd";
+declare variable $auction as document-node(schema-element(site)) := .;
+
+let $ca := $auction/site/closed_auctions/closed_auction
+return ...</code></pre>
+      <p>With Saxon 9.1.0.3 this changes the figures to</p>
+      <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1Mb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10Mb<br>
+            q9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.1ms&nbsp;&nbsp;&nbsp;&nbsp; 22.7ms</code><br>
+         <code>q11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 17ms&nbsp;&nbsp;&nbsp; 1492ms</code></p>
+      <p>Note that q9 is a little bit slower, q11 fairly significantly faster. Which exemplifies
+         why I'm cautious about telling people what to expect.</p>
+      <p>Now: something that I've had in mind for a very long time is to investigate what happens
+         if I store typed values as well as string values in the tiny tree. In theory this
+         gives a benefit because you only convert a string to a value such as a number or a
+         date once, you don't do it each time the value is referenced. Today I finally got
+         around to implementing this feature - it turns out to be only 100 lines of code or
+         so. This is the impact:</p>
+      <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1Mb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10Mb<br>
+            q9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.6ms&nbsp;&nbsp;&nbsp;&nbsp; 17.6ms</code><br>
+         <code>q11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8.9ms&nbsp;&nbsp;&nbsp; 746.3ms</code></p>
+      <p>That is: the performance of q9 is pulled back to the non-schema-aware level, while
+         the speed of q11 doubles! It's still quadratic, of course, but a 100% speed improvement
+         in a slow-running query is always welcome. Interestingly, this doesn't depend on the
+         compiler having any extra knowledge, one could potentially get similar improvements
+         simply by validating the input document and running the non-schema-aware query. When
+         I try this, the results are:</p>
+      <p><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1Mb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10Mb<br>
+            q9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.75ms&nbsp;&nbsp;&nbsp;&nbsp; 18.9ms</code><br>
+         <code>q11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 14.64ms&nbsp; 1249.5ms</code></p>
+      <p>Although there's an improvement, it seems that the full benefit comes from have the
+         typed values available as numbers at run-time, and the compiled code also knowing
+         that they will be numbers at run-time.</p>
+      <p>So: there seems to be considerable benefits in caching typed value. It's such a simple
+         thing to do, it's really rather surprising it took me this long to realise it.</p>
+      <p>At the same time, don't ignore the other benefits of
+         schema-awareness. In this round, I discovered a problem with the
+         version of q7 that I have been using: Q7. How many pieces of prose are
+         in our database?</p>
+      <pre><code>for $p in /site
+return count($p//description) + count($p//annotation) + count($p//email)</code></pre>
+      <p>The schema-aware compiler points out that there is no email element in the schema.
+         I think that emailaddress was intended. But the query is strange anyway: annotation
+         is a child element of description. Which all goes to underline the message, that performance
+         really doesn't matter much unless the code is correct.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/11/tei-conference.html">TEI Conference</a></div><div class="next-uri"><a href="/mike/2008/12/ten-reasons-why-saxon-xquery-is-fast.html">Ten Reasons why Saxon XQuery is Fast</a></div></footer></body>
+</html>

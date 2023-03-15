@@ -1,0 +1,92 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Representing namespaces in XDM tree models</title>
+      <meta name="id" content="226">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2019-02-01T11:59:58">
+      <meta name="basename" content="representing_namespaces_in_xdm_tree_models">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Representing namespaces in XDM tree models</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2019-02"><span class="date" time="2019-02-01T11:59:58">February&nbsp;01, 2019 at 11:59a.m.</span></a></div></header><main>
+      
+      <p>Most tree representations of XML, including the Saxon TinyTree and LinkedTree implementation,
+         as well as DOM, represent namespace information by holding a set of namespace declarations
+         and undeclarations on each element node.
+         </p>
+      <p>
+         I'm considering a change to this representation (for the Saxon implementations) to
+         do something that more closely reflects the way namespaces are actually defined in
+         XDM: each element node has a set of in-scope namespaces (held in a NamespaceMap object)
+         containing all the information about the namespaces that apply to that element.
+         </p>
+      <p>
+         The obvious objection to this, and the reason I've never done it before, is that it
+         looks at first sight to be very inefficient. But consider:
+         </p>
+      <p>
+         (a) in the vast majority of documents, there are very few namespace declarations on
+         any element other than the root
+         </p>
+      <p>
+         (b) if there are no namespace declarations on an element, it can point to the same
+         NamespaceMap object that its parent element points to; in most cases, all elements
+         in the document will point to the same shared NamespaceMap.
+         </p>
+      <p>
+         (c) having a NamespaceMap object immediately available on every element node means
+         we never need to search up the ancestor axis to resolve namespace prefixes
+         </p>
+      <p>
+         (d) there are still opportunities for implementations of NamespaceMap that use "deltas"
+         if space-saving in pathological cases is considered necessary.
+         </p>
+      <p>
+         Note that the NamespaceMap holds prefix=uri pairs, not namespace nodes. Namespace
+         nodes have node identity and parentage, which is what makes them so expensive. prefix-uri
+         pairs are just pairs of strings without such baggage, and they can be freely shared
+         across element nodes.
+         </p>
+      <p>
+         The current implementation I'm using for NamespaceMap is an immutable map implemented
+         as a pair of String[] arrays, one for prefixes and one for uris. The prefix array
+         is maintained in sorted order so we can use binary search to find a prefix. Insertion
+         of a new prefix/uri mapping is O(n), but this doesn't matter because the number of
+         bindings is usually less than ten, and it's a rare operation anyway that only happens
+         during tree construction.
+         </p>
+      <p>
+         Because the NamespaceMap is immutable, the system is quite easy to implement in a
+         tree builder that gets notified of namespaces incrementally (for example by a SAX
+         parser). The tree builder maintains a stack of NamespaceMap objects. On a startElement
+         event it allocates to the element the same NamespaceMap object that the parent element
+         is using; when a namespace declaration or undeclaration is encountered, this is replaced
+         with a new NamespaceMap with the required modifications.
+         </p>
+      <p>
+         The real motivation for the change is in implementing copy operations. In complex
+         multi-phase transformations both deep and shallow element copy operations are very
+         frequent, and copying of the namespace information is a significant cost. The XSLT
+         and XQuery language semantics require that when an element is copied, all its in-scope
+         namespaces are copied, and this requires searching the ancestor axis to find them
+         (we try quite hard to optimize this away, but we're not always successful). If the
+         in-scope namespaces are readily to hand in a simple immutable object, we save this
+         effort and just pass the complete object down the pipeline.
+         </p>
+      <p>
+         The builder for the tree to which the element is being copied now has to merge this
+         set of namespaces with the existing namespaces inherited from ancestor elements on
+         the receiving tree. It should now be clear why I chose the particular data structure
+         for the NamespaceMap: merging two sets of namespace bindings reduces to merging two
+         sorted arrays, which is quite an efficient operation. It's also easy to optimize for
+         the common case where the in-scope namespaces of the element being copied are exactly
+         the same as the in-scope namespaces of its parent element (typically we'll find that
+         the same NamespaceMap object is in use), in which case the merge becomes a null operation.
+         </p>
+      <p>
+         Of course, there are many details to work through (not least, how we fit this in with
+         third-party tree models that continue to use declarations and undeclarations). But
+         initial experiments are looking encouraging.
+         </p>
+   </main><footer><div class="prev-uri"><a href="/mike/2018/06/the-receiver-pipeline.html">The Receiver Pipeline</a></div><div class="next-uri"><a href="/mike/2019/05/a-new-push-event-api.html">A new push event API</a></div></footer></body>
+</html>

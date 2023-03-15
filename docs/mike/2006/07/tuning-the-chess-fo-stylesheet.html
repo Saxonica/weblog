@@ -1,0 +1,265 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Tuning the Chess-FO stylesheet</title>
+      <meta name="id" content="122">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-07-27T14:18:44">
+      <meta name="basename" content="tuning_the_chess-fo_stylesheet">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Tuning the Chess-FO stylesheet</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-07"><span class="date" time="2006-07-27T14:18:44">July&nbsp;27, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>In an interesting <a href="https://blogs.msdn.com/antosha/archive/2006/07/24/677560.aspx#679926">post</a> (at least partly influenced by my
+<a href="/mike/2006/07/experiments-with-compilation.html">compilation experiments</a>) Anton Lapounov has published some Saxon performance measurements for a number of
+         1.0 stylesheets. I'm intrigued that I get faster performance for Saxon 8.7.3 than
+         for 6.5.5, whereas he gets the opposite. I decided to look into the performance of
+         one of these stylesheets a bit more closely and see how it can be improved. The one
+         I chose is the <a href="http://www.renderx.com/chess.html">Chess-FO</a> stylesheet which takes as input the record of moves in a chess game and produces
+         as output an XSL-FO document showing the successive positions.</p>
+      <p>Firstly, it's clear just from looking at the source code that evaluating path expressions
+         doesn't play much of a role in this code. It's spending most of its time constructing
+         output. There are a fair number of template calls, some of them tail-recursive. The
+         ratio of output size to input size (377Kb from 3Kb) is unusually large, so we should
+         expect that the cost of creating elements and serializing them will dominate.</p>
+      <p>I started by seeing how far I could improve the performance simply by tuning the XSLT
+         code as written. The baseline execution time was 301ms (in this, and all subsequent
+         figures, I'm reporting the second-best out of nine runs, running from the command
+         line with the -9 option to run the transformation nine times, and the -t option to
+         output the results. </p>
+      <p>First I modified the stylesheet to say version="2.0", and put in a couple of explicit
+         type conversions in places where the code had been implicitly converting between strings
+         and numbers. Time now 280ms.</p>
+      <p>My next move was to profile the stylesheet execution using the -TP option on the command
+         line. This generates a trace file with timing information, which can be analyzed using
+         the timing-profile.xsl stylesheet (in the samples/analysis directory of the Saxon
+         distribution). This showed one template dominating the execution time: template <code>render-chessboard-cell</code>. So I focused my efforts on this template, which reads:</p>
+      <pre><code>&nbsp; &lt;xsl:template name="render-chessboard-cell"&gt;
+&nbsp;&nbsp;&nbsp; &lt;xsl:param name="col-number" select="1"/&gt;
+&nbsp;&nbsp;&nbsp; &lt;xsl:param name="row-number"/&gt;
+&nbsp;&nbsp;&nbsp; &lt;xsl:param name="row-content"/&gt;
+&nbsp;&nbsp;&nbsp; &lt;xsl:variable name="cell-background"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:choose&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:when test="($col-number mod 2 = 0 and $row-number mod 2 = 0) or
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ($col-number mod 2 != 0 and $row-number mod 2 != 0)"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:value-of select="'b'"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:when&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:otherwise&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:value-of select="'w'"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:otherwise&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:choose&gt;
+&nbsp;&nbsp;&nbsp; &lt;/xsl:variable&gt;
+&nbsp;&nbsp;&nbsp; &lt;xsl:variable name="cell-content" select="substring($row-content, $col-number, 1)"/&gt;
+&nbsp;&nbsp;&nbsp; &lt;fo:table-cell&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:if test="$cell-background = 'b'"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:attribute name="background-color"&gt;#C0C0C0&lt;/xsl:attribute&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:if&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;fo:block&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:if test="$cell-content != 'x'"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:call-template name="piece-image"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="piece-name" select="$cell-content"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="cell-background" select="$cell-background"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:call-template&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:if&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/fo:block&gt;
+&nbsp;&nbsp;&nbsp; &lt;/fo:table-cell&gt;
+&nbsp;&nbsp;&nbsp; &lt;xsl:if test="$col-number &amp;lt; 8"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;!-- recurse to the next cell --&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:call-template name="render-chessboard-cell"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="row-number"&nbsp; select="$row-number"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="col-number"&nbsp; select="$col-number + 1"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="row-content" select="$row-content"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:call-template&gt;
+&nbsp;&nbsp;&nbsp; &lt;/xsl:if&gt;
+&nbsp; &lt;/xsl:template&gt;</code></pre>
+      <p>I started by declaring types on the parameters and variables, and changing xsl:value-of
+         to xsl:sequence (no need to create a text node when you only want a string). Time
+         now down to 210ms.</p>
+      <p>Then I dealt with the recursion in this template, replacing it by an iteration. The
+         call on this template, as written, was:</p>
+      <pre><code>&nbsp;&nbsp;&nbsp; &lt;fo:table-row height="24pt"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:call-template name="render-chessboard-cell"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="row-number" select="$row-number"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="count" select="1"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="row-content"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:value-of select="substring($chessboard, $row-number * 8 - 7, 8)"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:with-param&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:call-template&gt;
+&nbsp;&nbsp;&nbsp; &lt;/fo:table-row&gt;</code></pre>
+      <p>The count parameter is noise (it isn't even declared as a parameter: XSLT 2.0 spots
+         this error). The row-content parameter uses the horribly unnecessary RTF construction:
+         it should simply be written as <br></p>
+      <pre><code>&lt;xsl:with-param name="row-content" 
+     select="substring($chessboard, $row-number * 8 - 7, 8)"/&gt;</code></pre>
+      <p>
+         And then we can change it to call the template 8 times using <code>&lt;xsl:for-each select="1 to 8"&gt;</code>, passing the column number as a parameter. This gave no further time savings, however.
+         Using recursion to do simple iteration is a pain from the usability point of view,
+         but it's not actually inefficient. But to tidy things up further, I removed the recursion
+         to scan over the rows as well. This time the timing came down a little to 191ms. </p>
+      <p>Then I collapsed the three templates into one, so that the board is printed using
+         two nested for-each loops. Time now down to 130ms!</p>
+      <p>The body of the template is still inefficient: the calculation of the colour of a
+         cell can be simplified, and we don't need the variable <code>$row-content</code>. It's also passing a parameter <code>cell-background</code> to the template <code>piece-image</code>, which the called template doesn't actually use. So the template now looks like this:</p>
+      <pre><code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;fo:table-body&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:for-each select="1 to 8"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:variable name="row-number" as="xs:integer" select="."/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:variable name="row-content" select="substring($chessboard, $row-number * 8 - 7, 8)"/&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;fo:table-row height="24pt"&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:for-each select="1 to 8"&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:variable name="col-number" as="xs:integer" select="."/&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:variable name="cell-number" as="xs:integer" 
+                                  select="($row-number - 1) * 8 + $col-number"/&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;xsl:variable name="cell-content"&nbsp; as="xs:string" 
+                                      select="substring($chessboard, $cell-number, 1)"/&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;fo:table-cell&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:if test="$cell-number mod 2 = 0"&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:attribute name="background-color"&gt;#C0C0C0&lt;/xsl:attribute&gt;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:if&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;fo:block&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:if test="$cell-content != 'x'"&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:call-template name="piece-image"&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:with-param name="piece-name" select="$cell-content"/&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:call-template&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:if&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/fo:block&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/fo:table-cell&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:for-each&gt;&nbsp; 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/fo:table-row&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:for-each&gt;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/fo:table-body&gt;</code></pre>
+      <p>No further improvement in performance, though (in fact, this time the second-best
+         time is 140ms, but I'll put that down to random fluctuation).</p>
+      <p>The next obvious target is the <code>piece-image</code> template, which is using a 16-way xsl:choose statement to replace characters such
+         as P, B, or K with a single Unicode character representing the chess piece. This can
+         clearly be done in a single translate() call. </p>
+      <p>I thought this would make a significant difference, but the time is stubbornly sticking
+         at 130ms. Still, that's down below 40% of the starting figure.</p>
+      <p>Rerunning the profiling, the <code>render-chessboard</code> template is still accounting for 80% of the execution time, so there's not much point
+         looking anywhere else. There are still a couple of small tweaks we can make: removing
+         variables that are only used once, and expanding them inline, for example. The best
+         time is now down to 110ms: but I said I would use the second-best, and that's still
+         130ms. This is probably as good as we are going to get by tuning the stylesheet. The
+         relevant template now looks like this:</p>
+      <pre><code>&nbsp; &lt;xsl:template name="render-chessboard"&gt;
+&nbsp;&nbsp;&nbsp; &lt;xsl:param name="chessboard"/&gt;
+&nbsp;&nbsp;&nbsp; &lt;fo:table width="192pt"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; height="192pt"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; border="thin solid black"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; start-indent="0.26in"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; end-indent="0.26in"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; font="20pt/0pt Chess"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;fo:table-column column-width="24pt" number-columns-repeated="8"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;fo:table-body&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:for-each select="0 to 7"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:variable name="row-offset" as="xs:integer" select=". * 8"/&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;fo:table-row height="24pt"&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:for-each select="1 to 8"&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:variable name="cell-number" as="xs:integer" select="$row-offset + ."/&gt;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;fo:table-cell&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:if test="$cell-number mod 2 = 0"&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:attribute name="background-color"&gt;#C0C0C0&lt;/xsl:attribute&gt;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:if&gt;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;fo:block&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;xsl:value-of select="translate(substring($chessboard, $cell-number, 1), 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'KQRBNPkqrbnpx', 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; '&amp;#x2654;&amp;#x2655;&amp;#x2656;&amp;#x2657;&amp;#x2658;&amp;#x2659;&amp;#x265A;&amp;#x265B;&amp;#x265C;&amp;#x265D;&amp;#x265E;&amp;#x265F;')"/&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/fo:block&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/fo:table-cell&gt;
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:for-each&gt;&nbsp; 
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/fo:table-row&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/xsl:for-each&gt;&nbsp; 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/fo:table-body&gt;
+&nbsp;&nbsp;&nbsp; &lt;/fo:table&gt;
+&nbsp; &lt;/xsl:template&gt;</code></pre>
+      <p><br>I expect that the costs are now dominated by constructing and serializing the various
+         FO elements and attributes, which we can't reduce any further. Let's run some profiling
+         at the Java level, by adding -Xrunhprof:cpu=samples to the command line. The only
+         sample points which occur more than once are these:</p>
+      <pre><code>CPU SAMPLES BEGIN (total = 185) Thu Jul 27 11:58:26 2006
+rank&nbsp;&nbsp; self&nbsp; accum&nbsp;&nbsp; count trace method
+&nbsp;&nbsp; 1&nbsp; 8.11%&nbsp; 8.11%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 15 300106 java.lang.ClassLoader.defineClass1
+&nbsp;&nbsp; 2&nbsp; 4.86% 12.97%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9 300316 java.io.FileOutputStream.close0
+&nbsp;&nbsp; 3&nbsp; 3.24% 16.22%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6 300001 java.lang.ClassLoader.findBootstrapClass
+&nbsp;&nbsp; 4&nbsp; 2.16% 18.38%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4 300311 java.lang.Runtime.gc
+&nbsp;&nbsp; 5&nbsp; 1.62% 20.00%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 300306 net.sf.saxon.functions.Substring.substring
+&nbsp;&nbsp; 6&nbsp; 1.62% 21.62%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3 300011 java.util.jar.JarFile.getManifest
+&nbsp;&nbsp; 7&nbsp; 1.08% 22.70%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300214 com.sun.org.apache.xerces.internal.util.XMLChar.&lt;clinit&gt;
+&nbsp;&nbsp; 8&nbsp; 1.08% 23.78%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300112 java.lang.Class.forName0
+&nbsp;&nbsp; 9&nbsp; 1.08% 24.86%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300052 sun.misc.FloatingDecimal.&lt;clinit&gt;
+&nbsp; 10&nbsp; 1.08% 25.95%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300227 net.sf.saxon.style.StyleElement.processVersionAttribute
+&nbsp; 11&nbsp; 1.08% 27.03%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300257 java.util.AbstractList.iterator
+&nbsp; 12&nbsp; 1.08% 28.11%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300256 net.sf.saxon.pattern.Pattern.make
+&nbsp; 13&nbsp; 1.08% 29.19%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300041 sun.security.provider.Sun$1.run
+&nbsp; 14&nbsp; 1.08% 30.27%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300207 com.sun.org.apache.xerces.internal.impl.XMLEntityManager.setupCurrentEntity
+&nbsp; 15&nbsp; 1.08% 31.35%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2 300332 java.io.FileOutputStream.open</code></pre>
+      <p><code></code></p>
+      <pre><code>
+</code></pre>
+      <p>This doesn't give us much to go on, unfortunately. There's a fair bit of system overhead
+         loading classes, opening files, and running the garbage collector. The most-sampled
+         bit of Saxon code is the substring function, and that's followed by the code for parsing
+         XSLT patterns at compile time. With only a couple of hits on each sample point, this
+         data is pretty random: we need a much longer run for the samples to be meaningful.
+         <br></p>
+      <p>So I changed the command-line code in my IDE to run the transformation 1000 times,
+         with these results:</p>
+      <pre>&nbsp;&nbsp; 1 49.97% 49.97%&nbsp;&nbsp;&nbsp; 7979 300137 java.net.PlainSocketImpl.socketAccept
+&nbsp;&nbsp; 2&nbsp; 2.12% 52.09%&nbsp;&nbsp;&nbsp;&nbsp; 339 300289 sun.nio.cs.UTF_8$Encoder.encodeArrayLoop
+&nbsp;&nbsp; 3&nbsp; 1.79% 53.89%&nbsp;&nbsp;&nbsp;&nbsp; 286 300293 net.sf.saxon.event.XMLEmitter.testCharacters
+&nbsp;&nbsp; 4&nbsp; 1.70% 55.58%&nbsp;&nbsp;&nbsp;&nbsp; 271 300312 net.sf.saxon.functions.Substring.substring
+&nbsp;&nbsp; 5&nbsp; 1.61% 57.19%&nbsp;&nbsp;&nbsp;&nbsp; 257 300314 java.io.FileOutputStream.writeBytes
+&nbsp;&nbsp; 6&nbsp; 1.57% 58.76%&nbsp;&nbsp;&nbsp;&nbsp; 250 300296 net.sf.saxon.value.StringValue.getStringLength
+&nbsp;&nbsp; 7&nbsp; 1.42% 60.18%&nbsp;&nbsp;&nbsp;&nbsp; 227 300297 net.sf.saxon.value.StringValue.getStringLength
+&nbsp;&nbsp; 8&nbsp; 1.23% 61.41%&nbsp;&nbsp;&nbsp;&nbsp; 196 300305 java.io.FileOutputStream.open
+&nbsp;&nbsp; 9&nbsp; 0.97% 62.38%&nbsp;&nbsp;&nbsp;&nbsp; 155 300333 java.io.FileOutputStream.close0
+&nbsp; 10&nbsp; 0.96% 63.34%&nbsp;&nbsp;&nbsp;&nbsp; 154 300304 java.lang.AbstractStringBuilder.append
+&nbsp; 11&nbsp; 0.86% 64.20%&nbsp;&nbsp;&nbsp;&nbsp; 137 300345 net.sf.saxon.instruct.LocalParam.evaluateVariable
+&nbsp; 12&nbsp; 0.85% 65.05%&nbsp;&nbsp;&nbsp;&nbsp; 136 300327 net.sf.saxon.om.NamePool.getCodeForPrefix
+&nbsp; 13&nbsp; 0.83% 65.89%&nbsp;&nbsp;&nbsp;&nbsp; 133 300307 java.lang.StringBuffer.toString
+&nbsp; 14&nbsp; 0.80% 66.68%&nbsp;&nbsp;&nbsp;&nbsp; 127 300379 net.sf.saxon.expr.Assignation.evaluateVariable
+&nbsp; 15&nbsp; 0.79% 67.47%&nbsp;&nbsp;&nbsp;&nbsp; 126 300318 java.lang.AbstractStringBuilder.&lt;init&gt;
+&nbsp; 16&nbsp; 0.75% 68.22%&nbsp;&nbsp;&nbsp;&nbsp; 120 300366 java.io.FileInputStream.open
+&nbsp; 17&nbsp; 0.75% 68.97%&nbsp;&nbsp;&nbsp;&nbsp; 120 300468 java.lang.String.&lt;init&gt;</pre>
+      <p>I don't actually know what that dominant call on socketAccept is doing, but I'll assume
+         it's an artefact of the CPU sampling and ignore it. Next to that in importance, we
+         have a number of routines concerned with outputting of characters: UTF-8 encoding
+         (I should have mentioned that I changed the output to UTF-8 to see what the effect
+         would be, and there was none noticeable), Saxon's testCharacters which tests that
+         characters are encodable, and various methods in FileOutputStream. Apart from that
+         there are various methods for string manipulation, and routines for evaluating local
+         variables and parameters.</p>
+      <p>I see now why changing to UTF-8 encoding made no difference. The routine testCharacters
+         is still called to test whether every character appearing in an element name is present
+         in the chosen encoding. If the encoding is UTF-8, that's clearly unnecessary, so there's
+         something I can fix.</p>
+      <p>The call on Substring is evaluating the first argument of translate() in the expression</p>
+      <p><code>translate(substring($chessboard, $cell-number, 1), </code></p>
+      <p>This is a more expensive call than you might imagine, because Saxon has to scan the
+         string looking for Unicode surrogate pairs, which occupy four bytes rather than the
+         usual two: it's not possible to simply index into the string. Similarly, translate()
+         itself has to step through the various strings supplied as arguments, rather than
+         indexing into them directly. This suggests an opportunity to mark strings as "safe"
+         once they have been examined and found to contain no characters outside the 2-byte
+         range. However, there's another clue here: another trace shows that Substring() is
+         calling ItemChecker and CardinalityChecker to perform type checking on one of the
+         arguments. That reminds me that I didn't declare the type of $chessboard (because
+         I wasn't sure what type it actually was). Back to the stylesheet, declare the type
+         as xs:string. Second-best time is now 120ms.</p>
+      <p>There are quite a few calls on getDisplayName() in the NamePool, which does string
+         concatenation to construct (prefix + ':' + localname). This is happening in the serializer
+         when writing start tags. There's scope here to reduce the cost by caching, or by getting
+         the components of the name separately, or perhaps even by storing the display name
+         explicitly in the NamePool rather than reconstructing it on demand. But at user level,
+         perhaps I could reduce the cost by making the FO namespace be the default namespace?
+         Wow: second-best time is now 100ms.</p>
+      <p>I'll leave it there for now: I've cut the execution time to a third, by some pretty
+         simple source-level changes to the stylesheet. It's encouraging to know that this
+         can be achieved with a stylesheet even when there are no obvious gross inefficiencies
+         in the coding. It does require some exploitation of XSLT 2.0 features, of course.
+         I've also identified one or two places where I think Saxon could be tweaked internally.
+         And I hope I've given you, dear reader, a demonstration of the methodology I use when
+         tackling performance problems.</p>
+      <p>Saxonica, of course, is always pleased to tackle performance-related consultancy work.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/07/experiments-with-compilation.html">Experiments with Compilation</a></div><div class="next-uri"><a href="/mike/2006/08/tail-recursive-functions.html">Tail recursive functions</a></div></footer></body>
+</html>

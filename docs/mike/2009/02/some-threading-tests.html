@@ -1,0 +1,51 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Some threading tests</title>
+      <meta name="id" content="160">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2009-02-11T14:18:45">
+      <meta name="basename" content="some_threading_tests">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Some threading tests</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2009-02"><span class="date" time="2009-02-11T14:18:45">February&nbsp;11, 2009 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Continuing the investigation of Tatu Saloranta's XSLTMark measurements, I was puzzled
+         by the fact that on certiain tests, he was seeing a very different ratio between Saxon
+         and XSLTC performance from the figures I was seeing. I got him to run my test driver
+         just to confirm the numbers were real, and they were. So there had to be some difference
+         caused by the hardware, the JVM, the operating system, or some other external factor.</p>
+      <p>I thought one theory worth testing was that XSLTC might be making better use of multiple
+         processors than Saxon (which is essentially single-threaded). So I rigged up a test
+         to measure the performance of one of the transformations (identity.xsl transforming
+         db10000.xml) in a number of threads in parallel. Here are the initial measurements:
+         A is the number of threads, B is the "effective elapsed time" for Saxon in milliseconds
+         (actually the time taken to run the transformation 100 times, divided by 100), C is
+         the same for XSLTC, and we'll come back to D later:</p>
+      <p>
+         
+         <address style="font-family: Courier New,Courier,mono;">A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; D<br>1&nbsp;&nbsp;&nbsp; 502&nbsp;&nbsp;&nbsp; 382&nbsp;&nbsp;&nbsp; 492<br>2&nbsp;&nbsp;&nbsp; 280&nbsp;&nbsp;&nbsp; 200&nbsp;&nbsp;&nbsp; 280<br>5&nbsp;&nbsp;&nbsp; 466&nbsp;&nbsp;&nbsp; 175&nbsp;&nbsp;&nbsp; 247<br>10&nbsp;&nbsp; 485&nbsp;&nbsp;&nbsp; 164&nbsp;&nbsp;&nbsp; 242<br>20&nbsp;&nbsp; 501&nbsp;&nbsp;&nbsp; 162&nbsp;&nbsp;&nbsp; 241<br></address><br>So we see from columns B and C that both Saxon and XSLTC throughput increases by about
+         1.8 to 1.9 times when we move from a single thread to two threads, reflecting the
+         ability to use both cores of the dual-core processor. But as the number of threads
+         increases, XSLTC performance gets better while Saxon gets worse.</p>
+      <p>The obvious culprit is the shared Namepool. I haven't found a good way of measuring
+         contention on the NamePool in Java, and I spent a few hours trying (again) to see
+         if I could find any decent tools, and in the end decided to debug it "by hand". Sure
+         enough, the xsl:copy instruction in the stylesheet is generating a call on the synchronized
+         NamePool method allocateNamespaceCode. Once discovered, it wasn't difficult to elimate
+         this call, and the improved results after doing so are shown in column D.</p>
+      <p>This still leaves two questions unanswered: why is XSLTC performing 35% faster than
+         Saxon on this test, and why is Tatu seeing a different ratio on his Linux machine?
+         I suspect the answer to the first question is that an identity transform is dominated
+         by the performance of the XML parser, and XSLTC has some slick integration with Xerces
+         in this area. (One of the reasons for working with Tatu is to explore whether there
+         are opportunities to do something similar with his new Aalto parser.) The second one
+         is unanswered for now - although one might speculate that most products will tend
+         to work best on the platform where they are developed, because of unintentional bias
+         by the developers.</p>
+      <p>Meanwhile we've fixed a nasty little performance glitch, and we've learnt something
+         about the impact that contention on the NamePool can have. I think there are probably
+         a lot more opportunities to reduce contention here while still gaining the benefits
+         that the design brings.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2009/02/another-five-finger-performance-exercise.html">Another five-finger performance exercise</a></div><div class="next-uri"><a href="/mike/2009/02/streaming-templates.html">Streaming templates</a></div></footer></body>
+</html>

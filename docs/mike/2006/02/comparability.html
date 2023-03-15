@@ -1,0 +1,39 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Comparability</title>
+      <meta name="id" content="105">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-02-14T14:18:43">
+      <meta name="basename" content="comparability">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Comparability</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-02"><span class="date" time="2006-02-14T14:18:43">February&nbsp;14, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Interesting query submitted by a Saxon-SA XQuery user yesterday. They were reporting
+         a bug in validating QNames in element content, but the thing that interested me was
+         that they had written a rather complex function to determine whether two atomic values
+         were equal, <em>without failing if the values aren't comparable</em>.</p>
+      <p>If you test [@x eq 6], and @x is defined with a union type that allows both strings
+         and numbers, then you'll get a type error if @x happens to contain a string. (With
+         strict static typing, the query won't even compile). The same is true if you use the
+         "=" operator. So this user had coded a complex set of nested typeswitch expressions
+         to ensure that comparing two non-comparable values returned false rather than an error.</p>
+      <p>In fact there's an easier way. In fact, there are at least two easier ways. Both the
+         following expressions achieve the required aim:
+         
+         </p>
+      <p>count(distinct-values((@x, @y))&nbsp; eq 1</p>
+      <p>exists(index-of(@x, @y))</p>
+      <p>That's because in both distinct-values() and index-of(), we explicitly decided that
+         non-comparable values should be treated as distinct, rather than causing an error.</p>
+      <p>Why the difference? It's classic symptom of committee design. For "eq" and "=", the
+         advocates of strong typing won the argument, for distinct-values() and index-of()
+         the weak typists (probably me in this case) swayed the vote. Perhaps it just depended
+         on who was paying attention when the matter came up for discussion.</p>
+      <p>There are arguments both ways. There's even an argument for making different language
+         features inconsistent with each other, so users can pick and choose! It doesn't feel
+         like a very elegant piece of design, but it's nice to discover that there's a way
+         of doing what's needed in this particular case.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/02/thoughts-on-schema-awareness.html">Thoughts on schema-awareness</a></div><div class="next-uri"><a href="/mike/2006/02/thanks-for-the-compliment.html">Thanks for the compliment</a></div></footer></body>
+</html>

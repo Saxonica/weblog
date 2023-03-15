@@ -1,0 +1,122 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Redesigning the Saxon expression tree</title>
+      <meta name="id" content="206">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2014-11-11T23:45:00">
+      <meta name="basename" content="redesigning_the_saxon_expression_tree">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Redesigning the Saxon expression tree</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2014-11"><span class="date" time="2014-11-11T23:45:00">November&nbsp;11, 2014 at 11:45p.m.</span></a></div></header><main>
+      
+      <p>I've been embarking on an exercise to redesign the Saxon expression tree. It's got
+         a number of problems that it would be nice to fix; and there's major work ahead in
+         being able to save and restore the tree as part of a compiled XSLT 3.0 package, so
+         it would be nice to get the structure into better shape first.
+         </p>
+      <p>
+         One of the problems is that there's 150-odd different implementation classes for nodes
+         on the expression tree, and that's before you start counting individual function calls;
+         and there's far too much duplication between these classes. Implementing a new kind
+         of expression involves far too much code. In addition, there's far too much scope
+         to get this code wrong, leading to obscure bugs when a new kind of expression gets
+         involved in some particular optimization rewrite, such as function or variable inlining.
+         There's a steady flow of bugs, perhaps a couple a month, caused by tree corruptions
+         of one kind or another, and it would be nice to make the whole structure more robust.
+         </p>
+      <p>
+         One thing I want to do is to be more systematic about the way in which static context
+         information is held on the tree. At present the principle is that each expression
+         saves that part of the static context that it thinks it might need. For example, some
+         expressions need run-time access to the static base URI, some to the static namespace
+         context, and some to the register of collation names. (This last case has been simplified
+         in 9.6 because all collation names are now global to a Configuration, though the default
+         collation can still vary from one expression to another). A recent shock discovery
+         is that in XPath 3.0, general comparisons (that is, the humble "=" operator) can depend
+         on the namespace context - if one operand turns out to be untyped atomic and another
+         is a QName, then the untyped atomic value needs to be converted to a QName using the
+         in-scope namespaces. This means the namespace context needs to be saved with every
+         general comparison expression, which is heavy stuff. Given that the static context
+         is almost always the same for all expressions in a module, it would be much better
+         rather than saving what each expression thinks it might need, to save the changes
+         to the static context on the tree, so each expression can discover the whole static
+         context by processing a set of deltas held with its ancestors in the tree.
+         </p>
+      <p>
+         This leads to another point, which is that it would be nice to have parent pointers
+         in the expression tree. At present you can navigate from a node to its children (that
+         is, its subexpressions), but not in the other direction. Saxon gets around this by
+         keeping a dynamic stack of expressions visited in some of its operations on the tree
+         (such as type-checking and optimization) so the ancestor expressions are maintained
+         dynamically during the recursive tree-walk rather than being maintained statically
+         on the tree.
+         </p>
+      <p>
+         In 9.6, mainly to support XSLT 3.0 streamability analysis, we introduced a generalized
+         mechanism for obtaining the subexpressions of any node: the operands() method. This
+         returns a set of Operand objects, each of which contains a pointer to the child expression
+         itself, and also properties in effect of the parent-child expression relationship,
+         such as the XSLT 3.0 posture and sweep properties, and the operand usage, used in
+         the 3.0 general streamability rules. This mechanism has proved very successful (and
+         not just for streaming) in enabling more generalized operations on the tree. But a
+         limitation is that modtifications to the tree, such as substitution one child expression
+         for another (which is very common during type-checking and optimization) is still
+         entirely ad-hoc, and has to be managed independently by each class of expression node.
+         </p>
+      <p>
+         As a first step in redesigning the tree for 9.7, I have extended the way in which
+         we use Operand objects. As well as being used to navigate to subexpressions, they
+         are also now used to modify subexpressions: the Operand object has a method setChildExpression()
+         which can be used to replace the existing child expression with another. All structural
+         changes to the tree are required to go via this method, which is enforced by encapsulating
+         the reference to the child expression within the Operand object. The Operand also
+         holds a reference to its "owner" expression, so when a child expression is changed,
+         the single setChildExpression() method can take responsibility for housekeeping such
+         as making sure the child expression has location information for use in error reporting,
+         and making sure that expression properties cached on the parent node (such as the
+         inferred type) are invalidated and recomputed when the children of the expression
+         change.
+         </p>
+      <p>
+         This process is complicated by the fact that the nodes on the expression tree are
+         highly diverse, in fact they don't even all represent expressions. The tree also has
+         to cater, for example, for XSLT patterns and XQuery FLWOR expression clauses.
+         </p>
+      <p>
+         Making updates go through the Operand object enables many expressions to inherit a
+         generic implementation of common rewrite methods such as typeCheck and optimize. For
+         example, the default action of optimize is to call optimize() on each subexpression,
+         and if any changes have occurred, replace the subexpression with its rewritten self.
+         The redesign means that this "replace" operation can now be done in a generic way,
+         meaning that the default optimize() method does not need to be tailor-made for each
+         class of expression. The same is true of other methods such as primote().
+         </p>
+      <p>
+         I was hoping that channelling all updates through Operand.setChildExpression() would
+         also make it easy to maintain parent pointers in the tree. Unfortunately this is not
+         the case. It's easy enough, when B is set as a child of A, for B's parent pointer
+         to be updated to point to A. The problem arises when B's parent pointer was previously
+         set to C: what happens to C's children? Can B be a child of A and C simultaneously
+         (making it not a tree at all?). It turns out that some rewrites on the tree involve
+         creating a new structure over existing leaf nodes in the tree, which might then be
+         discarded if not all the conditions for optimization are met. So we've updated the
+         parent pointers in the leaf nodes to this new superstructure, which we then discarded,
+         reverting to the original. It's difficult then to make sure that the parent pointers
+         are reset properly when the rewrite is abandoned. It can be done in an ad-hoc way,
+         of course, but we're looking for something more robust: an API for tree rewriting
+         that doesn't allow the tree to become inconsistent. This is proving hard to achieve.
+         We may have to resort to a different approach, doing a bulk sweep of the tree to set
+         all parent pointers before the typecheck and optimize operations on each template
+         or function. This is intellectually unsatisfactory because it means accepting that
+         the tree could be temporarily inconsistent in the middle of such an operation, but
+         it may be the best option available.
+         </p>
+      <p>
+         This is work in progress, but it's looking promising. I appreciate that for most users
+         it's about as interesting as the repair works to the sewers beneath your street. Hopefully,
+         though, the bottom line will be fewer product bugs, and more ability to take the product
+         forward into new areas.
+         </p>
+   </main><footer><div class="prev-uri"><a href="/mike/2014/06/sharing-key-indexes.html">Sharing key indexes</a></div><div class="next-uri"><a href="/mike/2015/02/functions-function-calls-function-items.html">Functions, Function Calls, Function Items</a></div></footer></body>
+</html>

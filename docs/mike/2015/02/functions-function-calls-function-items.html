@@ -1,0 +1,134 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Functions, Function Calls, Function Items</title>
+      <meta name="id" content="208">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2015-02-01T14:05:36">
+      <meta name="basename" content="functions_function_calls_function_items">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Functions, Function Calls, Function Items</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2015-02"><span class="date" time="2015-02-01T14:05:36">February&nbsp;01, 2015 at 02:05p.m.</span></a></div></header><main>
+      
+      <p>XSLT and XQuery, in their 3.0
+         incarnations, have become fully functional programming languages,
+         where functions are first class values that can be manipulated in the
+         same way as other values, for example they can be bound to variables
+         and passed as arguments to other functions. So you would expect that
+         functions play a pretty central role in the Saxon implementation. In
+         this article I shall review how functions work within Saxon, and how
+         I think this needs to change.</p>
+      <p>One of the things that happens when
+         features are added to a complex piece of software is that they tend
+         to be added around the edges, rather than in the core. You can tell
+         when something was added by how central it is to the class hierarchy.
+         It shouldn't be that way, but there are good reasons why it happens.
+         And when we look at how functions work in Saxon, that's what we see.
+         For example, if we had always had dynamic function calls, then we
+         would probably find that static function calls (where the function to
+         be called is known at compile time) were treated simply as a special
+         case of dynamic calls, much as ($x+1) is treated as a special case of
+         ($x+$y). But because they came along later, dynamic calls are
+         actually handled very differently.</p>
+      <p>I've been doing work recently on the
+         design of Saxon's expression tree (the data structure produced by the
+         compilation phase for use by the execution phase of stylesheet and
+         query evaluation). One aspect of that has been working out how to
+         write the expression tree to persistent storage, and then load it
+         back again for execution. In doing this, I've been struck by the
+         sheer number of different classes that are somehow related to
+         functions, and by the lack of coherence between them.</p>
+      <p>The first thing we notice, which is in
+         itself a bit smelly, is that there is no class called Function. In
+         fact, for many functions, there is no object in Saxon that represents
+         the function itself. For example, with system functions (recall that
+         in XSLT 1.0 and XPath 1.0 that's the only kind there were), we have
+         two things: a data table containing general information about
+         functions, such as their type signatures and context dependencies,
+         and a class SystemFunctionCall which actually represents a call to
+         the function, not the function itself. The implementation of
+         functions such as name() or substring() is in a class called Name or
+         Substring which is a subclass of SystemFunctionCall. This in turn is
+         a subclass of Expression, and as such it forms a node in the
+         expression tree.</p>
+      <p>This works fine for static function
+         calls, but what happens to an expression such as substring#3 or
+         true#0 or name#0? Answer: different things in each of these three
+         cases.</p>
+      <p>For substring#3, this is a pure
+         function: there are no context dependencies. We create something
+         called a SystemFunctionItem, which is an Item (and therefore a
+         Sequence), we wrap this inside a Literal, and we put the Literal on
+         the expression tree. This is much the same as the way we handle a
+         constant such as "London" or 39. Internally, the
+         SystemFunctionItem contains a reference to an instance of the
+         Substring class, which is where things get a bit peculiar, because
+         Substring is designed to be a function call, not a function. In fact,
+         Substring has a dual personality, it tries to act in both roles
+         depending which methods you call. That's a hack, and like all hacks,
+         it comes back to bite you.</p>
+      <p>For true#0 there's a further bit of
+         hackery, because the function call true() doesn't actually generate a
+         SystemFunctionCall, it generates a BooleanValue: it's treated as a
+         constant, just like "London" or 39. But we have to support
+         dynamic calls on true(), so we introduced a SystemFunctionCall called
+         True to handle this case, even though it doesn't have the dual
+         personality: it acts only as a function, never as a function call.</p>
+      <p>The name#0 function is different again,
+         because it encapsulates context. It's defined to return the name of
+         the node that was the context node at the point where the name#0
+         expression was evaluated. So this should remind us that name#0 is not
+         a value, it is an expression: the function it represents has no
+         static existence, it can only be created dynamically by evaluating
+         the expression with a particular dynamic context. We solve this with
+         another hack: for context-dependent function "literals"
+         like name#0 or position#0, the compiler actually generates a call on
+         function-lookup("name", 0), which is an expression rather
+         than a value, and which has to be evaluated at run-time.</p>
+      <p>The SystemFunctionItem class implements
+         an internal interface called FunctionItem, and as one might expect, a
+         FunctionItem is an Item and therefore a Sequence: that is, it's a
+         run-time value. Other subclasses of FunctionItem are used for calls
+         to user defined functions, Java extension functions, or constructor
+         functions. But they are only ever used for dynamic calls, never for
+         static calls.</p>
+      <p>Although there is no Function class,
+         some functions are in fact represented as objects in their own right.
+         The most important is UserFunction, which represents a user-written
+         function in XSLT or XQuery. Another is InlineFunction (representing
+         an anonymous inline function), and another is
+         ExtensionFunctionDefinition, which represents a function whose
+         implementation is provided in Java code: this is used both for
+         user-written extension functions, and for many (but not all) vendor
+         supplied extension functions in the Saxon namespace. But these
+         classes have nothing in common with each other, there is no common
+         superclass. This has the consequence that not only is there one set
+         of machinery for static function calls and another quite different
+         set for dynamic calls, but that in each case, there are many
+         different flavours depending on what kind of function you happen to
+         be calling.</p>
+      <p>Getting this right involves a cleaner
+         data model. As always, a clean data model leads to cleanly structured
+         code, and the data model should be designed to accurately reflect the
+         specification, not for the convenience of the implementation. The
+         specification says we have two objects of interest, a function, and a
+         function call. Quite rightly, the spec no longer uses the term
+         "function item" as something distinct from the function: a
+         function is an item. There's also something called the "function
+         implementation" which we should recognize, because two functions
+         may share an implementation. For example, the expression name#0
+         returns a different function each time it is evaluated: these
+         functions differ in the data they hold (a snapshot of the dynamic
+         context), but they share the same implementation.</p>
+      <p>We should be trying to move towards a
+         structure where we have a hierarchy of subclasses of Function (for
+         system functions, constructor functions, user functions, Java
+         extension functions, etc); where the Function is an Item; where a
+         Function may reference a FunctionImplementation to provide for
+         sharing; and where a FunctionCall is as far as possible independent
+         of what kind of function it is calling, but simply has two flavours
+         for static function calls and dynamic function calls.</p>
+      <p>It will be interesting to see how close
+         we can get to that situation.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2014/11/redesigning-the-saxon-expression-tree.html">Redesigning the Saxon expression tree</a></div><div class="next-uri"><a href="/mike/2015/02/how-long-is-a-piece-of-string.html">How long is a (piece of) string?</a></div></footer></body>
+</html>

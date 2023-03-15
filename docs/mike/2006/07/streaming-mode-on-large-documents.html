@@ -1,0 +1,36 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Streaming Mode on large documents</title>
+      <meta name="id" content="120">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-07-04T14:18:43">
+      <meta name="basename" content="streaming_mode_on_large_documents">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Streaming Mode on large documents</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-07"><span class="date" time="2006-07-04T14:18:43">July&nbsp;04, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Coincidentally, the day after my successful efforts to get the XStream benchmark running
+         using the Saxon-SA <a href="http://www.saxonica.com/documentation/sourcedocs/serial.html">streaming mode for large documents</a>, (see previous post) a Saxon-SA customer sent me a problem: they needed to transform
+         a 450 Mb file and wanted to know whether this facility would crack the problem. The
+         answer, sadly, was no: the optimization only works if the transformation can be broken
+         up into a sequence of transformations on subtrees of the document. In this particular
+         use case the subtrees to be transformed carried context with them, for example they
+         were grouped hierarchically, so the method doesn't work.</p>
+      <p>As always, though, some new customer requirements proved a useful stimulus to improving
+         the product. I haven't cracked this use case yet, but I have made some useful improvements.</p>
+      <p>Firstly, you can now specify a filter on the expression defining the subtrees to be
+         transformed, for example</p>
+      <p>&lt;xsl:copy-of select="doc('huge.xml')//item[@price gt 50.00]"/&gt;</p>
+      <p>The only restrictions on the filter are that it mustn't be positional, and it can't
+         look outside the subtree being copied.</p>
+      <p>Secondly, union expressions now work (this is a bug fix).</p>
+      <p>Finally, the construct is now decoupled from the push-pull multithreading implementation.
+         If all you want to do is to write selected parts of the large document to the serializer,
+         or to a temporary tree held in a variable, then there is no push-pull conflict, and
+         the whole thing can operate in push mode, filtering and all. On the other hand, if
+         your stylesheet iterates over the sequence returned by the xsl:copy-of, then the multithreaded
+         implementation is still used (this slows things down by about a factor of two, but
+         that's often worth it for the memory savings.)</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/07/push-and-pull-parsing.html">Push and Pull parsing</a></div><div class="next-uri"><a href="/mike/2006/07/experiments-with-compilation.html">Experiments with Compilation</a></div></footer></body>
+</html>

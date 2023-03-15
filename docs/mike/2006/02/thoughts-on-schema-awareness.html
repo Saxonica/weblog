@@ -1,0 +1,21 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Thoughts on schema-awareness</title>
+      <meta name="id" content="103">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-02-08T14:18:43">
+      <meta name="basename" content="thoughts_on_schema-awareness">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Thoughts on schema-awareness</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-02"><span class="date" time="2006-02-08T14:18:43">February&nbsp;08, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Spent an hour this morning (with a client) tracking down an elusive bug in a stylesheet.
+         As described in my <a href="http://www.stylusstudio.com/schema_aware.html">Stylus Studio article</a>, it was one of those classic problems where a path expression or match pattern selects
+         nothing: and if the stylesheet had been schema-aware we would have found the problem
+         in no time. So why wasn't it? Answer: because it was cobbled together quickly, and
+         it was the second transformation in a pipeline, and the intermediate format was ad-hoc
+         and local. But we could have generated a schema from the instance document after running
+         the first step in the pipeline. Resolution: I must learn to take my own medicine.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/02/formatting-of-floating-point-numbers.html">Formatting of floating point numbers</a></div><div class="next-uri"><a href="/mike/2006/02/comparability.html">Comparability</a></div></footer></body>
+</html>

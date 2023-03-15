@@ -1,0 +1,52 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Floating Point Numbers again</title>
+      <meta name="id" content="108">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-02-27T14:18:43">
+      <meta name="basename" content="floating_point_numbers_again">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Floating Point Numbers again</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-02"><span class="date" time="2006-02-27T14:18:43">February&nbsp;27, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>The quality of the Saxon product benefits enormously from the contributions of a dozen
+         or so "power-users": as soon as I upload a new release, they run it through all their
+         regression tests and often give me the bad news within hours. </p>
+      <p>In this case it was a performance problem with the new floating-point to string conversion
+         routines. Wolfgang Hoschek found that one or two of the (ten thousand) XQuery <a href="http://www.w3.org/XML/Query/test-suite/">XQTS </a>tests were running hideously slowly.</p>
+      <p>What happened was this. I had decided to bring the code for floating-point to string
+         conversion in-house, for a couple of reasons: firstly, the IKVMC implementation that
+         I was using on the .NET platform had unacceptable bugs, and secondly, Saxon was doing
+         some very inefficient post-processing of the result of Java's float output to make
+         it conform to XPath rules, and I felt there were savings to be had by avoiding this.</p>
+      <p>I looked around for some reusable code to do the job, and hit on some routines written
+         by Jack Shirazi that&nbsp; appeared suitable.&nbsp; A few tests showed that they were sometimes
+         producing an answer that was just a little bit too high or too low as a result of
+         rounding errors, so I added a tweak to detect this situation and correct it. Some
+         fairly thorough testing showed that  after this change, it was getting the right answers,
+         and some quick performance checks showed acceptable performance.</p>
+      <p>However, it turned out that there were a few cases where Shirazi's code was getting
+         the answer badly wrong. Because it was calculating the exponent and mantissa separately,
+         using floating point arithmetic it would sometimes format a value such as 0.00001
+         not as 1.0e-5 or 0.99999e-5 but as 9.99999e-5. My "tweak" was picking up that the
+         answer was wrong and was then applying a million small adjustments to get it right
+         - finally delivering the correct answer after about 30 seconds.</p>
+      <p>So: back to the drawing board. I decided to do a bit more searching of the literature
+         and everything seemed to point to a paper published by Guy Steele and Jon White at
+         SIGPLAN 1990. (They had actually written it ten years earlier, but being engineers
+         rather than academics, publishing was not high on their list of priorities.) Over
+         the weekend I forked out $10 to download a copy of the paper and set about implementing
+         their algorithm, and today I uploaded the resulting <a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=1439685&amp;group_id=29872&amp;atid=397617">replacement module</a>. In due course, it will find its way into an 8.7.1 release.</p>
+      <p>Are there lessons to be learned? I could adopt the approach of taking less risk -
+         not changing things in case they break. I don't believe in that strategy, at least
+         not until I get to a point where there is a release I want to advertise as a stable,
+         gold star release. Saxon got where it is by moving fast, and very often benefiting
+         from the contributions of "power users" like Wolfgang. One thing that is important
+         is to get rid of bugs fast once they are found: the bugginess of the product is the
+         number of bugs multiplied by their half-life, and both factors need to be addressed.
+         One thing that concerns me now (especially with the .NET platform becoming available)
+         is that it's taking increasingly long to ship a release. I need to invest more in
+         automating the process, especially in detecting genuine test failures.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/02/finite-state-machines.html">Finite State Machines</a></div><div class="next-uri"><a href="/mike/2006/03/apis-for-xml-processing.html">APIs for XML processing</a></div></footer></body>
+</html>

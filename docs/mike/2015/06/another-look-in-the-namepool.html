@@ -1,0 +1,199 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Another look in the NamePool</title>
+      <meta name="id" content="210">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2015-06-22T08:59:45">
+      <meta name="basename" content="another_look_in_the_namepool">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Another look in the NamePool</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2015-06"><span class="date" time="2015-06-22T08:59:45">June&nbsp;22, 2015 at 08:59a.m.</span></a></div></header><main>
+      
+      <p>I've been looking again at the
+         implementation of some of the parallel processing features in Saxon
+         (see my <a href="http://www.saxonica.com/papers/xmlprague-2015mhk.pdf">XMLPrague 2015 paper</a>) and at how best to make use of the
+         facilities in the Java platform to support them. In the course of
+         this I've been studying Brian Goetz's excellent book Java Concurrency
+         in Practice, which although dated, is still probably the best text
+         available on the subject; and the fact that it only takes you up to
+         Java 6 is an advantage in our case, because we still want Saxon to
+         run on Java 6.</p>
+      <p>Reading the book has made me think
+         again about the venerable design of Saxon's NamePool, which is the
+         oldest thing in the product where multithreading is relevant. The
+         NamePool is basically a shared data structure holding QNames.</p>
+      <p>The design of the NamePool hasn't
+         changed much over the years. On the whole it works well, but there
+         are a number of limitations:</p>
+      <p>
+         
+         
+         
+         <ul>
+            <li>
+               
+               
+               <p>Updating the NamePool requires an
+                  exclusive lock, and on occasions there has been heavy contention on
+                  that lock, which reduces the effectiveness of running more threads.</p>
+               </li>
+            <li>
+               
+               
+               <p>We read the NamePool without
+                  acquiring a lock. All the textbooks say that's bad practice because
+                  of the risk of subtle bugs. We've been using this design for over a
+                  dozen years without a single of these subtle bugs coming to the
+                  surface, but that doesn't mean they aren't there. It's very hard to
+                  prove that the design is thread-safe, and it might only take an
+                  unusual JVM, or an unusual hardware architecture, or a massively
+                  parallel application, or pathological data (such as a local name
+                  that appears in hundreds of namespaces) for a bug to suddenly
+                  appear: which would be a serious embarassment.</p>
+               </li>
+            <li>
+               
+               
+               <p>The fact that we read the NamePool
+                  with no lock means that the data structure itself is very
+                  conservative. We use a fixed number of hash buckets (1024), and a
+                  chain of names within each bucket. We only ever append to the end of
+                  such a chain. If the vocabulary is large, the chains can become
+                  long, and searching then takes time proportional to the length of
+                  the chains. Any attempt to change the number of buckets on the fly
+                  is out of the question so long as we have non-locking readers. So
+                  performance degrades with large vocabularies.</p>
+               </li>
+            <li>
+               
+               
+               <p>We've got a problem coming up with
+                  XSLT 3.0 packages. We want packages to be independently compiled,
+                  and we want them to be distributed. That means we can't bind names
+                  to fingerprints during package construction, because the package
+                  will have to run with different namepools at run-time. We can
+                  probably solve this problem by doing the binding of names at package
+                  "load" or "link" time; but it's a change of
+                  approach and that invites a rethink about how the NamePool works.</p>
+               </li>
+         </ul>
+         
+         </p>
+      <p>Although the NamePool design hasn't
+         changed much over the years, we've changed the way it is used: which
+         essentially means, we use it less. Some while ago we stopped using
+         the NamePool for things such as variable names and function names: it
+         is now used only for element names, attribute names, and type names.
+         Around Saxon 9.4 we changed the Receiver interface (Saxon's
+         ubiquitous interface for passing push-mode events down a pipeline) so
+         that element and attribute names were represented by a NodeName
+         object instead of an integer fingerprint. The NodeName can hold a
+         name either in string form or as an integer code, or both, so this
+         change meant that we didn't have to allocate a NamePool fingerprint
+         just to pass events down this pipeline, which in turn meant that we
+         didn't have to allocate fingerprints to constructed elements and
+         attributes that were going to be immediately serialized. We also
+         stopped using the NamePool to allocate codes to (prefix, uri) pairs
+         representing namespace bindings.</p>
+      <p>These changes have been pretty
+         effective and it's a while since we have seen a workload suffer from
+         NamePool contention. However, we want to increase the level of
+         parallelism that Saxon can support, and the NamePool remains a
+         potential pinch point.</p>
+      <p>There are a number of things we can do
+         that would make a difference. We could for example use a Java
+         <a href="http://tutorials.jenkov.com/java-util-concurrent/readwritelock.html">ReadWriteLock</a>&nbsp;to allow either a single writer or multiple readers; this would allow
+         us to introduce operations such as reconfiguring the hash table as
+         the size of the vocabulary increases, without increasing contention
+         because of the high frequency of read access.</p>
+      <p>But let's first try and remind
+         ourselves what the NamePool is actually for. It is there, first and
+         foremost, to allow fast run-time testing of whether a particular node satisfies a
+         NameTest. Because we use the same NamePool when constructing a source
+         tree and when compiling a stylesheet or query, the node on the tree
+         and the NameTest in the compiled code both know the integer fingerprint of
+         the name, and testing the node against the NameTest therefore reduces
+         to a fast integer comparison. This is undoubtedly far faster than
+         doing a string comparison, especially one involving long URIs.</p>
+      <p>If that was the only thing we used the
+         NamePool for, then we would only need a single method,
+         <b>allocateFingerprint(namespace, localName)</b>. What are all the other
+         methods there for?</p>
+      <p>Well, firstly, the NamePool knows the
+         mapping of fingerprints to names, so we have read-only get methods to
+         get the fingerprint corresponding to a name, or the name
+         corresponding to a fingerprint. These are a convenience, but it seems
+         that they are not essential. The client code that calls the NamePool
+         to allocate a fingerprint to a name could retain the mapping
+         somewhere else, so that there is no need to go back to a shared
+         NamePool to rediscover what is already known.</p>
+      <p>The most obvious case where this
+         happens is with the TinyTree. The TinyTree holds the names of
+         elements and attributes as fingerprints, not as strings, so
+         operations like the XPath <b>local-name()</b> and <b>namespace-uri()</b> functions
+         get the fingerprint from the TinyTree and then call on the NamePool
+         to translate this back to a string. We could avoid this by keeping a
+         map from integers to strings within the TinyTree itself. This could
+         potentially have other benefits: we could make fewer calls on the
+         NamePool to allocate fingerprints during tree construction; and
+         retargeting a TinyTree to work with a different NamePool would be
+         easier.</p>
+      <p>Secondly, there's a lot of code in the
+         NamePool to manage prefixes. This isn't needed for the core function
+         of matching a node against a NameTest, since that operation ignores
+         namespace prefixes. The detail here is that when we call
+         <b>NamePool.allocate()</b>, we actually supply prefix, uri, and local-name,
+         and we get back a 32-bit <b>nameCode</b> which uniquely represents this
+         triple; the bottom 20 bits uniquely represent the local-name/uri
+         pair, and it is these 20 bits (called the <b>fingerprint</b>) that are used
+         in QName comparisons. The purpose of this exercise has nothing to do
+         with making name comparisons faster; rather it is mainly concerned
+         with saving space in the TinyTree. By packing the prefix information
+         into the same integer as the local-name and URI, we save a few useful
+         bits. But there are other ways of doing this without involving the
+         NamePool; we could use the same few bits to index into a table of
+         prefixes that is local to the TinyTree itself. There are of course a
+         few complications; one of the benefits of the NamePool knowing about
+         prefixes is that it can provide a service of suggesting a prefix to
+         use with a given URI when the system is required to invent one: users
+         like it when the prefix that emerges is one that has previously been
+         associated with that URI by a human being. But there are probably
+         less expensive ways of achieving this.</p>
+      <p>Let's suppose that we reduced the
+         functionality of the NamePool to a single method, <b>allocate(QName)&nbsp;→&nbsp;int</b>.
+         How would we then implement it to minimize contention? A simple
+         and safe implementation might be</p>
+      <pre>HashMap&lt;QName, Integer&gt; map;
+int next = 0;
+
+public synchronized int allocate(QName q) {
+       Integer n = map.get(q);
+       if (n == null) {
+              int m = ++next;
+              map.put(q, m);
+              return m;
+       } else {
+              return n;
+       }
+}</pre>
+      <p>This still serializes all allocate
+         operations, whether or not a new fingerprint is allocated. We can
+         almost certainly do better by taking advantage of Java's concurrent
+         collection classes, though it's not immediately obvious what the best
+         way of doing it is. But in any case, if we can achieve this then
+         we've reduced the NamePool to something much simpler than it is
+         today, so optimization becomes a lot easier. It's worth noting that
+         the above implementation still gives us the possibility to discover
+         the fingerprint for a known QName, but not to (efficiently) get the
+         QName for a known fingerprint.</p>
+      <p>To get here, we need to start doing two
+         things:</p>
+      <p>(a) get prefixes out of the NamePool,
+         and handle them some other way.</p>
+      <p>(b) stop using the NamePool to discover
+         the name associated with a known fingerprint.</p>
+      <p>After that, redesign becomes relatively
+         straightforward.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2015/02/how-long-is-a-piece-of-string.html">How long is a (piece of) string?</a></div><div class="next-uri"><a href="/mike/2015/06/a-redesign-of-the-namepool.html">A redesign of the NamePool</a></div></footer></body>
+</html>

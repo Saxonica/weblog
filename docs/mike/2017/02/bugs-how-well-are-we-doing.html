@@ -1,0 +1,167 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Bugs: How well are we doing?</title>
+      <meta name="id" content="218">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2017-02-05T17:36:01">
+      <meta name="basename" content="bugs_how_well_are_we_doing">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Bugs: How well are we doing?</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2017-02"><span class="date" time="2017-02-05T17:36:01">February&nbsp;05, 2017 at 05:36p.m.</span></a></div></header><main>
+      
+      <p>We're about to ship another Saxon 9.7 maintenance release, with another 50 or so bug
+         clearances. The total number of patches we've issued since 9.7 was released in November
+         2015 has now reached almost 450. The number seems frightening and the pace is relentless.
+         But are we getting it right, or are we getting it badly wrong?
+         </p>
+      <p>
+         There are frequently-quoted but poorly-sourced numbers you can find on the internet
+         suggesting a norm of 10-25 bugs per thousand lines of code. Saxon is 300,000 lines
+         of (non-comment) code, so that would suggest we can expect a release to have 3000
+         to 7500 bugs in it. One one measure that suggests we're doing a lot better than the
+         norm. Or it could also mean that most of the bugs haven't been found yet.
+         </p>
+      <p>
+         I'm very sceptical of such numbers. I remember a mature product in ICL that was been
+         maintained by a sole part-time worker, handling half a dozen bugs a month. When she
+         went on maternity leave, the flow of bugs magically stopped. No-one else could answer
+         the questions, so users stopped sending them in. The same happens with Oracle and
+         Microsoft. I submitted a Java bug once, and got a response 6 years later saying it
+         was being closed with no action. When that happens, you stop sending in bug reports.
+         So in many ways, a high number of bug reports doesn't mean you have a buggy product,
+         it means you have a responsive process for responding to them. I would hate the number
+         of bug reports we get to drop because people don't think there's any point in submitting
+         them.
+         </p>
+      <p>
+         And of course the definition of what is a bug is completely slippery. Very few of
+         the bug reports we get are completely without merit, in the sense that the product
+         is doing exactly what it says on the tin; at the same time, rather few are incontrovertible
+         bugs either. If diagnostics are unhelpful, is that a bug?
+         </p>
+      <p>
+         The only important test really is whether our users are satisfied with the reliability
+         of the product. We don't really get enough feedback on that at a high level. Perhaps
+         we should make more effort to find out; but I so intensely hate completing customer
+         satisfaction questionnaires myself that I'm very reluctant to inflict it on our users.
+         Given that open source users outnumber commercial users by probably ten-to-one, and
+         that the satisfaction of our open source users is just as important to us as the satisfaction
+         of our commercial customers (because it's satisfied open source users who do all the
+         sales work for us); and given that we don't actually have any way of "reaching out"
+         to our open source users (how I hate the marketing jargon); and given that we really
+         wouldn't know what to differently if we discovered that 60% of our users were "satisfied
+         or very satisfied": I don't really see very much value in the exercise. But I guess
+         putting a survey form on the web site wouldn't be difficult, some people might interpret
+         it as a signal that we actually care.
+         </p>
+      <p>
+         With 9.7 there was a bit of a shift in policy towards fixing bugs pro-actively (more
+         marketing speak). In particular, we've been in a phase where the XSLT and XQuery specs
+         were becoming very stable but more test cases were becoming available all the time
+         (many of them, I might add, contributed by Saxonica - often in reaction to queries
+         from our users). So we've continuously been applying new tests to the existing release,
+         which is probably a first. Where a test showed that we were handling edge cases incorrectly,
+         and indeed when the spec was changed in little ways under our feet, we've raised bugs
+         and fixes to keep the conformance level as high as possible (while also maintaining
+         compatibility). So we've shifted the boundary a little between feature changes (which
+         traditionally only come in the next release), and bug fixes, which come in a maintenance
+         release. That shift also helps to explain why the gap between releases is becoming
+         longer - though the biggest factor holding us back, I think, is the ever-increasing
+         amount of testing that we do before a release.
+         </p>
+      <p>
+         Fixing bugs pro-actively (that is before any user has hit the bug) has the potential
+         to improve user satisfaction if it means that they never do hit the bug. I think it's
+         always as well to remember also that for every user who reports a bug there may be
+         a dozen users who hit it and don't report it. One reason we monitor StackOverflow
+         is that a lot of users feel more confident about reporting a problem there, rather
+         than reporting it directly to us. Users know that their knowledge is limited and they
+         don't want to make fools of themselves, and you need a high level of confidence to
+         tell your software vendor that you think the product is wrong.&nbsp;
+         </p>
+      <p>
+         On the other hand, destabilisation is a risk. A fix in one place will often expose
+         a bug somewhere else, or re-awaken an old bug that had been laid to rest. As a release
+         becomes more mature, we try to balance the benefits of fixing problems with the risk
+         of de-stabilisation.
+         </p>
+      <p>
+         So, what about testing? Can we say that because we've fixed 450 bugs, we didn't run
+         enough tests in the first place?
+         </p>
+      <p>
+         Yes, in a sense that's true, but how many more tests would have had to write in order
+         to catch them? We probably run about a million test cases (say, 100K tests in an average
+         of ten product configurations each) and these days the last couple of months before
+         a major release are devoted exclusively to testing. (I know that means we don't do
+         enough continuous testing. But sorry, it doesn't work for me. If we're doing something
+         radical to the internals of the product then things are going to break in the process,
+         and my style is to get the new design working while it's still fresh in my head, then
+         pick up the broken pieces later. If everything had to work in every nightly build,
+         we would never get the radical things done. That's a personal take, and of course
+         what works with a 3-4 person team doesn't necessarily work with a larger project.
+         We're probably pretty unusual in developing a 300Kloc software package with 3-4 people,
+         so lots of our experience might not extrapolate.)
+         </p>
+      <p>
+         We've had a significant number of bug reports this time on performance regression.
+         (This is of course another area where it's arguable whether it's a bug or not. Sometimes
+         we will change the design in a way that we know benefits some workloads at the expense
+         of others.) Probably most of these are extreme scenarios, for example compilation
+         time for stylesheets where a single template declares 500 local variables. Should
+         we have run tests to prevent that? Well, perhaps we should have more extreme cases
+         in our test suite: the vast majority of our test cases are trivially small. But the
+         problem is, there will always be users who do things that we would never have imagined.
+         Like the user running an XSD 1.1 schema validation in which tens of thousands of assertions
+         are expected to "fail", because they've written it in such a way that assertion failures
+         aren't really errors, they are just a source of statistics for reporting on the data.
+         </p>
+      <p>
+         The bugs we hate most (and therefore should to most to prevent) are bugs in bytecode
+         generation, streaming, and multi-threading. The reason we hate them is that they can
+         be a pig to debug, especially when the user-written application is large and complex.&nbsp;
+         </p>
+      <p>
+         
+         
+         
+         <ul>
+            <li>For bytecode generation I think we've actually got pretty good test coverage, because
+               we not only run every test in the QT3 and XSLT3 test suites with bytecode generation
+               enabled, we also artificially complicate the tests to stop queries like 2+5 being
+               evaluated by the compiler before bytecode generation kicks in. We've also got an internal
+               recovery mechanism so if we detect that we've generated bad code, we fall back to
+               interpreted mode and the user never notices (problem with that is of course that we
+               never find out).</li>
+            <li>Streaming is tricky because the code is so convoluted (writing everything as inverted
+               event-based code can be mind-blowing) and because the effects of getting it wrong
+               often give very little clue as to the cause. But at least the failure is "in your
+               face" for the user, who will therefore report the problem, and it's likely to be reproducible.
+               Another difficulty with streaming is that because not all code is streamable, tests
+               for streaming needed to be written from scratch.</li>
+            <li>Multi-threading bugs are horrible because they occur unpredictably. If there's a low
+               probability of the problem happening then it can require a great deal of detective
+               work to isolate the circumstances, and this often falls on the user rather than on
+               ourselves. Fortunately we only get a couple of these a year, but they are a nightmare
+               when they come. In 9.7 we changed our Java baseline to Java 6 and were able therefore
+               to replace many of the hand-built multithreading code in Saxon with standard Java
+               libraries, which I think has helped reliability a lot. But there are essentially no
+               tools or techniques to protect you from making simple thread-safety blunders, like
+               setting a property in a shared object without synchronization. Could we do more testing
+               to prevent these bugs? I'm not optimistic, because the bugs we get are so few, and
+               so particular to a specific workload, that searching the haystack just in case it
+               contains a needle is unlikely to be effective.</li>
+         </ul>
+         Summary: Having the product perceived as reliable by our users is more important to
+         us than the actual bug count. Fixing bugs quickly before they affect more users is
+         probably the best way of achieving that. If the bug count is high because we're raising
+         bugs ourselves as a result of our own testing, then that's no bad thing. It hasn't
+         yet got to the level where we can't cope with the volumes, or where we have to filter
+         things through staff who are only employed to do support. If we can do things better,
+         let us know.
+         
+         
+         </p>
+   </main><footer><div class="prev-uri"><a href="/mike/2016/12/guaranteed-streamability.html">Guaranteed Streamability</a></div><div class="next-uri"><a href="/mike/2017/11/transforming-json.html">Transforming JSON</a></div></footer></body>
+</html>

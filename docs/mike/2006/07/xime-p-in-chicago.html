@@ -1,0 +1,58 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>XIME-P in Chicago</title>
+      <meta name="id" content="118">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-07-01T14:18:43">
+      <meta name="basename" content="xime-p_in_chicago">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>XIME-P in Chicago</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-07"><span class="date" time="2006-07-01T14:18:43">July&nbsp;01, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>It's been a heavy month for travelling: Grenoble, Dusseldorf, Prague, Paris, Edinburgh,
+         and now Chicago for the one-day XIME-P XQuery workshop.</p>
+      <p>I presented a paper describing a proposal for an XQuery extension to tackle positional
+         grouping problems.&nbsp; You can download both the <a href="http://www.saxonica.com/papers/positionalgrouping.pdf">paper</a> (PDF) and the <a href="http://www.saxonica.com/papers/XIME-P2006.ppt">Powerpoint slides</a>. This is essentially a conference of XQuery researchers and implementors, co-located
+         with the SIGMOD database conference. The main reason I put this paper forward was
+         that I was irritated at last year's workshop by the "data" orientation of most of
+         the speakers, and felt there was a need to stress that XML, unlike relational data,
+         is intrinsically ordered and that there are many practical tasks that need to take
+         the ordering into account. As it happens, there was much more emphasis on narrative
+         ("document-oriented") XML at this year's event, including a couple of papers on&nbsp; parallel
+         markup - one of the speakers informing the audience, as if it was a new discovery,
+         that XML was invented by markup people and not by database people.</p>
+      <p>My paper on positional grouping got a reasonably good reception. Some people seemed
+         to think that extensions to FLWOR expressions would be a better approach than a free-standing
+         new construct. I'm not convinced - I haven't seen the use cases that require it, and
+         in any cases FLWOR expressions are already quite complicated enough. I think it was
+         a bad mistake adding the "O" for "order by" rather than having a free-standing "sort
+         X by Y" construct. Apart from anything else, it bends the data model by requiring
+         the concept of tuples, which makes it hard to implement, hard to explain, and apparently
+         has made it impossible to define the formal semantics.</p>
+      <p>The XQuery people, by and large, still try to pretend that XSLT doesn't exist. Don
+         Chamberlin proudly announced that the word "XQuery" gets 11,900,000 hits on Google,
+         without mentioning that "XSLT" gets 90,200,000. He also mentioned evidence of lively
+         traffic on internet XQuery forums, whereas my perception is that <a href="http://www.mulberrytech.com/">xsl-list</a> still has ten times the traffic of all the XQuery sites put together (and it was
+         much higher in the early days). Perhaps he didn't even think to look, I don't know.
+         All the debate in the corridors and in the panel session seemed to make the assumption
+         that the biggest competitor to XQuery was not XSLT but LinQ. For academics, this blind
+         spot is understandable - they only think things are important if lots of academic
+         papers are being written on the subject. It's harder to understand in the case of
+         people working in the industry.</p>
+      <p>Dana Florescu presented an important paper on XQueryP, a proposal for adding procedural
+         extensions to XQuery - statements that define the order of execution, and allow assignment
+         to variables. I have considerable doubts about whether this is the right way to go.
+         There are use cases where such features are badly needed, but my fear, based on experience
+         with saxon:assign, is that the facilities will be greatly abused by users who haven't
+         taken the time it needs to learn about declarative programming. Also, Dana has a vision
+         of XQuery being used to write entire applications. I prefer to think of XQuery being
+         used to write small components, each of them functional in nature, which are then
+         bound together to form a complete application using pipeline processing languages
+         (which is where the sequential, stateful logic belongs).</p>
+      <p>I've now got a weekend to enjoy in Chicago, this being what happens when you pay your
+         own air fares. Off to play croquet at 7.45 am - an unthinkable hour back home in England,
+         but perhaps the idea is to avoid the heat and humidity. Even in free time, however,
+         the diary is overloaded: I would have liked to watch the England v. Portugal match.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/06/killing-bugs.html">Killing bugs</a></div><div class="next-uri"><a href="/mike/2006/07/push-and-pull.html">Push and Pull</a></div></footer></body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Reducing the size of Saxon-CE</title>
+      <meta name="id" content="201">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2013-09-03T07:26:10">
+      <meta name="basename" content="reducing_the_size_of_saxon-ce">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Reducing the size of Saxon-CE</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2013-09"><span class="date" time="2013-09-03T07:26:10">September&nbsp;03, 2013 at 07:26a.m.</span></a></div></header><main>
+      
+      <p>During the early stages of Saxon-CE development, the major part of the work was cutting
+         Saxon down to size to run on the browser. That initial work was described in an earlier
+         post: see <i>Cutting Saxon down to size</i>: <a href="https://blog.saxonica.com/mike/2010/11/cutting-saxon-down-to-size.html">https://blog.saxonica.com/mike/2010/11/cutting-saxon-down-to-size.html</a><br>
+         In the last couple of weeks I've resumed the effort to reduce the size of the code.
+         This article examines the changes I've made, and the opportunities for further reduction.
+         </p>
+      <p>
+         Saxon-CE 1.1 is around 880Kb, and so far, I've reduced that to 780Kb. I'm measuring
+         the size of the main Javascript download here, not the ancillary data files that may
+         or may not be downloaded, depending on what the stylesheet actually does. Reducing
+         the size is important because the download time causes an appreciable delay on the
+         first visit to a site, and first impressions are important; cutting the delay from
+         say 7 seconds to 5 seconds will result in a corresponding reduction in the number
+         of visitors who don't bother to wait.
+         </p>
+      <p>
+         <b>What has gone?</b>
+         </p>
+      <p>
+         About half this reduction was achieved by rewriting two data-intensive classes to
+         load their data from XML files on demand, rather that defining it in static initialization
+         code. The two classes in question are Categories, which contains the mapping of Unicode
+         characters to categories used in regular expressions such as Lu and Nd; and CaseVariants,
+         used when the "i" flag appears in a regular expression to determine all the upper/lower
+         case variants of any character. These XML files are downloaded only if the relevant
+         language features are used in the stylesheet.
+         </p>
+      <p>
+         A couple of other classes were also performing lengthy static initializing: StandardFunctions,
+         which contains details of all the system functions in the core library, and StandardNames,
+         which contains the names of all XSLT elements, attributes, and built-in types. In
+         the case of StandardFunctions the amount of initialization code has been vastly reduced
+         by introducing a micro-syntax to describe function signatures in the form of a string
+         literal, which can be easily parsed in a few lines of code. In the case of StandardNames,
+         the class was setting up a mapping from integer constants to QNames; this has been
+         removed by changing the product to use QNames throughout (or in the case of types,
+         the object instances representing each built-in type) rather than integer constants.
+         </p>
+      <p>
+         Associated with this second change, the NamePool has gone. Saxon-CE was not getting
+         any real benefit from the NamePool, because the source document is always in the form
+         of a DOM, in which names are held as strings. So integer fingerprints were being allocated
+         on demand, which cancels any saving from faster integer comparisons. The change to
+         use QName objects in place of namecodes and fingerprints throughout the product was
+         of course very extensive, but it seems to have been trouble-free. There is only one
+         very minor loss of functionality: in cases where Saxon has to invent a prefix for
+         use on a constructed element or attribute, it is no longer able to consult the NamePool
+         to see what prefixes have previously been used with that URI.
+         </p>
+      <p>
+         The other changes are minor and tedious. They fall into a number of categories:
+         </p>
+      <p>
+         * Finding code that could never be executed. Although GWT automatically eliminates
+         code that is completely unreachable, there is code that cannot be executed in practice
+         for details that GWT cannot detect. Two examples: (a) code for matching types such
+         as attribute(*, xs:date). Although a basic XSLT processor allows this syntax, all
+         nodes in Saxon-CE are untyped, so this type will never match anything. It can therefore
+         be replaced during parsing by a type that matches no instances, which cuts out a lot
+         (well a couple of Kb) of useless code. (b) there was still a lot of code designed
+         to report the line number on which errors occurred, both statically and dynamically.
+         But in the browser environment, the XML parser provides no line number information,
+         so this code was useless.
+         </p>
+      <p>
+         * Eliminating duplication. For example, I found that there were two completely separate
+         mechanisms for maintaining comparison keys, one mechanism used for xsl:for-each-group
+         and distinct-values, the other used for sorting and various other operations. Although
+         there were a few semantics differences (for example in the handling of NaN) it proved
+         reasonably easy to combine these two mechanisms into one.
+         </p>
+      <p>
+         * Cutting out minor optimizations. Do we really need a separate class to handle hash
+         maps in which the key is an unboxed integer, rather than using the standard HashMap
+         with a boxed integer key? Is that optimization worth 1000 lines of code? Probably
+         not. There are many similar examples.
+         </p>
+      <p>
+         * Cutting out small classes. Arithmetic expressions, for example, delegated the computation
+         to one of a large number of small Calculator classes, each dedicated to one particular
+         operation, such as (integer plus integer). This is an elegant design, but in GWT it
+         appears to be expensive: each of these classes was generating up to 2Kb of code. Combining
+         the classes into a set of switch expressions in the parent class appears to give a
+         significant reduction in code size (though I have to admit I am not entirely sure
+         why).
+         </p>
+      <p>
+         In deciding whether to remove a particular piece of code, I find it useful to reverse
+         the thinking: if this wasn't there already, would I consider it worthwhile adding
+         it? This is analogous to zero-based budgeting: there is a presumption that something
+         isn't needed unless it can be justified, rather than a presumption in favour of the
+         status quo.
+         </p>
+      <p>
+         <b>Where will the next 100Kb come from?</b>
+         </p>
+      <p>
+         Getting down from 880Kb to 780Kb is useful, but it isn't enough. The target should
+         be something like 500Kb. Finding big savings, however, gets more and more difficult.
+         There are plently of small salami-slices available, but they get harder to find.
+         </p>
+      <p>
+         Some of the original areas in my earlier post remain unaddressed. There is still a
+         lot of duplication between the "style" classes representing the source stylesheet,
+         and the "instruct" classes on the expression tree. Historically, it was important
+         to allow the source stylesheet tree to be garbage collected once compilation is finished;
+         in Saxon-CE, that reasoning doesn't apply. Probably we should keep the instruction
+         classes on the expression tree, but have them delegate a lot more to the original
+         "style" elements to avoid duplication.
+         </p>
+      <p>
+         The expression tree is a major opportunity for simplification. There are two issues:
+         there are too many different kinds of expression (too many subclasses), and they implement
+         too many methods. Specifically, there are 167 subclasses of Expression, and the class
+         defines some 48 methods. Some of these classes are admittedly very small (FirstItemExpression,
+         for example, which implements constructs of the form EXP[1], is just 157 bytes --
+         I haven't worked out why these classes are so much smaller than the Calculator classes
+         mentioned above). So compiling EXP[1] to a call on subsequence(EXP,1,1) would probably
+         give no net saving. But despite much use of superclasses to hold shared functionality,
+         there's still a fair bit of duplication that could be eliminated, and a large number
+         of minor optimizations that probably have little merit.
+         </p>
+      <p>
+         Could we drop the LinkedTree implementation of XDM? The Tinytree is already gone from
+         Saxon-CE. The LinkedTree is only used (a) for stylesheets, and (b) for temporary trees:
+         source documents and result documents use the Javascript DOM. (Not the GWT DOM). We
+         could consider using the DOM also for stylesheets and for temporary trees. But it's
+         only 20Kb. A more interesting way forward might be some kind of hybrid of the current
+         LinkedTree and HTML-DOM-wrapped-tree; given the way Javascript works, we could consider
+         adding properties to the DOM to make it implement the NodeInfo interface more directly,
+         supplementing some of its deficiencies for example (notoriously) its poor support
+         for namespaces.
+         </p>
+      <p>
+         There is a lot of code whose main purpose is lazy (pipelined) evaluation. This leads
+         to a proliferation of small specialized classes. Some of these are probably an unnecessary
+         luxury. For the index-of() function, for example, do we really need a custom iterator
+         that searches for the next match and returns it on demand, or would it do any harm
+         to find all the matches up-front? In some cases several iterator implementations could
+         be combined into one: for example the index-of() iterator could be handled by a flag
+         in the filter iterator that returns the position of the matched item instead of the
+         item itself.
+         </p>
+      <p>
+         Generally, I think that finding another 100Kb of discardable code looks feasible,
+         though it's a lot of work.
+         </p>
+      <p>
+         <i>Note: Saxon-CE today is 64800 non-comment lines of Java code. Saxon-EE for comparison
+            is 261100 non-comment lines.</i>
+         <i><br></i>
+         <b>Update two weeks later:</b>
+         <b><br></b>
+         This kind of exercise can become a bit obsessive. I'm now down just below 700Kb, and
+         at the Java level the number of source lines is down to about 55000. It's amazing
+         how much dead wood there is, and it's a great pleasure to get rid of it. By and large,
+         most of the reductions have been achieved without adverse effects that anyone will
+         notice, and in some cases it's been a real opportunity to tidy up the code and improve
+         it. I'm very inclined to port some of the changes back to "big Saxon" (that is, the
+         server-side code base).
+         </p>
+      <p>
+         The changes made fall into a number of general categories:
+         </p>
+      <ul>
+         <li>Avoiding duplication. For example, the code to do compile-time static type checking
+            of function arguments (to implement the function conversion rules) was extremely similar
+            to the code for dynamic conversion of supplied stylesheet parameters to their required
+            type. A little bit of thought enabled the two to be combined. There was extensive
+            duplication in the code for iterating different axes for different tree models. The
+            code for xsl:next-match was about 95% the same as the code for xsl:apply-imports.
+            There was perhaps 70% code overlap in the iterators for the union, except, and difference
+            operators. There were half-a-dozen places in the product containing almost identical
+            code for converting a lexical QName to an expanded QName given a namespace context.
+            In some cases the duplication could be justified for "big Saxon", because of the imperative
+            to minimize run-time pathlengths. But that's the wrong trade-off for Saxon-CE; the
+            size of the code really does matter.</li>
+         <li>Eliminating trivial optimizations. I already mentioned the "integer hash-map" example.
+            There are plenty of examples of static rewrite optimizations that really don't justify
+            themselves: rewriting string-length($x) = 0 as not(string($x)) is an example. You
+            have to look at these and ask (a) whether the saving achieved is significant, and
+            (b) whether the rule will fire often enough to be worthwhile. It's easy to make mistakes
+            on both counts - nearly all these optimizations were added at some time because of
+            a real use case where they made a significant difference. But over time they accumulate
+            and gather dust; sometimes they cease to be relevant because something else has changed
+            elsewhere in the system.</li>
+         <li>Avoiding over-generalized code. GWT does a good job of identifying methods that are
+            never called. But it can't spot methods that are capable of doing 17 things, and are
+            only ever called upon to do one of those 17 things.</li>
+         <li>Rewriting the code to be more compact. A couple of examples here: the code for checking
+            the select attribute of xsl:value-of now reads "checkAttribute("select", "e")", where
+            "select" is the name of the attribute, and "e" indicates that its value must be an
+            expression. The previous code was about four times this long, and the extra stuff
+            was essentially the same for every attribute of every element. Similarly, the code
+            for registering details of the signatures of built-in functions, and the code for
+            enumerating the subexpressions of every kind of expression: these fragments of code
+            occur very often, and cutting them down from 4 lines to 1 can make a big difference
+            overall.</li>
+         <li>Simplifying error handling. Good diagnostics for errors are still important, but there
+            was a lot of verbosity in this area that could go. If a date is invalid, how much
+            detail do you need to give the user about the fact? Might it not be good enough to
+            tell them that 2013-03-59 is an invalid date?</li>
+      </ul>
+   </main><footer><div class="prev-uri"><a href="/mike/2013/03/whats-new-in-saxon-95.html">What's new in Saxon 9.5?</a></div><div class="next-uri"><a href="/mike/2013/09/stripping-the-dom.html">Stripping the DOM</a></div></footer></body>
+</html>

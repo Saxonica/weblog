@@ -1,0 +1,122 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>A new regex engine</title>
+      <meta name="id" content="187">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2012-01-16T19:57:00">
+      <meta name="basename" content="a_new_regex_engine">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>A new regex engine</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2012-01"><span class="date" time="2012-01-16T19:57:00">January&nbsp;16, 2012 at 07:57p.m.</span></a></div></header><main>
+      
+      <p>
+         Welcome to the new blog site. I hope it meets expectations.
+         </p>
+      <p>I've been busy integrating a new regex engine into Saxon over the last week or so.
+         </p>
+      <p>
+         Why?
+         </p>
+      <p>
+         The current arrangement is that Saxon (using code written originally by James Clark)
+         parses the regular expression supplied to functions like matches() and replace(),
+         or to the XSD pattern facet, and translates it into a Java JDK regular expression.
+         </p>
+      <p>
+         The disadvantages of this are (a) the process is inefficient, as the regular expression
+         is effectively parsed twice (and the JDK regular expression that Saxon generates may
+         be very long and complicated in some cases), (b) Saxon has little control over the
+         details of evaluation, needed to achieve precise conformance to the XSD and XPath
+         specs, (c) there are bugs in the JDK regex engine which Oracle appear to be in no
+         hurry to fix.
+         </p>
+      <p>
+         In Saxon 9.4 we've moved forward to Unicode 6.0 (the JDK is still on 3 point-something)
+         and this compounds the problem, because the expansions of character classes such as
+         \p{Lu} become increasingly long-winded.
+         </p>
+      <p>
+         For Saxon-CE there is an added impetus. GWT doesn't support the Java regular expression
+         API; instead it provides an interface to JavaScript regular expressions. We could
+         have written yet another variant of the regex translator, including digging out the
+         old version that targeted a regex engine with no support for non-BMP Unicode characters,
+         but this didn't feel like an attractive option; it wasn't even easy to see how constructs
+         such as XSD's subtraction operator ([A-Z-[aeiou]]) should be supported. It seemed
+         a good time for Saxon to have its own regex engine.
+         </p>
+      <p>
+         I looked at two candidates: JRegex and Apache Jakarta. On paper, JRegex looked a better
+         option, but I found the code extremely obscure and badly documented. I did a preliminary
+         integration of JRegex, but it crashed on some of the tests, and understanding the
+         engine well enough to debug and fix these problems didn't look like being much fun.
+         So I decided to go with Jakarta.
+         </p>
+      <p>
+         Jakarta is not a particularly sophisticated regex engine, but it's easy to understand
+         how it works and therefore easy to change it. It's also surprisingly small - not much
+         bigger than the current JDK regex translator. I started by changing the front-end
+         to handle the (slightly different) XSD and XPath dialects of regular expressions,
+         which was straightforward enough, except perhaps for the rather subtle rules on how
+         hyphens appearing within a character class (ie. between square brackets) are parsed,
+         and how many digits get swallowed by a back-reference.&nbsp;
+         </p>
+      <p>
+         The next change was to ensure that all Unicode codepoints (including surrogate pairs)
+         are handled as single characters rather than pairs of 16-bit values. This didn't prove
+         difficult, partly because the engine was already using an abstraction for character
+         strings (although this was used only for the input string and not for the regex itself.)
+         Then all character classes such as \p{Lu}, \i, and \c had to be implemented in terms
+         of the Unicode 6.0 definitions - which wasn't hard, because the existing regex translator
+         already understood these constructs.
+         </p>
+      <p>
+         At this stage nearly all the tests ran successfully (and fortunately, there's a large
+         suite of regression tests for both XSD and XQuery).
+         </p>
+      <p>
+         Jakarta enforced a rule that in the construct (E)*, E must not be "nullable". For
+         example, you aren't allowed to write (a?)*. That seems a reasonable restriction, but
+         unfortunately there's no such limitation in the XSD or XPath specs, so I had to work
+         out what to do with this construct. Simply removing the restriction meant that the
+         matching engine would fail to terminate on these constructs (after all, every string
+         contains an infinite number of consecutive empty sequences...) The pro-tem solution
+         I've come up with, though I'm not 100% enamoured of it, is for the (*) operator to
+         keep track of where it has been: if the same operation is applied at the same position
+         in the input string more than once, the second attempt is deemed to be a no-match.
+         (If anyone knows a better approach, let me know.)
+         </p>
+      <p>
+         The final problem shown up by the tests was that matching long input strings had a
+         tendency to cause a stack overflow. This is because the engine is using recursion
+         to work its way through the string, this being the easy way to implement back-tracking.
+         It's well known that backtracking isn't a brilliant approach to regex evaluation,
+         especially for pathological cases, but unfortunately the kind of regexes in popular
+         use (with substring capture and backreferences) aren't true "regular" expressions
+         in the sense that the theorists use the term, and the better algorithms can only handle
+         truly regular expressions. At this stage I felt some pragmatic improvements were more
+         appropriate than a rewrite using a new algorithm, and it seems that all the test cases
+         that were failing in this way were amenable to a simple optimization: if you can detect
+         that (E*) must be followed by something that doesn't match E, then the evaluation
+         of E* will never need to backtrack, and therefore it can be evaluated using iteration
+         rather than recursion.
+         </p>
+      <p>
+         It's now all running, both in "big" Saxon (-HE, -PE, -EE) and also in the client-side
+         Saxon-CE engine. We haven't measured performance yet, but the results are unlikely
+         to be surprising: initial compilation of regular expressions should be considerably
+         faster; evaluation of simple regular expressions should be much the same, and evaluation
+         of pathological regular expressions involving backtracking will probably be bad (as
+         it already is in the JDK engine).
+         
+         <br>
+         
+         
+         
+         
+         
+         
+         
+         </p>
+   </main><footer><div class="prev-uri"><a href="/mike/2011/07/tuples.html">Tuples</a></div><div class="next-uri"><a href="/mike/2012/01/maps.html">Maps</a></div></footer></body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Formatting of floating point numbers</title>
+      <meta name="id" content="102">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-02-06T14:18:43">
+      <meta name="basename" content="formatting_of_floating_point_numbers">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Formatting of floating point numbers</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-02"><span class="date" time="2006-02-06T14:18:43">February&nbsp;06, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>Given the query 1.11111111111111112E-7 some users might be surprised to see the answer
+         displayed as 1.1111111111111111E-7. But those are probably people who don't realize
+         that these are two different lexical representations of the same xs:double value (because
+         of limitations of double-precision floating point). The question now is, given that
+         you realize these are both different ways of displaying the same number, which one
+         should you choose?</p>
+      <p>I ran into this problem in trying to pass all the tests in the <a href="http://www.w3.org/XML/Query/test-suite/">XQTS test suite</a>. There are one or two tests there where Saxon produces an answer that's off by a
+         tiny amount from the published result, not because of rounding errors in the calculations,
+         but because there is more than one way of printing the same number. In the Candidate
+         Recommendation we have rules for converting a double (or float) to a string (you'll
+         find them in section 17.1.2 of the <a href="http://www.w3.org/TR/xpath-functions/#casting-to-string">Functions and Operators</a> book). These rules specify that "there must be as many, but only as many, additional
+         digits as are
+         needed to uniquely distinguish the value from all other values for the
+         datatype", and I think we (the WG) were under the impression that this gives you an
+         unambiguous answer. These words are taken straight from the XPath 1.0 spec, which
+         in turn took them straight from Java, so I took a look to see what Java does. </p>
+      <p>It turns out that it's very hard to reconcile what Java does with what Java actually
+         says. As I reported in a <a href="http://www.w3.org/Bugs/Public/show_bug.cgi?id=2644">bug entry</a>, the single-precision float whose internal representation in hex is 58901722 is formatted
+         by Java as 1.26743223E15, but the final digit "3" adds nothing, since all literals
+         in the range 1.26743220E15 to 1.26743229E15 produce the same value.</p>
+      <p>I proposed three options to the WG: either say that you can choose any lexical representation
+         that "round-trips" back to the original value; or that you must choose the exact decimal
+         representation of the internal binary value, regardless how many digits it takes;
+         or a tightening of the existing rules to make them unambiguous. The WGs chose the
+         first option - which makes the implementor's life easier because you can use an existing
+         floating-point library, at the cost of recognizing that different products will produce
+         different lexical output. That's probably a wise choice at this stage of the game.</p>
+      <p>As it happens, and quite fortuitously, I was having to face problems with this code
+         in Saxon at the same time. Saxon currently takes the Java output of float-to-string
+         conversion and then does some post-processing to make it fit the XPath rules. This
+         code wasn't working on the Saxon.NET platform because of bugs in the IKVMC cross-compiler.
+         So I decided to bring the code "in house" and&nbsp; implement float-to-string conversion
+         within Saxon itself rather than relying on an external library (starting, of course,
+         from published open-source code, in this case  code published by Jack Shirazi in the
+         O'Reilly book<em> Java Performance Tuning</em>).</p>
+      <p>Jack's code is extremely fast but unfortunately (as he admits) it doesn't always produce
+         the right answer: when you round-trip, the result is sometimes out by a tiny fraction
+         because of decimal division rounding errors. What I'm currently doing is to test if
+         the value round-trips, and if it doesn't, I'm adjusting it up or down. The result
+         still seems to be faster than the original code. The only slightly unsatisfactory
+         feature is that whereas Java always produced a value that was right in the middle
+         of the range of possible values, my code often produces a value that's at one extreme
+         or the other. But it satisfies the new conformance rules, and it seems to perform
+         OK, so it will have to do.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/02/regex-libraries-in-java-and-net.html">Regex libraries in Java and .NET</a></div><div class="next-uri"><a href="/mike/2006/02/thoughts-on-schema-awareness.html">Thoughts on schema-awareness</a></div></footer></body>
+</html>

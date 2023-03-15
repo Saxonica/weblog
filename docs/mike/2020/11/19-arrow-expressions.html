@@ -1,0 +1,85 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+  <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="author" content="Michael Kay">
+    <meta name="pubdate" content="2020-11-19T10:20:00">
+    <meta name="basename" content="arrow-expressions">
+    <meta name="blog-id" content="3">
+    <link rel="stylesheet" type="text/css" href="/css/blog.css">
+    <link rel="stylesheet" type="text/css" href="/css/michael-kay.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrow Expressions</title>
+  <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"></head>
+  <body class="michael-kay michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Arrow Expressions</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2020-11"><span class="date" time="2020-11-19T10:20:00">November&nbsp;19, 2020 at 10:20a.m.</span></a></div></header><main>
+    <h2>Arrow Expressions</h2>
+    <p>When I proposed the arrow operator to the XQuery/XSLT working groups, I thought of it as minor syntactic sugar.
+    It's just a convenience: instead of <code>substring-before(substring-after(X, '['), ']')</code> you can write
+    <code>X =&gt; substring-after('[') =&gt; substring-before(']')</code> which helps you to avoid going cross-eyed.
+    If you're the kind of person who can play the piano with your hands crossed over, you probably don't need it,
+    but for the rest of us, it makes life just a tiny bit easier.</p>
+    <p>So I was a bit surprised at XML Prague 2020 that Juri Leino managed to construct an entire
+            presentation around the arrow operator 
+            (<a href="https://speakerdeck.com/minuso/shooting-arrows-fast-and-accurately">Shooting Arrows Fast and Accurately</a>).
+          Not only that, he also developed a whole library of functions, called XBow, to increase their power.</p>
+    <p>Now, XBow actually reveals a bit of a weakness in the construct: you can construct a pipeline of functions,
+          but you can't include arbitrary expressions in the pipeline unless each of the expressions is made available
+          via a function. Moreover,
+          the value output by one step in the pipeline can only be used as the first argument in the next function: you
+          can do <code>X =&gt; concat('$')</code> to add a "$" at the end of a string, but there's no simple way of adding
+          a "$" at the front, except by defining a new <code>prepend</code> function that does this for you (or hoping
+            that XBow will have anticipated your requirement).</p>
+    <p>Now, of course you can do <code>X ! concat('$', .)</code>. But that doesn't always fit the bill. Firstly,
+          it only works when you're processing single items (or mapping a sequence to multiple items). Secondly,
+          (to use the current jargon) the optics are wrong: it breaks the pipeline visually.</p>
+    <p>So my first suggestion is that we allow inline expressions to appear in a pipeline. Something like this:
+          <code>X =&gt; {~ + 1}</code>, or <code>X =&gt; {concat('$', ~)}</code>. 
+            I'm using '~' here as a variable to refer to the
+          implicit argument, that is, the value passed down the pipeline. I would have used '_', as Scala does, but unfortunately
+          '_' is a legal element name so it already has a meaning. And '~' seems to work quite nicely.</p>
+    <p>The next thing that's been requested is implicit mapping, so you can use something like arrow notation
+          to do <code>X ! substring-after(., '$') ! number(.) =&gt; sum()</code>. (Actually, the main obstacle in getting
+          the arrow operator accepted by the XQuery Working Group was that some people wanted it to have this meaning.)</p>
+    <p>For that I propose we use a "thin arrow": <code>X -&gt; substring-after('$') -&gt; number() =&gt; sum()</code>.
+          The effect of the thin arrow is that instead of passing the value of the LHS to the function on the RHS
+          <i>en bloc</i>, we pass it one item at a time. Of course, if the value on the LHS is a single item, then
+          it doesn't matter which kind of arrow we use, both have the same effect.</p>
+    <p>If you're a fan of map-reduce terminology, then you'll recognize this instantly as a map-reduce
+          pipeline. The <code>-&gt;</code> operations are doing a mapping, and the final <code>=&gt;</code> does a reduce.
+            If you're more into functional thinking, you probably think of it more in terms of function composition.</p>
+    <p>Of course thin arrows can also be used with arbitrary expressions, just like thick arrows:
+          <code>(0 to 3) -&gt; {~ + 1} -&gt; format-integer('a') =&gt; string-join('.')</code> returns 
+            <code>"a.b.c.d"</code>.</p>
+    <p>And now I'd like to pull one more rabbit out of the hat. What if I want a function that applies the
+            above pipeline to any input sequence. I could write <code>function($x){$x -&gt; {~ + 1} -&gt; 
+              format-integer('a') =&gt; string-join('.')}</code> but that seems clunky. I'm looking for a nice way
+          to supply functions as arguments to higher-order functions like sort, where other languages have
+          shown that a concise notation for anonymous functions (like <code>a -&gt; a+1</code> in Javascript) can
+          make code a lot simpler, less verbose, more readable.</p>
+    <p>So my proposal is this: just remove the left-hand expression, so you have something starting with
+          <code>-&gt;</code> or <code>=&gt;</code>, and use this as an anonymous arity-1 function.</p>
+    <p>So you can now do: <code>//employee =&gt; sort((), -&gt;{~/@salary})</code> to sort employees
+            by salary, or <code>//employee =&gt; sort((), -&gt;{~/@salary}-&gt;substring-after('$')-&gt;number())</code> 
+          if you need to do a bit more processing.</p>
+    <p>As another little refinement, in the case of <code>-&gt;</code>, the implicit argument is
+          always a single item, so we can bind it to the context item. So <code>-&gt;{~/@salary}</code>
+          can be simplified to <code>-&gt;{@salary}</code>. Basically, within curly braces on the RHS of <code>-&gt;</code>,
+          <code>.</code> and <code>~</code> mean the same thing.</p>
+    <p>I believe that all these constructs can be added to the grammar without introducing ambiguity
+          or backwards incompatibility, but I haven't proved it conclusively yet.</p>
+    <h3>Postscript</h3>
+    <p>The <code>~</code> construct seems to be the missing ingredient to enabling pipelines in XSLT.
+          Consider:</p>
+    <p><pre>
+&lt;xsl:pipeline&gt;
+  &lt;xsl:apply-templates select="/" mode="m1"/&gt;
+  &lt;xsl:apply-templates select="~" mode="m2"/&gt;
+  &lt;xsl:for-each select="~"&gt;
+    &lt;e&gt;&lt;xsl:copy-of select="."/&gt;&lt;e&gt;
+  &lt;/xsl:for-each&gt;
+&lt;/xsl:pipeline&gt;             
+            </pre></p>
+    <p>Here "~" is acting as an implicit variable to pass the result of one instruction to be the input for
+          the next: basically eliminating the clunky <code>xsl:variable</code> declarations needed to do this today.
+          The instructions that form the children of the <code>xsl:pipeline</code> element are effectively
+          connected to each other with an implicit <code>=&gt;</code> operator.</p>
+  </main><footer><div class="prev-uri"><a href="/norm/2020/11/15-helloWorldNode.html">helloWorld.Saxon-JS for Node.js</a></div><div class="next-uri"><a href="/norm/2021/01/08-saxon-js-203.html">Saxon-JS 2.0.3</a></div></footer></body>
+</html>

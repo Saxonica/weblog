@@ -1,0 +1,204 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>FtanML - A new markup language</title>
+      <meta name="id" content="193">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2012-08-14T12:29:01">
+      <meta name="basename" content="ftanml_-_a_new_markup_language">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>FtanML - A new markup language</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2012-08"><span class="date" time="2012-08-14T12:29:01">August&nbsp;14, 2012 at 12:29p.m.</span></a></div></header><main>
+      
+      <p>FtanML
+         is a notation for data and documents designed to combine the
+         simplicity of JSON with the expressive power of XML. Key aims are
+         ease of reading and writing by human beings, and ease of processing
+         by software in conventional programming languages.</p>
+      <p>It
+         is named after Ftan, the village in the Swiss Alps where it was
+         created, during a two-week summer school course in August 2012. The
+         tutors on the course were Michael Kay and Stephanie Haupt, and the
+         students were Max Altgelt, Julien Bergner, Lukas Graf, Dominik Helm,
+         Axel Kroschk, Uwe von Lpke, My-Tien Nguyen, Sebastian Memer,
+         Suhanyaa Nitkunanantharajah, Jan Landelin Pawellek, and Martin
+         Schmitt.</p>
+      <p><b>The
+            FtanML Grammar</b></p>
+      <p>value
+         ::= array | element |  string | number | "true" | "false" |
+         "null"</p>
+      <p>string
+         ::= (like a JSON string)</p>
+      <p>number
+         ::= (like a JSON number)</p>
+      <p>
+         array
+         ::= "[" (value ("," value)* )? "]"</p>
+      <p>
+         element
+         ::= "&lt;" element-name? attribute* ("|" content)?  "&gt;"</p>
+      <p>
+         element-name
+         ::=  string | name</p>
+      <p>attribute
+         ::= (string | name) "=" value</p>
+      <p>
+         content
+         ::= (content-char | escaped-char | element ) *</p>
+      <p>
+         content-char
+         ::= any character except \, &lt;, &gt;, and control characters</p>
+      <p>
+         escaped-char
+         ::= as in JSON strings with the addition of "\&lt;", "\&gt;"
+         (to escape "&lt;" and "&gt;")</p>
+      <p>
+         name
+         ::= [\p{L}\p{N}:_$]+ 
+         </p>
+      <p>
+         <b>The
+            FtanML Data Model</b></p>
+      <p>
+         A Value
+         is either an Array, an Element, a string, a number, a boolean or
+         null.</p>
+      <p>
+         An
+         Array is a sequence of Values.</p>
+      <p>
+         An
+         Element is a set of attributes. An attribute is a name-value pair,
+         where the name is any string and the value is any Value. (An element
+         is thus equivalent to a JSON Object.)</p>
+      <p>
+         Two
+         particular attributes are treated specially in the surface syntax,
+         but not in the data model. The attribute named "name" represents
+         what in XML is called the "element type name", and the syntax
+         &lt;name="hr"&gt; may therefore be abbreviated to &lt;hr&gt;. The
+         attribute named "content" represents what in XML is modelled as
+         the children of the element, and its value is an array consisting of
+         a sequence of elements and strings (with adjacent strings and
+         zero-length strings not permitted). The content of an element is
+         normally written in the form &lt;p|Here is &lt;b|bold&gt; text&gt;
+         but in data model terms this is equivalent to &lt;p content=["Here
+         is ", &lt;b content=["bold"]&gt;, " text"]&gt;.</p>
+      <p>
+         <b>Examples</b></p>
+      <p>
+         A
+         JSON-like array:</p>
+      <p>
+         [1, 2,
+         "abc", [1, 2]]</p>
+      <p>
+         A
+         JSON-like map:</p>
+      <p>
+         &lt;x=1
+         y=2 label="box" "corner coordinates"=[[0,1], [0,3], [1,3],
+         [1,1]]&gt;</p>
+      <p>
+         Note:
+         the attribute names do not require quotes unless they contain special
+         characters not allowed in a name. The presence or absence of quotes
+         is not exposed in the data model. The quotes around attribute values
+         are required if the value is a string, but not otherwise.</p>
+      <p>
+         An
+         XML-like element:</p>
+      <p>
+         &lt;para|Here
+         is some &lt;b|bold&gt; text&gt;</p>
+      <p>
+         The
+         equivalent of the XML "start tag" is the material before the
+         vertical bar; to the right of the vertical bar is the (optional)
+         content; the end tag is reduced to a right angle bracket.</p>
+      <p>
+         An
+         XML-like element with attributes, and an empty element:</p>
+      <p>
+         &lt;para
+         id="p123"|Line 1&lt;br&gt;Line 2&gt;</p>
+      <p>
+         A
+         element named "list" containing three unnamed elements:</p>
+      <p>
+         &lt;list|&lt;|red&gt;&lt;|green&gt;&lt;|blue&gt;&gt;</p>
+      <p>
+         An
+         element having a class attribute but no name:</p>
+      <p>
+         &lt;p|This
+         is &lt;class="u"|underlined&gt;&gt;</p>
+      <p>
+         An
+         element with no name, attributes, or content:</p>
+      <p>
+         &lt;&gt;</p>
+      <p><b>Postscript</b></p>
+      <p>By the end of the course we implemented a parser for FtanML (using JavaCC), which
+         generated Java objects corresponding to the object model. We also implemented serialization
+         of the object model to FtanML, JSON, and XML, and wrote some parser tests and test
+         applications for the object model.</p>
+      <p>Analyzing what we did, I think there are two things FtanML does particularly well:</p>
+      <p>(a) it adds mixed content to JSON at the lexical level, without adding any complexity
+         to the data model. So programming against JSON is just as easy as it was before, but
+         "document-like" information is no longer excluded</p>
+      <p>(b) It provides a document-oriented markup language that is both richer and simpler
+         than XML. Richer, because it generalizes what attributes can contain (not just strings,
+         but numbers, booleans, arrays, and elements), and simpler because (i) there is less
+         syntactic baggage (&lt;b|bold text&gt; instead of &lt;b&gt;bold text&lt;/b&gt;; simpler escape mechanism),
+         and (ii) it cuts out a lot of the rarely used but complicating features such as comments,
+         processing instructions, CDATA sections, entity references, XML declarations, etc.)</p>
+      <p>Of course, the fact that we have a better mousetrap will not itself cause the world
+         to beat at our door; but I hope the ideas will prove influential.</p>
+      <p>There are some things we didn't tackle or decide; here is a list of what one might
+         want to do next.</p>
+      <p><i>Parent pointers in the data model</i></p>
+      <p>Should an element (=map, = JSON object) have a pointer to its parent? In the XML world
+         we expect this, in the JSON world we don't. There are advantages and disadvantages
+         both ways. I think this remains an open question.</p>
+      <p><i>Whitespace</i></p>
+      <p>In element content, is whitespace significant? I think it's important that it should
+         be possible to include both significant and insignificant whitespace, and that the
+         two should be clearly distinguished. One suggestion is that any sequence of whitespace
+         characters that follows a backslash should be considered insignificant. Another is
+         the reverse: whitespace is normalized/collapsed except for any whitespace character
+         that is escaped with "\".</p>
+      <p><i>Namespaces</i></p>
+      <p>I think there are three possible approaches to namespaces. (i) do nothing, as in JSON.
+         (ii) do namespaces the XML way. (iii) provide a minimal namespaces facility.</p>
+      <p>Since FtanML generally adopts the approach of doing what is right without concern
+         for compatibility, my preference is (iii). I think a simple namespace scheme might
+         work as follows:</p>
+      <p>The "absolute name" of an element is in the form ":com.saxonica.project.para", that
+         is a name rather like a Java class name using inverse DNS names by convention to achieve
+         uniqueness. The element name can always be written literally in this form. Alternatively,
+         it can be written as a short name "para" in which case it is implicitly in the same
+         namespace as its parent element. The name that appears in the data model is always
+         the absolute name; the short name is merely an authoring convenience. Attribute names
+         are in no namespace unless they are written in full as absolute names.</p>
+      <p><i>Path/query language</i></p>
+      <p>We clearly need an XPath-like language to address into FtanML documents, and the data
+         model is sufficiently different from XDM that XPath itself won't really do the job.
+         For example, the arrays in the data model are subtly different from XDM sequences
+         (a singleton item is not the same as an array containing that item) and this has considerable
+         implications.</p>
+      <p><i>Schema language</i></p>
+      <p>Given time and effort, I would propose a schema language for FtanML that is rule-based
+         and that incorporates both predicate-based validation, type assignment, and grammar
+         rules. That is, the ability to say "for an element that matches this pattern, the
+         following rules must be satisfied", where the rules include the ability to specify
+         a named type, to add restrictions such as min and max values and regex patterns, or
+         if the type is "element", to specify the required content of the element as a grammar.</p>
+      <p><b>Finally</b></p>
+      <p>I don't know if FtanML will go any further. But developing it was a great experience
+         and a good way of spending a couple of weeks with a group of very talented students.
+         I think it was a good learning experience for them; and perhaps, just perhaps, it
+         will sow some ideas in the community that will influence the future of markup languages.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2012/06/saxon-ce-is-10-today-1.html">Saxon-CE is 1.0 today</a></div><div class="next-uri"><a href="/mike/2012/09/comparing-dom-and-other-object-models.html">Comparing DOM and other object models</a></div></footer></body>
+</html>

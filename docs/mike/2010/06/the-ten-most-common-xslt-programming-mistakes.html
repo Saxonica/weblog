@@ -1,0 +1,83 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>The ten most common XSLT programming mistakes</title>
+      <meta name="id" content="179">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2010-06-11T14:18:47">
+      <meta name="basename" content="the_ten_most_common_xslt_programming_mistakes">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>The ten most common XSLT programming mistakes</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2010-06"><span class="date" time="2010-06-11T14:18:47">June&nbsp;11, 2010 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>
+         
+         In response to a user recently, I told him he had fallen into the most common elephant
+         trap for XSLT users. Rather than being annoyed, which I half expected, he thanked
+         me and asked me if I could tell him what the next most common elephant traps were.
+         Although some of us have been helping users avoid these traps for many years, I don't
+         recall seeing a list of them, so I thought I would spend half an hour compiling my
+         own list.&nbsp;</p>
+      <p>1. Matching elements in the default namespace. If the source document contains a default
+         namespace declaration xmlns="something", then every time you refer to an element name
+         in an XPath expression or match pattern, you have to make it clear you are talking
+         about names in that namespace. In XSLT 1.0 you have to bind a prefix to this namespace
+         (for example xmlns:p="something" on the xsl:stylesheet element) and then use this
+         prefix throughout, for example match="p:chapter/p:section". In XSLT 2.0 an alternative
+         is to declare default-xpath-namespace="something" on the xsl:stylesheet element.&nbsp;</p>
+      <p>2. Using relative paths. xsl:apply-templates and xsl:for-each set the context node;
+         within the "loop", paths should be written to start from this context node. For example,
+         &lt;xsl:for-each select="chapter"&gt;&lt;xsl:value-of select="title"/&gt;&lt;/xsl:for-each&gt;. Common
+         mistakes are to use an absolute path within the loop (for example select="//title"),
+         or to repeat the name of the context node in the relative path (select="chapter/title").&nbsp;</p>
+      <p>3. Variables hold values, not fragments of expression syntax. Some people imagine
+         that a variable reference $x is like a macro, expanded into the syntax of an XPath
+         expression by textual substitution - rather like variables in shell script languages.
+         It isn't: you can only use a variable where you could use a value. For example, if
+         $N holds the string 'para', then the path expression chapter/$N does not mean the
+         same as chapter/para. Instead, you need chapter/*[name()=$N]. If a variable holds
+         something more complex than a simple name (for example, a full path expression) then
+         you need an extension like saxon:evaluate() to evaluate it.&nbsp;</p>
+      <p>4. Template rules and xsl:apply-templates are not an advanced feature to be used only
+         by advanced users. They are the most basic fundamental construct in the XSLT language.
+         Don't keep putting off the day when you start to use them. If you aren't using them,
+         you are making your life unnecessarily difficult.&nbsp;</p>
+      <p>5. XSLT takes a tree as input, and produces a tree as output. Failure to understand
+         this accounts for many of the frustrations beginners have with XSLT. XSLT can't process
+         things that aren't represented in the tree produced by the XML parser (CDATA sections,
+         entity references, the XML declaration) and it can't generate these things in the
+         output either. If you think you need to do this, ask why: there's probably something
+         wrong with your requirements or your design.&nbsp;</p>
+      <p>6. Namespaces are difficult. There are no easy answers to getting them right: this
+         probably needs another article of its own. The key is to understand the data model
+         for namespaces. Namespaces appear in two guises: (a) every element and attribute has
+         a name comprising a prefix, local name, and URI; and (b) elements own namespace nodes
+         representing all the prefix/uri bindings in scope for that element. When you've understood
+         this, you can understand the specifications for different instructions and their effect
+         on namespaces in the result tree. Most of the time, all you need to do is to ensure
+         that the elements you create are in the right namespace, and everything else will
+         take care of itself.&nbsp;</p>
+      <p>7. Don't use disable-output-escaping. Some people use it as magic fairy dust; they
+         don't know what it does, but they hope it might make things work better. This attribute
+         is for experts only, and experts will only use it as an absolute last resort. 95%
+         of the time, if you see disable-output-escaping in a stylesheet, it tells you that
+         the author was a novice who didn't know what s/he was doing.&nbsp;</p>
+      <p>8. The &lt;xsl:copy-of&gt; instruction creates an exact copy of a source tree, namespaces
+         and all. (Well, there's one exception, in XSLT 2.0 you can say copy-namespaces="no").
+         If you want to copy a tree with changes, then you can't use xsl:copy-of. Instead,
+         use the identity-template coding pattern: a template rule that uses &lt;xsl:copy&gt; to
+         make a shallow copy of an element and applies-templates to its children, supplemented
+         by template rules that override this behaviour for particular elements.&nbsp;</p>
+      <p>9. Don't use &lt;xsl:variable name="x"&gt;&lt;xsl:value-of select="y"/&gt;&lt;/xsl:variable&gt;. Instead
+         use &lt;xsl:variable name="x" select="y"/&gt;. The latter is shorter to write, and much
+         more efficient to execute, and in many cases it's correct where the former is incorrect.&nbsp;</p>
+      <p>10. When you need to search for data, use keys. As with template rules, don't put
+         off learning how to use keys or dismiss them as an advanced feature. They are an essential
+         tool of the trade. Searching for data without using keys is like using a screwdriver
+         to hammer nails.
+         
+         </p>
+      
+      
+   </main><footer><div class="prev-uri"><a href="/mike/2010/05/the-first-saxon-deadlock.html">The first Saxon deadlock</a></div><div class="next-uri"><a href="/mike/2010/06/parameterized-validation.html">Parameterized validation</a></div></footer></body>
+</html>

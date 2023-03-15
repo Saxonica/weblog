@@ -1,0 +1,47 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Implementing XQuery Update</title>
+      <meta name="id" content="144">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2007-12-19T14:18:45">
+      <meta name="basename" content="implementing_xquery_update">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Implementing XQuery Update</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2007-12"><span class="date" time="2007-12-19T14:18:45">December&nbsp;19, 2007 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I've been asked a number of times whether I planned to implement XQuery Updates, and
+         my answer has always been that I would do it when the time was right (i.e. when the
+         spec seemed to be stable enough and when I had a suitable gap in my hectic schedule).
+         I was hoping someone might want it badly enough to sponsor the development, but one
+         can't wait for ever!</p>
+      <p>Anyway I've started work on it and have made good progress in a couple of days. Parsing
+         the syntax has required one or two tweaks to the tokenizer, which is a bit worrying
+         - this is one of the few areas of the Saxon code that I'm frightened to touch in case
+         something breaks; but at least there are now zillions of test cases. By and large
+         the semantics of the spec pose no particular problems - in fact the spec comes very
+         close to describing an implementation strategy that one can lift directly into the
+         code.</p>
+      <p>One of the issues has been deciding what implementation of the tree model to work
+         on. I decided to start with Saxon's "linked tree" (formerly known as the "standard
+         tree") which has had very little attention paid to it for the last five years or so
+         since the tinytree came along. (The TinyTree is intrinsically non-updateable, because
+         it relies heavily on static allocation of space in fixed arrays.). There are a few
+         features of the linked tree that make update tricky, notably the use of sequence numbers
+         allocated at tree-building time to make sorting into document order efficient; but
+         there are ways around that. Once that's working I can think about supporting DOM,
+         XOM, etc if appropriate.</p>
+      <p>Simple things in XQUpdate seem to work really nicely: being able to do things like
+         bulk renaming or deletion of nodes in a one-liner is a lot easier than the equivalent
+         in XSLT using the modified identity template pattern (and of course infinitely easier
+         than doing a hand-written tree traversal in XQuery 1.0). Doing slightly more complicated
+         things, however, seems to get a bit messy, because of the "snapshot semantics" - basically
+         the query never has read access to its own updates. But I think with experience the
+         coding patterns will emerge to solve most of these problems.</p>
+      <p>The trickiest design area is probably the interface between the query language and
+         the external environment - what should the command line interface look like, and the
+         API? In particular, when should the system be prepared to overwrite an input file
+         with an output file reflecting the results of the update, and how much user control
+         do you provide over such decisions? I'm still working on that.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2007/12/progress-on-xquery-update.html">Progress on XQuery Update</a></div><div class="next-uri"><a href="/mike/2008/01/further-progress-on-xquery-update.html">Further progress on XQuery Update</a></div></footer></body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Pipedreaming: Could XPath have been better?</title>
+      <meta name="id" content="175">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2010-01-15T14:18:47">
+      <meta name="basename" content="pipedreaming_could_xpath_have_been_better">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Pipedreaming: Could XPath have been better?</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2010-01"><span class="date" time="2010-01-15T14:18:47">January&nbsp;15, 2010 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I normally resist the kind of wishful thinking that tries to improve languages like
+         XML or XPath without worrying about backwards compatibility. In practice you can never
+         ignore the legacy: compatibility means deliberately repeating other people's mistakes,
+         as David Wheeler used to say when I was an undergraduate. But it's New Year, so let's
+         be absurdly optimistic, and assume that anything can be done. (And what set me on
+         to this was actually something quite practical: Anthony Coates is looking at the XML
+         support in Scala. Scala has a kind of XPath-like expression that adapts the XPath
+         syntax into the Scala framework. So in such an environment, there is indeed an opportunity
+         to rethink things.</p>
+      <p>Here are some of the changes I think I would make:</p>
+      <ul>
+         <li>Avoid the overloading of [] to act as both a filter and a subscript operator. Perhaps
+            use [] for subscripting and ? for filtering, or perhaps use ! for subscripting and
+            [] for filtering. The current overloading, especially because it is decided dynamically
+            rather than statically, causes some very odd effects in edge cases. For the present,
+            I'll avoid [] entirely, and use ? for the filter operator, and ! for subscript. We'll
+            postpone decisions on operator precedence until later.
+            </li>
+         <li>Remove the special rules for subscripting when following a reverse axis. If X delivers
+            items A, B, C, then X!1 delivers A, regardless of the nature of the expression X.
+            </li>
+         <li>The subscript operator would then be a simple binary operator: both operands would
+            be evaluated in the same context. No special magic about N being a shorthand for position()=N.
+            This removes the ability to use last() as a pseudo-subscript. Most languages seem
+            to get by without such a feature, but I have to admit it is useful; I'd suggest either
+            (a) a convention that negative subscripts number from the end (so X!-1 selects the
+            last item), or (b) a separate operator, say , to number backwards (it's high time
+            we broke free from the shackles of ASCII...). Then X1 selects the last item in the
+            sequence.
+            </li>
+         <li>Replace / with \ as the path operator, to avoid confusion with numeric division;
+            and make it a pure mapping operator, with no implicit sorting into document order
+            or deduplication. Remove all remaining restrictions on what can appear on the lh and
+            rh sides. Use an explicit unary | operator for this purpose when required (so |EXP
+            has the same meaning as ()|EXP, that is, take the nodes in EXP, deduplicate, and sort
+            into document order).
+            </li>
+         <li>Lose the leading "/" in path expressions, as well as the lone "/" to refer to the
+            root node. Instead use root() at the start of the path to get the root node of the
+            tree containing the context node.
+            </li>
+         <li>Drop the abbreviation allowing E as a short-hand for child::E. Controversial, this
+            one - the short-hand is very convenient. But it causes a lot of problems in making
+            the grammar unambiguous and extensible. Replace it with a new abbreviation, on the
+            same lines as "@" for the attribute axis: let's say ^. So a path expression might
+            look like root()\^A\^B\@C. Not as pretty as what we are used to, but much more systematic,
+            orthogonal, and extensible.
+            </li>
+         <li>This then suggests ^^ as an abbreviation for the descendant axis, replacing the
+            current highly-illogical // pseudo-operator with its wierd syntactic expansion.
+            </li>
+         <li>Drop the implicit existential semantics for the "=" family of operators, giving
+            them instead the same meaning that "eq" and friends have in XPath 2.0. Again, this
+            removes a convenience in the interests of being more rigorous and orthogonal. It would
+            be nice to offer something that's as general as the expression "some $x in X satisfies
+            $x = 3" but less verbose; I would suggest prefixing any boolean operator or function
+            name with "~" to indicate that it is to operate over sequences and behave existentially,
+            so we have X ~= 3 to mean "some X equals 3", and ~contains(X, ('a', 'b')) to mean
+            "some X contains 'a' or 'b'". 
+            </li>
+         <li>Unify axes and functions. Conceptually, child::X applies the function child() to
+            the context node and then filters the result with the predicate "is an X". There is
+            no reason why "child" (the axis) should not be any function, rather than forcing it
+            to be one of 13 magic functions built in to the system. There is also no reason why
+            X (the nodetest) should not be generalised. Assuming a syntax .T to test whether the
+            context node satisfies the nodetest T,&nbsp; X::T becomes a shorthand for X(.)?(.T), and
+            this semantic definition paves the way to allowing X to be any single-argument function,
+            and for generalizing nodetests to be any pattern. The overall effect is to make the
+            semantics of XPath as a functional language much more explicit.
+            </li>
+         <li>Unify node tests and types. Both are essentially ways of classifying nodes (or other
+            items). XPath 2.0 already goes some way towards making them interchangeable through
+            the concept of "kind tests", but it could go further.</li>
+      </ul>
+      <p>What is all this trying to achieve? The bottom line, I guess, is</p>
+      <p>(a) making the semantics of the language cleaner and more explicitly functional; </p>
+      <p>(b) removing quirkiness and non-orthogonality even where these quirks provide ways
+         ways of expressing commonly used constructs more concisely</p>
+      <p>Of course, it's all an academic exercise. But perhaps it points the way to a better
+         way of describing the current language by mapping the syntax onto a more regular core.<br>
+         
+         </p>
+      
+      
+   </main><footer><div class="prev-uri"><a href="/mike/2010/01/unicode-regular-expressions-and-java.html">Unicode, regular expressions, and Java</a></div><div class="next-uri"><a href="/mike/2010/05/the-first-saxon-deadlock.html">The first Saxon deadlock</a></div></footer></body>
+</html>

@@ -1,0 +1,12 @@
+.michael-kay header .banner {
+    border-top: 10px solid #470101;
+    padding-top: 2em;
+    padding-bottom: 2.5em;
+    background: #ad0404 url(/img/mkheader.gif) repeat-x bottom right;
+    color: white;
+}
+
+.michael-kay header h2 {
+    max-width: var(--max-width);
+}
+

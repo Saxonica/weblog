@@ -1,0 +1,104 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Introducing Saxon-JS</title>
+      <meta name="id" content="214">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2016-02-13T14:15:04">
+      <meta name="basename" content="introducing_saxon-js">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Introducing Saxon-JS</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2016-02"><span class="date" time="2016-02-13T14:15:04">February&nbsp;13, 2016 at 02:15p.m.</span></a></div></header><main>
+      
+      <p>At XML Prague yesterday we got a
+         spontaneous round of applause when we showed the animated Knight's
+         tour application, reimplemented to use XSLT 3.0 maps and arrays,
+         running in the browser using a new product called Saxon-JS.</p>
+      <p>So, people will be asking, what exactly
+         is Saxon-JS?</p>
+      <p>Saxon-EE 9.7 introduces a new option
+         -export which allows you to export a compiled stylesheet, in XML
+         format, to a file: rather like producing a .so file from a C
+         compiler, or a JAR file from a Java compiler. The compiled stylesheet
+         isn't executable code, it's a decorated abstract syntax tree
+         containing, in effect, the optimized stylesheet execution plan. There
+         are two immediate benefits: loading a compiled stylesheet is much
+         faster than loading the original source code, so if you are executing
+         the same stylesheet repeatedly the cost of compilation is amortized;
+         and in addition, it enables you to distribute XSLT code to your users
+         with a degree of intellectual property protection analogous to that
+         obtained from compiled code in other languages. (As with Java, it's
+         not strong encryption - it wouldn't be too hard to write a fairly
+         decent decompiler - but it's strong enough that most people won't
+         attempt it.)</p>
+      <p>Saxon-JS is an interpreted, written in
+         pure Javascript, that takes these compiled stylesheet files and
+         executes them in a Javascript environment - typically in the
+         browser, or on Node.js. Most of our development and testing is
+         actually being done using Nashorn, a Javascript engine bundled with
+         Java 8, but that's not a serious target environment for Saxon-JS
+         because if you've got Nashorn then you've got Java, and if you've got
+         Java then you don't need Saxon-JS.</p>
+      <p>Saxon-JS can also be seen as a rewrite
+         of Saxon-CE. Saxon-CE was our first attempt at doing XSLT 2.0 in the
+         browser. It was developed by producing a cut-down version of the Java
+         product, and then cross-compiling this to Javascript using Google's
+         GWT cross-compiler. The main drawbacks of Saxon-CE, at a technical
+         level, were the size of the download (800Kb or so), and the
+         dependency on GWT which made testing and debugging extremely
+         difficult - for example, there was no way of testing our code
+         outside a browser environment, which made running of automated test
+         scripts very time-consuming and labour-intensive. There were also
+         commercial factors: Saxon-CE was based on a fork of the Saxon 9.3
+         Java code base and re-basing to a later Saxon version would have
+         involved a great deal of work; and there was no revenue stream to
+         fund this work, since we found a strong expectation in the market
+         that this kind of product should be free. As a result we effectively
+         allowed the product to become dormant.</p>
+      <p>We'll have to see whether Saxon-JS can
+         overcome these difficulties, but we think it has a better chance.
+         Because it depends on Saxon-EE for the front-end (that is, there's a
+         cost to developers but the run-time will be free) we're hoping that
+         there'll be a reveue stream to finance support and ongoing
+         development; and although the JS code is not just a fork but a
+         complete rewrite of the run-time code the fact that it shares the
+         same compiler front end means that it should be easier to keep in
+         sync.</p>
+      <p>Development has been incredibly rapid -
+         we only started coding at the beginning of January, and we already
+         have about 80% of the XSLT 2.0 tests running - partly because
+         Javascript is a powerful language, but mainly because there's little
+         new design involved. We know how an XSLT engine works, we only have
+         to decide which refinements to leave out. We've also done client-side
+         XSLT before so we can take the language extensions of Saxon-CE (how
+         to invoke templates in response to mouse events, for example) the
+         design of its Javascript APIs, and also some of its internal design
+         (like the way event bubbling works) and reimplement these for
+         Saxon-JS.</p>
+      <p>One of the areas where we have to make
+         design trade-offs is deciding how much standards conformance,
+         performance, and error diagnostics to sacrifice in the interests of
+         keeping the code small. There are some areas where achieving 100%
+         conformance with the W3C specs will be extremely difficult, at least
+         until JS6 is available everywhere: an example is support for Unicode
+         in regular expressions. For performance, memory usage (and therefore
+         expression pipelining) is important, but getting the last ounce of
+         processor efficiency less so. An important factor (which we never got
+         quite right for Saxon-CE) is asynchronous access to the server for
+         the doc() and document() functions - I have ideas on how to do
+         this, but it ain't easy.</p>
+      <p>It will be a few weeks before the code
+         is robust enough for an alpha release, but we hope to get this out as
+         soon as possible. There will probably then be a fairly extended
+         period of testing and polishing - experience suggests that when the
+         code is 90% working, you're less than half way there.</p>
+      <p>I haven't yet decided on the licensing
+         model. Javascript by its nature has no technical protection, but that
+         doesn't mean we have to give it an open source license (which would
+         allow anyone to make changes, or to take parts of the code for reuse
+         in other projects).</p>
+      <p>All feedback is welcome: especially on
+         opportunities for exploiting the technology in ways that we might not
+         have thought of.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2015/09/parent-pointers-in-the-saxon-expression-tree.html">Parent pointers in the Saxon expression tree</a></div><div class="next-uri"><a href="/mike/2016/06/improving-compile-time-performance.html">Improving Compile-Time Performance</a></div></footer></body>
+</html>

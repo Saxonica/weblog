@@ -1,0 +1,81 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>match="para except appendix//para"</title>
+        
+        <meta name="author" content="Michael Kay">
+        <meta name="pubdate" content="2022-05-26T15:15:00">
+
+    <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>The pattern <code>match="para except appendix//para"</code></h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2022-05"><span class="date" time="2022-05-26T15:15:00">May&nbsp;26, 2022 at 03:15p.m.</span></a></div></header><main>
+        
+        
+        <p>If you saw this pattern in an XSLT stylesheet, I can guess your reaction: <i>I haven't
+        seen a pattern like that before. Cool, a neat way of matching paragraphs that aren't in
+        an appendix. Must remember that and use it myself.</i></p>
+        
+        <p>Sadly, it doesn't do what you think. Consider this input document:</p>
+        
+        <pre><code>
+&lt;appendix id="A"&gt;
+    &lt;section id="A.1"&gt;
+        &lt;para&gt;Ipsum lorem.&lt;/para&gt;
+    &lt;/section&gt;
+&lt;/appendix&gt;                   
+        </code></pre>
+        
+        <p>You'd probably be as surprised as I was to see that the <i>Ipsum lorem</i> paragraph in this
+            example matches the pattern <code>para except appendix//para</code>.</p>
+        
+        <p>To see why this is true, go to the spec, section 5.5.3: </p>
+        
+        <p>An item <i>N</i> matches a pattern <i>P</i> if the following applies, where <i>EE</i> is the equivalent expression to <i>P</i>: 
+            <i>N</i> is a node, and the result of evaluating the expression <code>root(.)//(EE)</code> with a singleton 
+            focus based on <i>N</i> is a sequence that includes the node <i>N</i>.</p>
+        
+        <p>So, this is saying that a node matches the pattern if it is selected by the expression <code>root(.)//(para except appendix/para)</code>.
+        Assuming that we're in a tree rooted at a document node, that means it must be selected by the expression 
+        <code>/descendant-or-self::node()/(para except appendix//para)</code>.</p>
+        
+        <p>Now, in our example document, one of the nodes selected by <code>/descendant-or-self::node()</code> is the <code>section</code> element;
+            and when we evaluate <code>(para except appendix//para)</code> starting at the <code>section</code> element, the first operand
+            (<code>para</code>) selects our paragraph, and the second operand (<code>appendix//para</code>) doesn't select it, so
+        the expression as a whole selects it, and therefore it matches the pattern.</p>
+        
+        <p>That's totally counter-intuitive, and it's certainly not what the Working Group intended. It's a nasty bug. So the question is,
+        what can we do about it, given that this is a published spec and there are implementations out there, and user applications that
+        depend on it?</p>
+        
+        <h2>Is there anything we can do about it?</h2>
+        
+        <p>Perhaps we should start by asking: what would we like the spec to say, if we had the opportunity to change it?</p>
+        
+        <p>Given that we already have a special rule for patterns with a top-level <code>union</code> operator (see §6.5 rule 2),
+        we could add a special rule for patterns with a top-level <code>intersect</code> or <code>except</code>
+            operator: a pattern of the form <code>A except B</code> matches an item if pattern <i>A</i> matches the item and 
+            pattern <i>B</i> does not. (And analagously for <code>intersect</code>.)</p>
+        
+        <p>If that's what we think we need to do, that leaves two challenges:</p>
+        
+        <ul>
+            <li>Changing the spec (given there is no longer a Working Group to maintain it).</li>
+            <li>Changing the Saxon implementation.</li>
+        </ul>
+        
+        <p>Starting with the second point, there are several possibilities:</p>
+        
+        <ul>
+            <li>Just do it, and hope we don't break any existing applications.</li>
+            <li>Support both the old and new semantics concurrently, with some mechanism for selecting which to use. (Which should
+            be the default? We want new users not to fall into the elephant trap, but we also don't want to break working applications.)</li>
+            <li>Deprecate the syntax, and provide new syntax for the new semantics (e.g. operators spelled <code>and-also</code> or
+            <code>but-not</code>). Note however, that it's likely most applications currently using <code>except</code> in a pattern
+            are using unproblematic patterns like <code>@* except @code</code>.</li>
+        </ul>
+        
+        <p>The third option seems the most satisfactory. And that suggest a route forward for the spec: in XSLT 4.0, if and when we
+        manage to get it defined, deprecate the <code>except</code> and <code>intersect</code> operators at the top level of a pattern,
+        and replace them with new operators that have the expected intuitive semantics.</p>
+        
+    
+    </main><footer><div class="prev-uri"><a href="/mike/2022/05/xml-vs-json.html">XML versus JSON: A Comparison using the XMark Benchmark</a></div><div class="next-uri"><a href="/norm/2022/06/15-saxonjs.html">Triaging the bug lists…</a></div></footer></body>
+</html>

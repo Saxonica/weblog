@@ -1,0 +1,59 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>There's an R in the month</title>
+      <meta name="id" content="148">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-09-01T14:18:45">
+      <meta name="basename" content="theres_an_r_in_the_month">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>There's an R in the month</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-09"><span class="date" time="2008-09-01T14:18:45">September&nbsp;01, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>September is upon us; summer is over; so it's time to start thinking about a new season.</p>
+      <p>This blog has become rather dormant. I think the reason is that I've been reluctant
+         to say anything unless I've got something profound to say, and the less frequently
+         I post, the more profound I feel my utterances have to be to justify the uttering.
+         Well, I'm going to try and reform, and post more regularly, and if I haven't got much
+         to say then I'll just witter on about what I've been up to recently.</p>
+      <p>Saxon 9.1 was a big push. It's becoming more and more effort to get a release out,
+         as the number of tests that I run increases, especially given the increasing number
+         of environments in which the tests are run. I'm always conscious of how much I don't
+         test (at least formally) - for example different JDKs, different .NET versions, different
+         XML parsers. But despite the gaps, I'm always increasing the number of tests I run,
+         and it seems to pay off - 9.1 has been pretty reliable on the whole, the first new
+         development release that hasn't required a fairly immediate patch release to fix some
+         embarrassing blunder. In fact, the worst bugs in 9.1 reported so far were also present
+         in 9.0. However, the number of bugs has now built up to a level where doing a patch
+         release is a priority in the next week or two.</p>
+      <p>On the development side, I haven't been doing too much since 9.1 came out. Most of
+         the work has been to continue the implementation of new features in XML Schema 1.1,
+         the biggest being "open content" which allows in effect for implicit wildcards to
+         provide extensibility for people who want to allow elements in a different namespace
+         to appear as children of any element, either at the end, or interleaved. As often
+         happens with schema, most of the development work turns out to be concerned with scenarios
+         that will occur very rarely in practice, in this case handling derivation of types
+         with open content from types without open content, or vice versa.</p>
+      <p>I took a fortnight's holiday during August (sorry: for Americans that's two weeks'
+         vacation), which is the longest break I've taken since setting up Saxonica, and reflects
+         confidence that the boat can steer itself for a while. I had my laptop with me of
+         course and kept an eye on the email but fortunately there was no support issue that
+         couldn't either be dealt with with a quick reply, or wait until my return. We were
+         in Dubrovnik on the Dalmatian coast of Croatia, with a couple of days in Mostar in
+         Bosnia/Herzegovina, and whether you're interested in lazing around by the sea or in
+         exploring historic towns or just enjoying the scenery, I'd thoroughly recommend it.
+         The scars of the recent war are pretty terrible though, and make one angry about the
+         equally stupid wars that we are still engaged in.</p>
+      <p>Apart from getting a maintenance release out, my other immediate priority is to make
+         some progress with the XSLT 2++ specification. The "theme" for the next release is
+         streaming, and the Working Group (with a largely new membership) has been spending
+         18 months or so brainstorming about what's needed in the language to allow streaming
+         transformations. Some of these ideas have already found their way, in experimental
+         form, into Saxon 9.1 and are being well received by users. But the WG needs to switch
+         now from brainstorming mode to design mode. We've got a meeting in Prague later this
+         month that will hopefully achieve that transition, but to make this successful I need
+         to prepare some concrete language proposals that we can use as a baseline. Fortunately
+         (?) my consultancy diary is fairly light at the moment so I should be able to find
+         some time for that.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/07/document-projection.html">Document Projection</a></div><div class="next-uri"><a href="/mike/2008/09/tweaking-the-tinytree.html">Tweaking the TinyTree</a></div></footer></body>
+</html>

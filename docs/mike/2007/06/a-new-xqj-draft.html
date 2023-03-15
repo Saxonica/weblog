@@ -1,0 +1,59 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>A new XQJ draft</title>
+      <meta name="id" content="140">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2007-06-13T14:18:45">
+      <meta name="basename" content="a_new_xqj_draft">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>A new XQJ draft</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2007-06"><span class="date" time="2007-06-13T14:18:45">June&nbsp;13, 2007 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>XQJ is the proposed XQuery API for Java. A new draft of the XQJ specifications came
+         out yesterday, with the psychologically significant version number of 0.9, and I spent
+         today updating Saxon's implementation to conform. The spec can be downloaded from
+         <a href="http://jcp.org/en/jsr/detail?id=225">http://jcp.org/en/jsr/detail?id=225</a></p>
+      <p>It's the first new version for about a year, and the spec is developed under conditions
+         of absolute secrecy, so I was interested to see what was going to be in it. I wasn't
+         expecting too much, because most of my comments on the previous draft had been politely
+         rejected (about 8 months after I submitted them, with no open discussion). Sure enough,
+         they've tidied up quite a lot of little things, but the overall design hasn't changed
+         much. (It's sufficiently incompatible, however, that most applications will have to
+         be tweaked: not rewritten, but amended here and there.)</p>
+      <p>First the criticisms. It's still uncompromisingly based on a client-server, connection-oriented
+         model where the application lives on a different machine from the database (so 1980s!).
+         There's all sorts of nonsense to do with connection pooling and the like, which makes
+         no sense for Saxon at all. Results are still handled through a horrible XQResultSequence
+         object that acts both as a sequence and as an iterator over the sequence - I thought
+         that it had been known for decades that it was better to keep the two concepts separate.
+         Bizarrely, prepared expressions are not thread-safe - you can't compile an expression
+         and then run it in multiple threads simultaneously, because the XQPreparedExpression
+         holds its own dynamic execution context. There's a major omission that most of the
+         interfaces for parsing a source document don't allow the base URI to be specified,
+         which means that you can't then follow relative references from one document to another.
+         And there's a weird&nbsp; way of getting input from an XMLReader that requires the user
+         to wrap the standard parser in a private filter that has the actual input URI preinitialized
+         within it. Fortunately you can also take input from a JAXP Source object, which makes
+         all the other methods redundant.</p>
+      <p>Are there any good points? Yes, quite a few. The mapping of XPath values (the 19 primitive
+         data types) to equivalent objects in Java is done reasonably well - much better than
+         JAXP which simply uses Object to represent any XPath value, and doesn't give you any
+         hints as to which kinds of Object might be acceptable. This version also has a full
+         representation in Java terms of all XPath types - one could argue that this is overkill
+         because it adds a lot of weight to the interface and isn't needed very often, but
+         if you're going to do it then you ought to do it properly, and they have done so (contrast
+         with the JAXP XPath API, which still only supports XPath 1.0, and makes a real mess
+         of that). This time round there's a reasonable level of integration with the other
+         important XML APIs in the JAXP world, without going over the top, and at the same
+         time they've avoided getting into some of the JAXP disaster areas like the factory
+         loading mechanism.</p>
+      <p>Still, I think one can do better. I've implemented the new interfaces, but I have
+         to admit the test coverage is very minimal (doing better will have to await a third
+         party test suite). I'm not going to integrate these interfaces more deeply into Saxon,
+         however: unless the user community reacts with more enthusiasm than I've seen so far,
+         I shall leave it as an optional API, one among several. Instead, I shall try to steal
+         a few of the better ideas for the grand new unified API planned for a future Saxon
+         release.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2007/04/path-expressions-revisited.html">Path Expressions Revisited</a></div><div class="next-uri"><a href="/mike/2007/09/transforming-20-gigabytes.html">Transforming 20 Gigabytes</a></div></footer></body>
+</html>

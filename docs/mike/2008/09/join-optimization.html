@@ -1,0 +1,75 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Join optimization</title>
+      <meta name="id" content="111">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-09-20T14:18:43">
+      <meta name="basename" content="join_optimization">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Join optimization</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-09"><span class="date" time="2008-09-20T14:18:43">September&nbsp;20, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>People ask me from time to time whether they can expect a performance gain from moving
+         to Saxon-SA. The answer is: it depends!</p>
+      <p>The <a href="http://monetdb.cwi.nl/xml/">Xmark benchmark</a> is a case in point. It's not a very satisfactory benchmark in many ways, because
+         the queries are very "relational" in style, but there are some people with that kind
+         of workload and so long as one accepts that it's not typical of every kind of workload,
+         it's not a bad test.</p>
+      <p>Here's how Saxon-B and Saxon-SA compare for the twenty queries in the test suite.
+         This is version 8.7.1 (not yet released), running against a 10Mb data file, with timings
+         in milliseconds.</p>
+      <pre><code>Query&nbsp;&nbsp;&nbsp; Saxon-SA&nbsp;&nbsp;&nbsp; Saxon-B
+&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6
+&nbsp; 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6
+&nbsp; 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 25&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 22
+&nbsp; 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 24&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 21
+&nbsp; 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8
+&nbsp; 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4
+&nbsp; 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 32&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 31
+&nbsp; 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 38&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 11196
+&nbsp; 9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 50&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 14023
+&nbsp;10&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 104&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1435
+&nbsp;11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 13686&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 13005
+&nbsp;12&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4296&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3335
+&nbsp;13&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3
+&nbsp;14&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 120&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 116
+&nbsp;15&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4
+&nbsp;16&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8
+&nbsp;17&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 11&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 11
+&nbsp;18&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 13&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 13
+&nbsp;19&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 66&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 66
+&nbsp;20&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 38&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 38</code></pre>
+      <p>What do these numbers tell us? Firstly, the difference between 8ms and 6ms simply
+         isn't statistically significant. So for 15 out of these 20 tests, the performance
+         under Saxon-SA is essentially identical to that under Saxon-B. Then there are three
+         tests (Q8, Q9, and Q10) where the performance under Saxon-SA is dramatically better
+         (and the bigger the data file, the bigger the difference becomes. This is where the
+         Saxon-SA optimizer has found a better strategy for evaluating a join.</p>
+      <p>If we look at one of these queries Q8, it's like this:</p>
+      <pre><code>(: Q8.&nbsp; List the names of persons and the number of items they bought.
+--&nbsp;&nbsp;&nbsp;&nbsp; (joins person, closed\_auction)} :)
+
+for $p in (:document("auction.xml"):)/site/people/person
+let $a := for $t in (:document("auction.xml"):)/site
+/closed_auctions/closed_auction
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; where $t/buyer/@person = $p/@id
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return $t
+return &lt;item person="{$p/name}"&gt; {count ($a)} &lt;/item&gt;</code></pre>
+      <p>The important thing is that "where" condition relating the two range variables $t
+         and $p, both of which are defined in a "for" expression. Saxon-B here does two nested
+         loops, testing each ($t, $p) pair to see if the condition is satisfied. Saxon-SA,
+         by contrast, decides to build a hash index which avoids having to loop over all the
+         $t items once for every $p.</p>
+      <p>There are two join queries in the collection where Saxon-SA didn't make any difference,
+         in fact things got slightly worse: Q11 and Q12.</p>
+      <p>In Q11 and Q12, the join condition is</p>
+      <pre><code>where $p/profile/@income &gt; (5000 * $i)</code></pre>
+      <p>and Saxon at present isn't doing any optimization for non-equijoins (joins where the
+         operator isn't "=" or "eq"). At present I don't know why Saxon-SA is performing worse
+         for these two queries: it's not a major difference, but it's sufficiently significant
+         to be worth investigating.</p>
+      <p>The bottom line is: most queries probably run at about the same speed with Saxon-B
+         and Saxon-SA. A few queries run dramatically faster with Saxon-SA.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/09/more-thoughts-on-compile-time-performance.html">More thoughts on compile-time performance</a></div><div class="next-uri"><a href="/mike/2008/09/just-in-time-optimization.html">Just-in-Time Optimization</a></div></footer></body>
+</html>

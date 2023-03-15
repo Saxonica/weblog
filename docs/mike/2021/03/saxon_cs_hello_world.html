@@ -1,0 +1,157 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Saxon-CS says Hello World</title>
+        
+        <meta name="author" content="Michael Kay">
+        <meta name="pubdate" content="2021-03-22T10:34:00">
+
+    <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Saxon-CS says Hello World</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2021-03"><span class="date" time="2021-03-22T10:34:00">March&nbsp;22, 2021 at 10:34a.m.</span></a></div></header><main>
+        <p>The Saxon product on .NET has been living on borrowed time for a while.
+        It's built by converting the Java bytecode of the Java product to the 
+        equivalent .NET intermediate language, using the open-source IKVM converter
+        produced by Jeroen Frijters. Jeroen after many years of devoted service
+        decided to give up further development and maintenance of IKVM a few
+        years ago, which didn't immediately matter because the product worked
+        perfectly well. But then Microsoft in 2019 announced that future
+        .NET developments would be based on .NET Core, and IKVM has never supported
+        .NET Core, so we clearly had a problem.</p>
+        <p>There's a team attempting to produce a fork of IKVM that supports
+        the new .NET, but we've never felt we could put all our eggs in that basket.
+        In any case, we also have performance problems with IKVM that we've never
+        managed to resolve: some applications run 5 times slower than Java, and
+        despite a lot of investigation, we've never worked out why.</p>
+        <p>So we decided to try a new approach, namely Java-to-C# source code
+        conversion. After a lot of work, we've now achieved successful compilation
+        and execution of a subset of the the code, and for the first time this
+        morning, Saxon-CS successfully ran the minimal "Hello World" query.</p>
+        <p>We're a long way from having a product we can release, but we can now
+        have confidence that this approach is going to be viable.</p>
+        <p>How does the conversion work? We looked at some available tools,
+        notably the product from Tangible Solutions, and this gave us many
+        insights into what could be readily converted, and where the remaining
+        difficulties lay; it also convinced us that we'd be better off writing
+        our own converter.</p>
+        <p>The basic workflow is:</p>
+        <ol>
+            <li>Using the open source JavaParser library, parse the Java code, generate
+            an XML abstract syntax tree for each module, and annotate the syntax tree with type information
+            where needed.</li>
+            <li>Using XSLT code, do a cross-module analysis to determine which methods override each other,
+            which have covariant return types, etc: information needed when generating the C# code.</li>
+            <li>Perform an XSLT transformation on each module to generate C# code.</li>           
+        </ol>
+        <p>We can't convert everything automatically, so there's a range of strategies we use to
+        deal with the remaining issues:</p>
+        <ul>
+            <li>Some constructs can simply be avoided. We have trouble, for example, converting
+            Java method references like <code>Item::toString</code>, because it needs a fair bit of 
+            context information to distinguish the various possible translations. But it's no great
+            hardship to write the Java code a different way, for example as a lambda expression
+            <code>item -&gt; item.toString()</code>. Another example is naming conflicts: C# doesn't
+            allow you, for example, to have a variable with the same name as a method in the containing
+            class. It's no hardship to rename the variables so the problem doesn't arise.</li>
+            <li>We can use Java annotations to steer the conversion. For example, sometimes
+            we want to generate C# code that's completely unrelated to the Java code. We can move
+            this code into a method of its own, and then add an annotation <code>@CSharpReplaceMethodBody</code>
+            which substitutes different code for the existing method body. The annotation is copied
+            into the XML syntax tree by the JavaParser, and our converter can pick it up from there.</li>
+            <li>We already have a preprocessor mechanism to mark chunks of code as being excluded from
+            particular variants of the product (such as Saxon-HE or Saxon-PE). We can make further use
+            of this mechanism. However, it's limited by the fact that the code, prior to preprocessing,
+            must be valid Java so that it works in the IDE.</li>
+        </ul>
+        <p>The areas that have caused most trouble in conversion are:</p>
+        <ul>
+            <li>Inner classes. C# has no anonymous inner classes, and its named inner classes correspond
+            only to Java's static inner classes. Guided by the way the Tangible converter handles these,
+            we've found a way of translating them that handles most cases, and we've added Java annotations
+            that provide the converter with extra information where additional complexities arise.</li>
+            <li>Enumeration types. C#'s enumeration types are much more limited than the equivalent in
+            Java, because enumeration constants can't have custom methods associated with them. We distinguish
+            three kinds of enumeration classes: singleton enumerations (used to implement classes that will
+            only have a single instance); simple enumerations with no custom behaviour, which can be translated
+            to C# enumerations very directly, and more complex enumerations, that result in the generation
+            of two separate C# classes, one to hold the enumeration constants, the other to accommodate the
+            custom methods.</li>
+            <li>Generics. C# is much stricter about generic types than Java, because the type information
+            is carried through to run-time, whereas in Java it is used only for compile-time type checking,
+            which can be subverted by use of casting. So the rule in C# is, either use generics properly,
+            or don't use them at all. We anticipated some of these issues a year or two ago when we
+            first started thinking about this project: see 
+                <a href="/mike/2020/01/java-generics-revisited.html">Java Generics Revisited</a>.
+            The result is that the classes representing XDM sequences and sequence iterators no longer use
+            generics, which has saved a lot of hassle in this conversion. But there are still many
+            problems, notably (a) the type inference needed to support Java's diamond operator (as in 
+            <code>new ArrayList&lt;&gt;()</code>, where an explicit type parameter is needed in C#),
+            and (b) the handling of covariant and contravariant wildcards (<code>? extends T</code>,
+            <code>? super T</code>.)</li>
+            <li>Iterators and enumerators. A <code>for-each</code> loop in Java (<code>for (X x : collection)</code>)
+                relies on the <code>collection</code> operand implementing the <code>java.lang.Iterable</code>
+                interface. To translate this into a C# for-each loop (<code>foreach (X x in collection)</code>)
+                the <code>collection</code> needs to implement <code>IEnumerable</code>. So we convert
+                all Iterables to IEnumerables, and that means we have to convert Iterators to Enumerators.
+                Unfortunately Java's <code>Iterator</code> interface doesn't lend itself to static
+                translation to a c# <code>IEnumerator</code>: in Java, the <code>hasNext()</code>
+                method is stateless (so you can call it repeatedly), whereas C#'s <code>MoveNext</code>
+                changes the current position (so you can't). We're fortunate that we only make
+                modest use of Java iterators; in most of the code, we use Saxon's <code>SequenceIterator</code>
+                interface in preferance, and this converts without trouble. We examined all the cases
+                where Saxon explicitly uses <code>hasNext()</code> and <code>next()</code>, and made
+                sure these followed the discipline of calling <code>hasNext()</code> exactly once
+            before each call on <code>next()</code>; with this discipline, converting the calls to
+            <code>MoveNext()</code> and <code>Current</code> works without problems.</li>
+            <li>Lambda expressions and delegates. In Java, lambda expressions can be used where the
+            expected type is a <i>functional interface</i>; a functional interface in other ways is just
+            an ordinary interface, and you can have concrete classes that implement it. So for example
+            the second argument of <code>NodeInfo.iterateAxis(axis, nodeTest)</code> is a <code>NodeTest</code>,
+            for which we can supply either a lambda expression (such as <code>it -&gt; it instanceof XSLExpose</code>),
+            or one of a whole range of implementation classes such as a <code>SchemaElementTest</code>,
+            which tests whether an element belongs to an XSD-defined substitution group. In C#, lambda expressions
+            can only be used when the expected type is a delegate, and if the expected type is a delegate,
+            then (in effect) a lambda expression is the only thing you can supply. The way we've handled this
+            is generally to make the main method (like <code>iterateAxis()</code> expect a non-delegate
+            interface, and then to supply a proxy implementation of this interface that accepts a delegate.
+            It's not a very satisfactory solution, but it works.</li>
+            
+        </ul>
+        <p>One area where we could have had trouble, but avoided it, is in the use of the Java
+        <code>CharSequence</code> class. I wrote about this issue last year at
+            <a href="/mike/2020/07/string-charsequence-ikvm-and-net.html">String, 
+                CharSequence, IKVM, and .NET</a>. As described in that article, we decided to eliminate
+        our dependence on the <code>CharSequence</code> interface. For a great many internal uses of strings
+        in Saxon, we now use a new interface <code>UnicodeString</code> which as the name implies is much
+        more Unicode-friendly than Java's <code>String</code> and <code>CharSequence</code>. It also reduces
+        memory usage, especially in the TinyTree. But there is a small overhead in the places where we
+        have to convert strings to or from <code>UnicodeStrings</code>, which we can't hide entirely:
+        it represents about 5% on the bottom line. But it does make all this code much easier to port
+        between Java and C#.</p>
+        
+        <p>What about dependencies? So far we've just been tackling the Saxon-HE code base, and that has
+        very few dependencies that have caused any difficulty. Most of the uses of standard Java library
+        classes (maps, lists, input and output streams, and the like) are handled by the converter,
+        simply translating calls into the nearest C# equivalent. In some cases such as <code>java.util.Properties</code>
+        we've written en emulation of the Java interface (or the parts of it that we actually use). In other
+        cases we've redirected calls to helper methods. For example we don't always have enough type
+        information to know whether Java's <code>List.remove()</code> should be translated to
+        <code>List.Remove()</code> or <code>List.RemoveAt()</code>; so instead we generate a call on
+        a static helper method, which makes the decision at runtime based on the type of the
+        supplied argument.</p>
+        
+        <p>The only external dependency we've picked up so far is for handling big decimal numbers.
+        We're currently evaluating the <code>BigDecimal</code> library from Singulink, which appears
+        to offer all the required functionality, though its philosophy is sufficiently different
+        from the Java <code>BigDecimal</code> to make conversion non-trivial.</p>
+        
+        <p>One thing I should stress is that we haven't written a general purpose Java to C# converter.
+            Our converter is designed to handle the Saxon codebase, and nothing else. Some of the
+            conversion rules are specific to particular Saxon classes, and as a general principle,
+            we only convert the subset of the language and of the class library that we actually need.
+            Some of the conversion rules assume that the code is written to the coding conventions
+            that we use in Saxon, but which might not be followed in other projects.</p>
+        
+        <p>So, Hello World to Saxon-CS. There's still a lot of work to do, but we've reached a significant
+        milestone.</p>
+        
+    </main><footer><div class="prev-uri"><a href="/mike/2021/03/zeno_chains.html">The Zeno Chain: a new data structure for XDM sequences</a></div><div class="next-uri"><a href="/norm/2021/05/11-saxon-js-22.html">Saxon-JS 2.2</a></div></footer></body>
+</html>

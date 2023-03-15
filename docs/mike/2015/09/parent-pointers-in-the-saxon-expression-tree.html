@@ -1,0 +1,134 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Parent pointers in the Saxon expression tree</title>
+      <meta name="id" content="213">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2015-09-11T19:38:54">
+      <meta name="basename" content="parent_pointers_in_the_saxon_expression_tree">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Parent pointers in the Saxon expression tree</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2015-09"><span class="date" time="2015-09-11T19:38:54">September&nbsp;11, 2015 at 07:38p.m.</span></a></div></header><main>
+      
+      <p>A while ago (<a href="/mike/2014/11/redesigning-the-saxon-expression-tree.html">https://blog.saxonica.com/mike/2014/11/redesigning-the-saxon-expression-tree.html</a>) I wrote about my plans for the Saxon expression tree. This note is an update.
+         </p>
+      <p>
+         We've made a number of changes to the expression tree for 9.7.
+         </p>
+      <ul>
+         <li>
+            
+            <p>Every node in the tree (every expression) now references a
+               Location object, providing location information for diagnostics
+               (line number, column number, etc). Previously the expression node
+               implemented the SourceLocator interface, which meant it provided
+               this information directly. The benefit is that we can now have
+               different kinds of Location object. In XQuery we will typically hold
+               the line and column and module URI. In XSLT, for a subexpression
+               within an XPath expression, we can now hold both the offset within
+               the XPath expression, and the path to the containing node within the
+               XSLT stylesheet. Hopefully debuggers and editing tools such as
+               oXygen and Stylus Studio will be able to take advantage of the
+               improved location information to lead users straight to the error
+               location in the editor. Where an expression has the same location
+               information as its parent or sibling expressions, the Location
+               object is shared.</p>
+            
+            
+            <p>Another reason for changing the way we hold location information
+               is connected with the move to separately-compiled packages in XSLT
+               3.0. This means that the system we previously used, of
+               globally-unique integer "location identifiers" which are translated
+               into real location information by reference to a central "location
+               provider" service, is no longer viable.</p>
+            </li>
+         <li>
+            
+            <p>Every node in the tree now points to a RetainedStaticContext
+               object which holds that part of the static context which can vary from
+               one expression to another, and which can be required at run-time.
+               Previously we only attempted to retain the parts of the static context
+               that each kind of expression actually used. The parts of the static
+               context that this covers include the static base URI, in-scope
+               namespaces, the default collation, and the XPath 1.0 compatibility
+               flag. Retaining the whole static context might seem extravagent. But
+               in fact, it very rarely changes, so a child expression will nearly
+               always point to the same RetainedStaticContext object as its parent
+               and sibling expressions.</p>
+            </li>
+         <li>
+            
+            <p>Every node in the tree now points to its parent node. This choice has proved tricky.
+               It gives many advantages: it means that the code for every expression can easily find
+               details of the containing package, the configuration options, and a host of details
+               about the query or stylesheet as a whole. The fact that we have a parent node eliminates
+               the need for the "container" object (typically the containing function or template)
+               which we held in previous releases. It also reduces the need to pass additional information
+               to methods on the Expression class, for example methods to determine the item type
+               and cardinality of the expression. There is a significant downside to holding this
+               information, which is the need to keep it consistent. Some of the tree rewrite operations
+               performed by the optimizer are complex enough without having to worry about keeping
+               all the parent pointers correct. And it turns out to be quite difficult to enforce
+               consistency through the normal "private data, public methods" encapsulation techniques:
+               those work when you have to keep the data in a single object consistent, but they
+               aren't much use for maintaining mutual consistency between two different objects.
+               In any case it seems to be unavoidable that to achieve the kind of tree rewrites we
+               want to perform, the tree has to be temporarily inconsistent at various stages.</p>
+            
+            
+            <p>Using parent pointers means that you can't share subtrees. It means that when you
+               perform operations like inlining a function, you can't just reference the subtree
+               that formed the body of the function, you have to copy it. This might seem a great
+               nuisance. But actually, this is not a new constraint. It never was safe to share subtrees,
+               because the optimiser would happily make changes to a subtree without knowing that
+               there were
+               other interested parties. The bugs this caused have been an irritation for years.
+               The introduction of parent pointers makes the constraint more explicit, and makes
+               it possible to perform integrity checking on the tree to discover when we have inadvertently
+               violated the constraints.
+               </p>
+            
+            
+            <p>
+               During development we've had diagnostic code switched on that checks the integrity
+               of the tree and outputs warnings if problems are found. We've gradually been examining
+               these and eliminating them. The problems can be very hard to diagnose, because the
+               detection of a problem in the data may indicate an error that occurred in a much earlier
+               phase of processing. We've developed some diagnostic tools for tracing the changes
+               made to a particular part of the tree and correlating these with the problems detected
+               later. Most of the problems, as one might expect, are connected with optimization
+               rewrites. A particular class of problem occurs with rewrites that are started but
+               then not completed, (because problems are found) or with "temporary" rewrites that
+               are designed to create an equivalent expression suitable for analysis (say for streamability
+               analysis or for schema-aware static type-checking) but which are not actually intended
+               to affect the run-time interpreted tree. The discipline in all such cases is to copy
+               the part of the tree you want to work on, rather than making changes in-situ.
+               </p>
+            
+            
+            <p>
+               For some non-local rewrites, such as loop-lifting optimizations, the best strategy
+               seems to be to ignore the parent pointers until the rewrite is finished, and then
+               restore them during a top-down tree-walk.
+               </p>
+            
+            
+            <p>
+               The fact that we now have parent pointers makes context-dependent optimizations much
+               easier. Checking, for example, whether &nbsp;a variable reference occurs within a loop
+               (a "higher-order expression" as the XSLT 3.0 spec calls it) is now much easier: it
+               can be done by searching upwards from the variable reference rather than retaining
+               context information in an expression visitor as you walk downwards. Similarly, if
+               there is a need to replace one expression by another (a variable reference by a literal
+               constant, say), the fact that the variable reference knows its own parent makes the
+               substitution much easier.
+               </p>
+            
+            
+            <p>
+               So although the journey has had a few bumps, I'm reasonably confident that we will
+               see long-term benefits.</p>
+            </li>
+      </ul>
+   </main><footer><div class="prev-uri"><a href="/mike/2015/06/lazy-evaluation.html">Lazy Evaluation</a></div><div class="next-uri"><a href="/mike/2016/02/introducing-saxon-js.html">Introducing Saxon-JS</a></div></footer></body>
+</html>

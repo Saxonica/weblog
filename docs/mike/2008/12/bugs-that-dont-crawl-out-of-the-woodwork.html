@@ -1,0 +1,28 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Bugs that don't crawl out of the woodwork</title>
+      <meta name="id" content="158">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-12-22T14:18:45">
+      <meta name="basename" content="bugs_that_dont_crawl_out_of_the_woodwork">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Bugs that don't crawl out of the woodwork</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-12"><span class="date" time="2008-12-22T14:18:45">December&nbsp;22, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I've said this before, but sometimes I'm truly amazed by some of the bugs I find:
+         how on earth can they remain undetected for so long?</p>
+      <p>Today's example is in schema validation. If you have a user-defined type derived by
+         restriction from a built-in restricted type such as xs:short or xs:NCName then of
+         course it inherits the restrictions defined in its base type alongside its own restrictions:
+         in the former case it must be in the range of values for xs:short, in the second case
+         it must conform to the syntax for xs:NCName. Well, Saxon isn't checking this: for
+         example it's allowing 1000000 as a valid value for a type derived from xs:short.</p>
+      <p>No-one reported this bug, and I didn't find it while running any test suite. I just
+         spotted it while reading the code for an unrelated reason. As far as I can see, the
+         bug has always been there. That means none of the 40,000 tests in the W3C test suite
+         is testing for this situation, and the chances are that in five years none of my users
+         has had a schema that relies on it being tested.</p>
+      <p>Some bugs, it seems, prefer to stay in the woodwork.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/12/ten-reasons-why-saxon-xquery-is-fast.html">Ten Reasons why Saxon XQuery is Fast</a></div><div class="next-uri"><a href="/mike/2009/02/another-five-finger-performance-exercise.html">Another five-finger performance exercise</a></div></footer></body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Path Expressions Revisited</title>
+      <meta name="id" content="139">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2007-04-27T14:18:45">
+      <meta name="basename" content="path_expressions_revisited">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Path Expressions Revisited</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2007-04"><span class="date" time="2007-04-27T14:18:45">April&nbsp;27, 2007 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>The core of XSLT and XQuery performance is the ability to evaluate simple path expressions
+         efficiently. This area of Saxon has been untouched for some time, and I tend to assume
+         it has been tuned to death. But I've always had a nagging feeling that the machinery
+         created for evaluating a multi-step path expression, involving a chain of mapping
+         iterators each of which delegates calls on next() to the next iterator in the sequence,
+         might have room for improvement.</p>
+      <p>In particular, I was worried that when evaluating /a/b/c/d/e/f, the call for the next
+         item in the result has to go through six levels of iterator before asking for the
+         next f, and each level has its own context objects. In the current Saxon implementation,
+         "/" is treated as a binary operator, which means that just as a+b+c+d+e+f is treated
+         as five separate binary additions, /a/b/c/d/e/f is treated as six binary path expressions.</p>
+      <p>So I spent this morning implementing an alternative design in which there's a single
+         PathIterator that takes a holistic view of the whole path: when you ask for the next()
+         item in the result, the first thing it does is to see whether there's another "f"
+         in the iteration of the last step. That should be fast; only if there isn't another
+         "f" does it consider moving on to the next "e", and so on in backtracking mode.</p>
+      <p>In theory, this ought to give lots of opportunities for savings. The normal case,
+         where there is another element available in the innermost loop, is a fast path; and
+         the context objects can be reused because we know they're only used in this path expression.</p>
+      <p>So I spent a couple of hours getting this working, and then took some measurements.
+         For the expression count(/*/*/*/*/*) applied to the 11Mb XMark dataset (selecting
+         74627 nodes), the run-time was consistently between 61 and 61.2 msecs, averaged over
+         several hundred runs. For the existing code, the run-time was also consistently between
+         the same limits.</p>
+      <p>I've spent another couple of hours trying to see whether I missed anything, and I
+         think the answer is no. The only conclusion is that path expressions were indeed pretty
+         well tuned already. To be honest, 61ms for finding 75000 nodes in a 500000 node XML
+         file, using serial searching alone, is not bad. Parsing the source XML and building
+         the tree takes nearly 2 seconds, by way of comparison. And most of the evaluation
+         time is in actually iterating over the various axes, not in organising the different
+         steps of the path.</p>
+      <p>The existing code was actually doing much better than I thought in terms of the number
+         of context objects and mapping iterators created.&nbsp; For the vast majority of cases
+         "/" is associative, so (a/b)/c means the same as a/(b/c). Saxon typically uses the
+         first of these forms: so it gets an iterator over (a/b), creates a new context with
+         this iterator as the current node list, and then applies (child::c) to every node
+         selected. The result is that for a six-step path expression there are only six mapping
+         iterators and six context objects created, not the thousands I had feared. Moreover,
+         the calls on next() aren't delegating through six levels of mapping iterator as I
+         thought: the path iterator maps child::f as the step to /a/b/c/d/e as the base iterator,
+         so when there is another f available, it's actually only one level deep. </p>
+      <p>When discussing performance I always recommend the&nbsp; methodology: (a) make changes;
+         (b) measure the effect; (c) understand the effect, (d) if the changes achieved nothing,
+         undo them. Step (d) can be the hardest psychologically, but I shall stick to my own
+         advice. It's not as if the exercise achieved nothing: there's always new knowledge
+         that comes out of this kind of study, and I hope that you don't mind me sharing it!</p>
+      <p><em>Postcript: Another thought. The expression /*/*/*/*/* is equivalent to "all level
+            5 element nodes in the tree". I could scan the TinyTree from start to finish, looking
+            for rows with kind=2 and level=5. That should be pretty fast. It's not worth optimizing
+            such a crazy expression of course, but the same idea would apply to any fixed-depth
+            expression such as /a/b/c/d/e. Only two problems: (a) if the early steps in the path,
+            such as /a/b, narrow the search then the tree scan would take longer (and how would
+            I know which to choose?), and (b) I don't want start optimizing the query execution
+            plan for a particular tree implementation model, as I don't know the tree model until
+            run-time.</em></p>
+   </main><footer><div class="prev-uri"><a href="/mike/2007/03/saxon-vs-xalan-performance-and-dom.html">Saxon vs Xalan Performance; and DOM</a></div><div class="next-uri"><a href="/mike/2007/06/a-new-xqj-draft.html">A new XQJ draft</a></div></footer></body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>APIs for XML processing</title>
+      <meta name="id" content="109">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-03-02T14:18:43">
+      <meta name="basename" content="apis_for_xml_processing">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>APIs for XML processing</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-03"><span class="date" time="2006-03-02T14:18:43">March&nbsp;02, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I'm quite pleased with the way the <a href="http://www.saxonica.com/documentation/dotnetdoc/index.html">new API offered by Saxon on .NET</a> panned out. Dimitre Novatchev said he liked it too, which is high praise in my book.
+         I've been concerned for a while that Saxon's API was looking pretty scruffy, and this
+         was an opportunity to do a better job.</p>
+      <p>My first thoughts were to try and emulate the System.Xml.Xsl interface. But I found
+         that this wasn't an interface at all, it was a set of concrete classes. So it didn't
+         look feasible to make Saxon "plug-compatible", allowing it to be swapped-in as a replacement
+         for the System.Xml.Xsl processor in existing applications. That's a shame, but it
+         was also an opportunity, because the System.Xml.Xsl interface isn't exactly pretty
+         - in particular, I hate its heavy overloading of methods like Transform(), which always
+         suggests to me that there's an abstraction somewhere waiting to be discovered.</p>
+      <p>My next thought was to stick close to the JAXP model, simply changing the stylistic
+         conventions to match the trivial differences of the .NET style, like method names
+         starting with a capital letter. This approach would make life easy for people trying
+         to write dual-platform applications on top of Saxon. But actually, that's not my target
+         audience for this API: those people will probably be writing in Java and can continue
+         to use Saxon's Java APIs. Anyway JAXP, over the years, has become rather a mess. It
+         still doesn't support XPath 2.0 and XSLT 2.0, and the more I looked into it, the more
+         I felt I could do a better job by starting from scratch.</p>
+      <p>I also wanted to take a consistent approach across XSLT, XQuery, and XPath. When I
+         looked at existing APIs, I found that XQuery and XPath generally offered a two-stage
+         processing model, with one object to hold compile-time context information, the other
+         to hold the compiled object; while the JAXP interface for XSLT also has two stages,
+         one object (misnamed "Templates") holding the compiled stylesheet and the other ("Transformer")
+         holding the run-time context. Looking at this, I realised all these interfaces would
+         be cleaner if I offered a three-step model: compile, load, go. </p>
+      <p>So the first object is the compiler for the language. At first I called it the static
+         context, but then I realized that "compiler" was a much better name, because users
+         of APIs find it hard to get to grips with amorphous concepts like a "static context":
+         it's sometimes better to name an object according to what it does, not what information
+         it holds. The second object is the compiled code; and the third object is the "loaded
+         and runnable" code (I had difficulty naming this, and chose different names for the
+         three languages) - this is where the dynamic context for evaluation is established.</p>
+      <p>Having made this split, all sorts of things fall into place. For example, there's
+         a long-standing problem with JAXP that if you run multiple XSLT compilations in parallel
+         from the same TransformerFactory, they all have to share the same ErrorListener. With
+         an XsltCompiler object to hold this information, the problem goes away. Similarly
+         on the XPath side, having an explicit object to hold the "loaded and runnable" expression
+         (I decided to call it an XPathSelector) provides a natural place to set variables,
+         define the context node, etc.</p>
+      <p>This left the problem of defining the Source and Result objects (in JAXP terms). The
+         JAXP solution here has been much criticized because it seems to be cheating: it uses
+         an interface as a way of avoiding method overloading, but the interface doesn't actually
+         describe an abstract service, it's really just a kind of union type. I'm not sure
+         I found the perfect answer here. To replace the JAXP Result object, I defined a Destination
+         interface, which is actually a true interface in that you can write your own impementation
+         and Saxon will accept it. The only slight oddity is that to write an implementation,
+         you need to go beyond the classes offered in the API and use some internal Saxon machinery.
+         For the Source, I decided not to implement an equivalent abstraction, but rather to
+         use method overloading: except that it would be a single method SetSource() that was
+         overloaded, to prevent the multi-dimensional overloading and the resulting explosion
+         of method signatures that occurs in System.Xml.Xsl.</p>
+      <p>So, what next? I'm quite tempted to retrofit the same API design to the Java product,
+         except that the Java product already suffers from a proliferation of APIs and adding
+         another will in some ways only make matters worse. There's also the problem of maintaining
+         tests and documentation for all these APIs. XQJ, the standard API for XQuery in Java,
+         might emerge soon from its long hibernation in the JCP process, and of course I will
+         have to implement that, though I hope that what finally emerges is an improvement
+         on the 2004 drafts, which were fairly horrible. Perhaps I should wait and see what
+         happens with JAXP 2.0.</p>
+      <p>Another general observation: most of the time, the API I have offered in Saxon has
+         grown out of the implementation. The current Java XQuery interface is an example of
+         that. This almost invariably leads to bad API design. Good APIs are designed from
+         a user perspective, by someone thinking about the design of the user-written application;
+         they are not produced by taking the implementation and deciding which of its classes
+         and methods to expose. Saxon is not unique in showing signs of this problem. When
+         I sat down to design the .NET API, I was determined to ignore constraints imposed
+         by the implementation (when I found such constraints, I removed them), and I think
+         the results speak for themselves.</p>
+      <p>Michael Kay</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/02/floating-point-numbers-again.html">Floating Point Numbers again</a></div><div class="next-uri"><a href="/mike/2006/03/conference-season-approaching.html">Conference Season approaching</a></div></footer></body>
+</html>

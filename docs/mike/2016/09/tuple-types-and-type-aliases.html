@@ -1,0 +1,77 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Tuple types, and type aliases</title>
+      <meta name="id" content="216">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2016-09-08T11:44:15">
+      <meta name="basename" content="tuple_types_and_type_aliases">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Tuple types, and type aliases</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2016-09"><span class="date" time="2016-09-08T11:44:15">September&nbsp;08, 2016 at 11:44a.m.</span></a></div></header><main>
+      
+      <p>I've been experimenting with some promising Saxon extensions.
+         </p>
+      <p>
+         Maps and arrays greatly increase the flexibility and power of the XPath / XSLT / XQuery
+         type system. But one drawback is that the type declarations can be very cumbersome,
+         and very uninformative.
+         </p>
+      <p>
+         Suppose you want to write a library to handle arithmetic on complex numbers. How are
+         you going to represent a complex number? There are several possibilities: as a sequence
+         of two doubles (<b>xs:double*</b>); as an array of two doubles (<b>array(xs:double)</b>), or as a map, for example <b>map{"r": 0.0e0, "i": 0.0e0}</b> (which has type <b>map(xs:string, xs:double)</b>).
+         </p>
+      <p>
+         Note that whichever of these choices you make, (a) your choice is exposed to the user
+         of your library by the way you declare the type in your function signatures, (b) the
+         type allows many values that aren't legitimate representations of complex numbers,
+         and (c) there's nothing in the type declaration that tells the reader of your code
+         that this has anything to do with complex numbers.
+         </p>
+      <p>
+         I think we can tackle these problems with two fairly simple extensions to the language.
+         </p>
+      <p>
+         First, we can define type aliases. For XSLT, I have implemented an extension that
+         allows you to declare (as a top-level element anywhere in the stylesheet):
+         </p>
+      <pre><code>&lt;saxon:type-alias name="complex"
+                  type="map(xs:string, xs:double)"/&gt;</code></pre>
+      <p>
+         and then you can use this type alias (prefixed by a tilde) anywhere an item type is
+         allowed, for example
+         </p>
+      <pre><code>&lt;xsl:variable name="i" as="~complex"&nbsp;
+              select="cx:complex(0.0, 1.0)"/&gt;</code></pre>
+      <p>
+         Secondly, we can define tuple types. So we can instead define our complex numbers
+         as:
+         </p>
+      <pre><code>&lt;saxon:type-alias name="complex"&nbsp;
+                  type="tuple(r: xs:double, i: xs:double)"/&gt;</code></pre>
+      <p>We're not actually introducing tuples here as a fundamental new type with their own
+         set of functions and operators. Rather, a tuple declaration defines constraints on
+         a map. It lists the keys that must be present in the map, and the type of the value
+         to be associated with each key. The keys here are the strings "r" and "i", and in
+         both cases the value must be an xs:double. The keys are always NCNames, which plays
+         well with the map lookup notation M?K; if $c is a complex number, then the real and
+         imaginary parts can be referenced as $c?r and $c?i respectively.
+         </p>
+      <p>
+         For this kind of data structure, tuple types provide a much more precise constraint
+         over the contents of the map than the current map type does. It also provides much
+         better static type checking: an expression such as $c?i can be statically checked
+         (a) to ensure that "i" is actually a defined field in the tuple declaration, and (b)
+         that the expression is used in a context where an xs:double value is expected.
+         </p>
+      <p>
+         I've been a little wary in the past of putting syntax extensions into Saxon; conformance
+         to standards has always been a primary goal. But the standards process seems to be
+         running out of steam, and I'm beginning to feel that it's time to push a few innovative
+         ideas out in product to keep things moving forward. For those who would prefer to
+         stick entirely to stuff defined by W3C, rest assured that these features will only
+         be available if you explicitly enable extensions.
+         </p>
+   </main><footer><div class="prev-uri"><a href="/mike/2016/06/improving-compile-time-performance.html">Improving Compile-Time Performance</a></div><div class="next-uri"><a href="/mike/2016/12/guaranteed-streamability.html">Guaranteed Streamability</a></div></footer></body>
+</html>

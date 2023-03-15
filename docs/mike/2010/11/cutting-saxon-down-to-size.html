@@ -1,0 +1,119 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Cutting Saxon down to size</title>
+      <meta name="id" content="184">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2010-11-21T14:18:47">
+      <meta name="basename" content="cutting_saxon_down_to_size">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Cutting Saxon down to size</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2010-11"><span class="date" time="2010-11-21T14:18:47">November&nbsp;21, 2010 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>It's clear that in cross-compiling Saxon to Javascript to run on the browser, reducing
+         the size of the code could make a major impact on the performance and therefore usability
+         of the resulting product. So I've been thinking about how one might achieve a radical
+         reduction in the size. Rather like an incoming Chancellor faced with a record budget
+         deficit, I've been trying to think the unthinkable to see where one might make savage
+         cuts.&nbsp;</p>
+      <p>It's instructive to compare Saxon 9.3 with Saxon 5.0, released in December 1999 as
+         the first fully-compliant implementation of XSLT 1.0. Saxon 5.0 was 17K non-comment
+         lines of code; Saxon-HE 9.3 is 143K, and Saxon-EE 9.3 is 210K. (The ratio of comment
+         to non-comment lines, incidentally, has remained steady at roughly 1:1).&nbsp;</p>
+      <p>Let's look at an example: the substring function, which is unchanged between XSLT
+         1.0 and XSLT 2.0. In Saxon 9.3, there's about 200 lines of Saxon-HE code to implement
+         this function, plus 30 lines in EE to support compilation of XQuery to Java: there
+         isn't any specific support for streaming, though there is for many other similar functions.
+         In Saxon 5.0 the size of the code is 40 lines, plus 12 lines to support the rudimentary
+         compile-to-Java facility that was present in that release, and later abandoned. In
+         AJAXSLT, an abortive 2005 attempt by Steffen Meschkat to write an XSLT processor in
+         Javascript, the substring function is implemented in 17 lines of code. In Henry Lindquist's
+         2008 XPath.js implementation of XPath 1.0, this is the implementation, in its entirety,
+         formatted for readability:&nbsp;</p>
+      <p>XPath.substring=function(s,i,l){&nbsp;<br>s=this.string(s);&nbsp;<br>i=Math.round(this.number(i))-1;&nbsp;<br>return(arguments.length==2)?s.substr(i&lt;0?0:i):s.substr(i&lt;0?0:i,Math.round(this.number(l))-Math.max(0,-i));&nbsp;<br>};&nbsp;</p>
+      <p>How do these implementations differ?&nbsp;</p>
+      <p>Firstly, even the early 1999 version of Saxon (unlike either of the Javascript versions)
+         supported Unicode astral planes (characters above 65535) properly; it also included
+         rudimentary code to supply static type information. That meant it didn't use Java's
+         substring() method. The code was also split into methods to support use in a run-time
+         library called from compiled code. It could easily be reduced to 20 lines and still
+         have full Unicode support.&nbsp;</p>
+      <p>In the 9.3 version of the code, we see first some compile-time optimization, designed
+         to avoid conversions of arguments from integer to double and then back to integers.
+         Then we find that the 2-argument form of the function and the 3-argument form are
+         separately implemented; and there are separate paths for the case when the arguments
+         are integers rather than doubles, and for the case where the the input string is known
+         to contain no astral characters (in which case the function can be implemented using
+         the Java substring() method). It is also careful in this case to mark the output string
+         as containing no astral characters, so that the consumer of the string can make similar
+         optimizations downstream.&nbsp;</p>
+      <p>In short, the code is ten times bigger than it needs to be, to achieve tiny speed
+         improvements which in the case of client-side execution will never pay for the cost
+         of the extra code that needs to be downloaded. (In Javascript, the assumption that
+         integer arithmetic is faster than double probably needs to be reversed anyway.) Extrapolated
+         across the product as a whole, this suggests that radical cuts are indeed possible.&nbsp;</p>
+      <p>I have already cut the size of the code base for the GWT compilation from about 145K
+         non-comment lines (in Saxon-HE 9.3) to under 80K, by cutting out unwanted functionality
+         such as XQuery, updates, serialization, support for JAXP, Java extension functions,
+         JDOM, etc etc. This study of the implementation of one function suggests that 40K
+         ought to be achievable, given enough effort. That's consistent with the figure of
+         17K lines for Saxon 5.0, on the basis that XSLT 2.0 as a language is about twice the
+         size of XSLT 1.0.&nbsp;</p>
+      <p>Where might we look for these savings?&nbsp;</p>
+      <p>The GWT compiler reports show that a significant proportion of the compiled Javascript
+         contains string literals. A lot of these are data: character tables supporting Unicode
+         normalization, case conversion, validation of XML characters, and regular expression
+         handling. I've already ditched the case conversion code in favour of using Javascript's
+         own version of the same - it's probably not 100% conformant to the XPath requirements
+         in corner cases, but I doubt anyone will notice. The Unicode normalization tables
+         are a vast amount of data to support one rarely-used function, normalize-unicode()
+         - the obvious thing to do here is to put the data in a separate file on the server
+         and download it only when it's needed. The data for validating XML characters can
+         be halved by removing support for XML 1.1 (or for XML 1.0, take your pick). More radically,
+         perhaps we can check whether a name is a valid name by exploiting functionality already
+         available in the Javascript platform - if it's a valid name, then it's a valid XPath
+         1.0 expression, so we could throw it at an XPath 1.0 parser to find out. I'm not sure
+         I would trust the answer (all the signs are that impementors take short cuts with
+         conformance in this kind of environment), but perhaps I need to pick up a bit of that
+         culture.&nbsp;</p>
+      <p>For regular expressions, Saxon currently parses the regex against the XPath rules,
+         and translates it to a Java regex. The "obvious" thing to do is to change that code
+         as necessary to generate a Javascript regex instead. (I've already retargeted the
+         code to use the Javascript RegExp class). The JS RegExp library doesn't support Unicode
+         properly ("." matches a 16-bit UCS code point, not a Unicode character), so I would
+         have to resurrect the JDK1.4 version of this code which handled the differences. But
+         I'm not sure this is the right thing to do. Most people wouldn't complain if I simply
+         offered Javascript regular expressions instead of XPath regular expressions. I'm not
+         comfortable with that level of non-conformance myself, but I do think there is room
+         here to find a more pragmatic balance.&nbsp;</p>
+      <p>As regards optimization, it's quite hard to know what code one can reasonably discard.
+         There's a lot of static type-checking logic, which has significant benefits in terms
+         of diagnostics as well as optimization; I don't think it's right to discard all of
+         this, but some of the more complex analysis can probably be simplified. The best thing
+         is probably to chip away at it on a case-by-case basis. I want to reduce the "instruction
+         set" of the compiled code, that is the number of different kinds of Expression that
+         the compiler/optimizer generate. Some of these are used in only very specialized circumstances;
+         some could be combined with other expressions.&nbsp;</p>
+      <p>Saxon goes to a fair bit of trouble to ensure that the original stylesheet tree isn't
+         needed at execution time. That involves copying data over from the stylesheet tree
+         to the expression tree. This seems rather pointless in the browser environment. There's
+         a lot of administrative overhead in maintaining things like line numbers for diagnostics
+         that will be little use in the browser (because the XML parser doesn't supply line
+         number information in the first place), so it should go. There's also code that unnecessarily
+         generalized because the requirements of XSLT and XQuery are different. The whole apparatus
+         for function binding is looking vastly over-engineered for a world in which every
+         function call is either a system function, a constructor function for a built-in type,
+         or a user-defined stylesheet function.&nbsp;</p>
+      <p>So there are plenty of candidates. But as with the Chancellor's cuts, it's important
+         to avoid becoming obsessive: there's a law of diminishing returns here.&nbsp;</p>
+      <p>Also, the size of the download doesn't depend only on the size of the Saxon source
+         code: it also depends on the libraries that are included. Adding in GWT's support
+         for the HTML DOM (which is quite separate from the XML DOM) appears to have bloated
+         the download size very substantially. I need to look at whether it's possible to avoid
+         that or reduce its impact.
+         
+         </p>
+      
+      
+   </main><footer><div class="prev-uri"><a href="/mike/2010/11/compiling-saxon-using-gwt.html">Compiling Saxon using GWT</a></div><div class="next-uri"><a href="/mike/2011/05/bytecode-generation.html">Bytecode generation</a></div></footer></body>
+</html>

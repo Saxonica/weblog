@@ -1,0 +1,106 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>A redesign of the NamePool</title>
+      <meta name="id" content="211">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2015-06-24T14:39:33">
+      <meta name="basename" content="a_redesign_of_the_namepool">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>A redesign of the NamePool</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2015-06"><span class="date" time="2015-06-24T14:39:33">June&nbsp;24, 2015 at 02:39p.m.</span></a></div></header><main>
+      
+      <p>As explained in my previous post, the NamePool in Saxon is a potential problem for
+         scaleability, both because access can cause contention, and also because it has serious
+         limits on the number of names it can hold: there's a maximum of one million QNames,
+         and performance starts getting seriously bad long before this limit is reached.
+         </p>
+      <p>
+         Essentially, the old NamePool is a home-grown hash table. It uses a fixed number of
+         buckets (1024), and when hash collisions occur, the chains of hash duplicates are
+         searched serially. The fact that the number of buckets is fixed, and entries are only
+         added to the end of a chain, is what makes it (reasonably) safe for read access to
+         the pool to occur without locking.
+         </p>
+      <p>
+         One thing I have been doing over a period of time is to reduce the amount of unnecessary
+         use of the NamePool. Most recently I've changed the implementation of the schema component
+         model so that references from one schema component to another are no longer implemented
+         using NamePool fingerprints. But this is peripheral: the core usage of the NamePool
+         for comparing names in a query against names in a source document will always remain
+         the dominant usage, and we need to make this scaleable as parallelism increases.
+         </p>
+      <p>
+         Today I've been exploring an alternative design for the NamePool (and some variations
+         on the implementation of the design). The new design has at its core two Java ConcurrentHashMaps,
+         one from QNames to fingerprints, and one from fingerprints to QNames. The ConcurrentHashMap,
+         which was introduced in Java 5, doesn't just offer safe multi-threaded access, it
+         also offers very low contention: it uses fine-grained locking to ensure that multiple
+         writers, and any number of readers, can access the data structure simulaneously.
+         </p>
+      <p>
+         Using two maps, one of which is the inverse of the other, at first seemed a problem.
+         How can we ensure that the two maps are consistent with each other, without updating
+         both under an exclusive lock, which would negate all the benefits? The answer is that
+         we can't completely, but we can get close enough.
+         </p>
+      <p>
+         The logic is like this:
+         </p>
+      <pre><strong>private final </strong>ConcurrentHashMap&lt;StructuredQName, Integer&gt; <strong>qNameToInteger </strong>= <strong>new </strong>ConcurrentHashMap&lt;StructuredQName, Integer&gt;(1000);
+<strong>private final </strong>ConcurrentHashMap&lt;Integer, StructuredQName&gt; <strong>integerToQName </strong>= <strong>new </strong>ConcurrentHashMap&lt;Integer, StructuredQName&gt;(1000);
+<strong>private </strong>AtomicInteger <strong>unique </strong>= <strong>new </strong>AtomicInteger();
+
+// Allocate fingerprint to QName
+
+Integer existing = <strong>qNameToInteger</strong>.get(qName);
+<strong>if</strong> (existing != <strong>null</strong>) {
+    <strong>return</strong> existing;
+}
+Integer next = <strong>unique</strong>.getAndIncrement();
+existing = <strong>qNameToInteger</strong>.putIfAbsent(qName, next);
+<strong>if </strong>(existing == <strong>null</strong>) {
+    <strong>integerToQName</strong>.put(next, qName);
+    <strong>return</strong> next;
+} <strong>else</strong> {
+    <strong>return</strong> existing;
+}</pre>
+      <p>Now, there are several things slightly unsafe about this. We might find that the QName
+         doesn't exist in the map on our first look, but by the time we get to the "putIfAbsent"
+         call, someone else has added it. The worst that happens here is that we've used up
+         an integer from the "unique" sequence unnecessarily. Also, someone else doing concurrent
+         read access might see the NamePool in a state where one map has been updated and the
+         other hasn't. But I believe this doesn't matter: clients aren't going to look for
+         a fingerprint in the map unless they have good reason to believe that fingerprint
+         exists, and it's highly implausible that this knowledge comes from a different thread
+         that has only just added the fingerprint to the map.
+         </p>
+      <p>There's another ConcurrentHashMap involved as well, which is a map from URIs to lists
+         of prefixes used in conjunction with that URI. I won't go into that detail.</p>
+      <p>The external interface to the NamePool doesn't change at all by this redesign. We
+         still use 20-bit fingerprints plus 10-bit prefix codes, so we still have the limit
+         of a million distinct names. But performance no longer degrades when we get close
+         to that limit; and the limit is no longer quite so hard-coded.</p>
+      <p>My first attempt at measuring the performance of this found the expected benefits
+         in scalability as the concurrency increases and as the size of the vocabulary increases,
+         but the performance under more normal conditions was worse than the existing design:
+         execution time of 5s versus 3s for executing 100,000 cycles each of which performed
+         an addition (from a pool of 10,000 distinct names so 90% of the additions were already
+         present) followed by 20 retrievals.</p>
+      <p>I suspected that the performance degradation was caused by the need to update two
+         maps, whereas the existing design only uses one (it's cleverly done so that the fingerprint
+         generated for a QName is closely related to its hash key, which enables us to use
+         the fingerprint to navigate back into the hash table to reconstruct the original QName).</p>
+      <p>But it turned out that the cause was somewhere else. The old NamePool design was hashing
+         QNames by considering only the local part of the name and ignoring the namespace URI,
+         whereas the new design was computing a hash based on both the local name and the URI.
+         Because URIs are often rather long, computing the hash code is expensive, and in this
+         case it adds very little value: it's unusual for the same local name to be associated
+         with more than one URI, and when it happens, the hash table is perfectly able to cope
+         with the collision. By changing the hashing on QName objects to consider only the
+         local name, the costs for the new design came down slightly below the current implementation
+         (about 10% better, not enough to be noticeable).</p>
+      <p>So I feel comfortable putting this into production. There are a dozen test cases failing
+         (out of 20,000) which I need to sort out first, but it all looks very promising.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2015/06/another-look-in-the-namepool.html">Another look in the NamePool</a></div><div class="next-uri"><a href="/mike/2015/06/lazy-evaluation.html">Lazy Evaluation</a></div></footer></body>
+</html>

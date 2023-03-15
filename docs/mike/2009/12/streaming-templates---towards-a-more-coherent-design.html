@@ -1,0 +1,162 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Streaming templates - towards a more coherent design</title>
+      <meta name="id" content="173">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2009-12-10T14:18:46">
+      <meta name="basename" content="streaming_templates_-_towards_a_more_coherent_design">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Streaming templates - towards a more coherent design</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2009-12"><span class="date" time="2009-12-10T14:18:46">December&nbsp;10, 2009 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>
+         
+         As previously reported, I've been making good progress in the last few weeks in implementing
+         streaming templates: that is, the ability to write an XSLT stylesheet using template
+         rules, in which the templates are activated in response to events notified by a SAX-style
+         push parser, without ever building a tree in memory. I've been gradually increasing
+         the range of expressions that can be handled in such templates to include a large
+         number of the more common constructs, including flow-of-control constructs like&nbsp;<code>xsl:for-each</code>&nbsp;and<code>xsl:choose</code>&nbsp;which end up needing rather special treatment.</p>
+      <p>However, there's something a little unsatisfactory about the state of play. Every
+         time I write a new test case, there's a 50% chance I have to change the code to make
+         it work. At this stage of the game, that's too high: it suggests the design is not
+         yet robust enough, and unless it is made more robust, there will be a lot of bugs
+         in the finished product, because there is a limit to how many test cases I can write.
+         There's a smell about it, which suggests I need to stop frantically coding to fix
+         each new bug, and step back to think about the design.</p>
+      <p>At the heart of the problem is the fact that the design is not sufficiently composable.
+         A template body is essentially an expression tree (we can ignore the fact that it
+         derives from two different languages, XSLT and XPath - the compiled expression tree
+         does not reflect this distinction once operations such as variable and function inlining
+         have taken place). We need a model where any expression can take any other expressions
+         as its arguments, subject only to the streamability rules, and that means we need
+         a clearly-defined and universal protocol for passing the results of one expression
+         to another.&nbsp;</p>
+      <p>In the non-streaming case this protocol is the SequenceIterator class, an iterator
+         which delivers a sequence of items (and there's also an optimized protocol which delivers
+         a singleton item where both sides agree to use it). We also have the ability to evaluate
+         expressions in push mode, where an expression pushes its results as a sequence of
+         events to a Receiver; it can evaluate its subexpressions either by "pull" as a SequenceIterator,
+         or by asking the subexpression to push its results to the same or a different Receiver.&nbsp;</p>
+      <p>For the streaming evaluation, a similar set of protocols is emerging, but they aren't
+         as well formalised, and currently not every expression supports every protocol, which
+         means that arbitrary composition of expressions isn't working.</p>
+      <p>Generally in a streamable template there will be one path through the expression tree
+         that accepts streamed input. For exampleconsider the template body:</p>
+      <p><code>&lt;xsl:template match="e"&gt;</code><br><code>&nbsp; &lt;abc att="{@x + 5}"&gt;</code><br><code>&nbsp; &nbsp;&nbsp; &lt;xsl:copy-of select="doc('xyz')//data[value=current()/@y]"/&gt;</code><br><code>&nbsp; &nbsp;&nbsp; &lt;xsl:value-of select="count(.//g)+2"/&gt;</code><br><code>&nbsp; &lt;/abc&gt;</code><br><code>&lt;/xsl:template&gt;</code></p>
+      <p>Here there is a "basic streamed input" represented by the selection&nbsp;<code>.//g</code>. This is fed into a count() function, whose result is then fed into an arithmetic
+         expression, whose result in turn is fed into a simple-content-constructor (represented
+         by the select attribute of xsl:value-of, and whose semantics are the rules for "constructing
+         simple content" in the XSLT 2.0 specification). The result of the simple content constructor
+         is a string, which is fed into the&nbsp;<code>xsl:value-of</code>&nbsp;instruction to create a text node, which is fed into the complex-content-constructor
+         represented by the body of the&nbsp;<code>&lt;abc&gt;</code>&nbsp;literal result element, whose result is in turn fed into the result of the template
+         itself. The expressions have other inputs as well, but these are evaluated conventionally
+         in non-streaming mode and need not concern us, except to note that in some cases their
+         results must be combined with the results of the streamed inputs.</p>
+      <p>What exactly do we mean by the&nbsp;basic streamed input? It's essentially the largest
+         subexpression that reads from the streamed input document
+         and whose syntax is that of a&nbsp;streamed pattern. A streamed pattern is capable of examining
+         events on the fly and deciding whether
+         they correspond to nodes that match the pattern or not. The rules for what you can
+         write in a streamed pattern are quite close to the rules for what you can write in
+         an XSLT match pattern, but not identical: they allow some things not allowed in XSLT
+         match patterns, such as "." which matches the context item, and they disallow some
+         other things, such as arbitrary navigation in the filter expressions. An important
+         difference is that they are anchored to a context node: the XSLT pattern&nbsp;<code>child::a</code>&nbsp;will match any &lt;a&gt; element regardless of context, whereas a streamed pattern&nbsp;<code>child::a</code>&nbsp;will only match &lt;a&gt; elements that are children of the context node.</p>
+      <p>In the particular case above, once count() has done its work the rest of the code
+         ought to be able to work in much the same way as it does today, because the result
+         of count() is a singleton. The count() function itself needs to be evaluated in streaming
+         mode because we don't want to buffer its input in memory. Currently Saxon is evaluating
+         the code above this point in two halves: the &lt;abc&gt; start tag and its att attribute
+         are written before the descendants of the context node arrive from the XML parser,
+         while the text node and end tag are written afterwards. This works, but isn't really
+         necessary: because the count() is a singleton, it could be evaluated at the start,
+         placed in a variable, and the rest of the template body could then be evaluated "conventionally"
+         taking its input from this variable when required.</p>
+      <p>This strategy works well when there is a streaming result that is a singleton, but
+         it can also be used as a fallback when there is an expression on the tree that expects
+         a sequence as its input, but for which no streamed implementation is available. For
+         example, let's suppose that in the above example,&nbsp;count(.//g)&nbsp;is replaced by&nbsp;<code>index-of(.//g, 'q')</code>, and that no streamed implementation of index-of is yet available. We don't want
+         to fail at this point. Note that the compiled expression is actually&nbsp;<code>index-of(data(.//g), 'q')</code>&nbsp;where the&nbsp;<code>data()</code>&nbsp;function represents the implicit atomization. We do have a streaming implementation
+         of&nbsp;<code>data(.//g)</code>: this will have to buffer its results into a variable, so that it can be made available
+         to the unstreamed&nbsp;<code>index-of()</code>&nbsp;function in the form it expects, as a (pull-style) SequenceIterator.</p>
+      <p>This approach means that during the time we have not yet developed streaming implementations
+         of all expressions and functions, users will only notice less-than-optimal performance,
+         they won't get failures. So this is an important part of getting the design more robust.</p>
+      <p>Let's now look at the protocols for expressions that actually are streamed.</p>
+      <p>There's a large class of expressions that can usefully take a sequence of items as
+         a streamed input, and produce another sequence of items as its streamed output. Examples
+         are functions such as distinct-values(), subsequence(), and index-of(), and expressions
+         such as filter expressions (a[b]). Some of these like distinct-values() might require
+         some working memory, but it's still useful to stream them.</p>
+      <p>In my paper at Balisage 2009 I identified two kinds of stream that can be used (whether
+         we're in a pull or push pipeline): a composed stream is a sequence of items (atomic
+         values and nodes), while a decomposed stream is a sequence of parser events (startElement,
+         endElement, etc). A mixed stream may contain both: for example the result of the expression
+         &lt;a&gt;{b}&lt;/a&gt; (I'll use XQuery notation for conciseness) might be produced as a startElement
+         event, followed by a sequence of composed element nodes, followed by an endElement
+         event. Depending on what happens to the result of this expression, the recipient might
+         either choose to&nbsp;compose&nbsp;it (into a single element node), or to&nbsp;decompose&nbsp;it (into
+         a stream of events, for example to be sent to the serializer).</p>
+      <p>The Saxon Receiver interface currently handles mixed or decomposed streams in push
+         mode. There is no push-style interface specialized for handling composed sequences,
+         corresponding to the SequenceIterator interface in pull mode. Because many expressions
+         can usefully pass their data in this way, I've been introducing such an interface
+         (called Feed), but it's not yet universally or systematically supported.</p>
+      <p>But although a composed Feed will be a useful protocol to support between streaming
+         expressions, it doesn't handle all cases.</p>
+      <p>At the bottom level, the events coming from the parser can be handled in a number
+         of ways.</p>
+      <p>Some functions, such as count(), exists(), data(), and string() can process these
+         events directly to generate an item or sequence of items. We'll call these "watching
+         operations". They sit on the push pipeline between the parser and the rest of the
+         expression evaluation machinery, turning decomposed parse events into composed items.
+         There input is the&nbsp;basic streamed input&nbsp;expression, and their output is a sequence
+         of items. In some cases they take additional
+         inputs beyond the streamed input: one expression that's proving particularly troublesome
+         in this regard is the simple-content-constructor, because of the messy work that it
+         has to do combining adjacent text nodes and inserting separators. We basically want
+         to have as small a set of watching operations as possible, because they are the most
+         complex to write. Fortunately a great many expressions work on atomized input, so
+         once we have implemented data() as a watching expression, a lot of other things become
+         possible.</p>
+      <p>It's not always ideal for watching operations to produce a composed sequence as their
+         result. Consider for example&nbsp;<code>&lt;a&gt;&lt;xsl:copy-of select=".//g"/&gt;&lt;/a&gt;</code>. Here the watching operation is the xsl:copy-of. This shouldn't materialise the &lt;g&gt;
+         elements as trees in memory: it should just feed a decomposed sequence of startElement
+         and endElement events to the Receiver used as the destination of the literal result
+         element.</p>
+      <p>So what's emerging is the following:</p>
+      <ul>
+         <li>Every expression must be able to take a feed (a composed sequence of items in push
+            mode) as its input (for any of its arguments) and to deliver its results as a feed.</li>
+         <li>For some expressions, this capability can be provided by a general-purpose wrapper
+            around the existing expression implementation, which buffers the contents of the feed
+            and delivers it via the SequenceIterator interface. This provides a transition route
+            so that streaming will work with any expression; "native streaming" implementations
+            of the more exotic expressions can then be developed incrementally.</li>
+         <li>In addition to this capability, some basic expressions must be implemented so they
+            can be evaluated as "watching expressions": instead of taking their input as a feed
+            of composed items, these match events coming from the parser. Some expressions must
+            be implemented this way (data(), string(), xsl:copy-of); for other expressions (count(),
+            exists()) this can be seen as an optional optimization.</li>
+         <li>For some expressions, notably those that construct element nodes, either directly
+            or by calling subexpressions (e.g.<code>xsl:apply-templates</code>,&nbsp;<code>xsl:for-each</code>,&nbsp;<code>xsl:choose</code>) it is more efficient to deliver the result as a decomposed stream of events. This
+            protocol will be used only where the receiving expression wants the data in this form
+            and where the supplying expression is able to deliver it in this form (alternatively,
+            if the receiving expression wants a decomposed sequence and the supplier is not able
+            to deliver it, a decomposer will be interserted in the pipeline to turn the composed
+            result into a decomposed result).</li>
+      </ul>
+      <p>This is not a million miles from what the current code is doing. But until writing
+         this, I hadn't stood back and formulated the rules. I think I've now got a set of
+         design principles in place that can be applied to the implementation of individual
+         streaming expressions to ensure full composability of the constructs that can be used
+         in a streamed template. I'll know I've got it right when I start expecting new test
+         cases to work first time.<br>
+         
+         </p>
+      
+      
+   </main><footer><div class="prev-uri"><a href="/mike/2009/12/intel-joins-the-club.html">Intel joins the club</a></div><div class="next-uri"><a href="/mike/2009/12/patents-an-open-letter-to-my-mp.html">Patents: an Open Letter to my MP</a></div></footer></body>
+</html>

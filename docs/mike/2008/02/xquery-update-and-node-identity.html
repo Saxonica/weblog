@@ -1,0 +1,71 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>XQuery Update and Node Identity</title>
+      <meta name="id" content="147">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-02-14T14:18:45">
+      <meta name="basename" content="xquery_update_and_node_identity">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>XQuery Update and Node Identity</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-02"><span class="date" time="2008-02-14T14:18:45">February&nbsp;14, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>An interesting little spat on the XQuery internal mailing list over the last couple
+         of days on the question of whether or not XQuery Update guarantees to preserve node
+         identity. The spec says that it does. Someone remarked during a telcon that there
+         were difficulties meeting this requirement in a SQL/XML environment. After the meeting
+         I sent an email claiming that the assertion in the spec that updates preserve node
+         identity is untestable and therefore ought to be removed.</p>
+      <p>It's an interesting point. Clearly a lot of the point of XQuery update is that it
+         is supposed to update documents <em>in situ</em>, and this makes it different from approaches like XSLT that create a modified copy.
+         But the question is, how can an outside observer tell the difference? Clearly you
+         can't detect the difference within the language itself, because the way snapshot semantics
+         works means you can never compare a node before updating with the same node (or even
+         a different node) after updating. So you have to fall back on doing something in the
+         next layer up, in the client application, to test whether the node identities are
+         the same before and after. In order to do that, we need to know something about the
+         client application.</p>
+      <p>Some clients might submit lexical XML (from filestore, or over the wire) to an XQuery
+         update engine, and get lexical XML back. Clearly such clients can't tell whether node
+         identity was retained or not - it's lost in transit between the client and the XQuery
+         engine.</p>
+      <p>What about a client that submits a DOM to be updated? Well, DOM nodes aren't quite
+         the same thing as XDM nodes, for example a DOM can have adjacent text nodes. It's
+         quite likely that the identity of those nodes will be lost by the time they are converted
+         to XDM and back. Did the XQuery update engine lose the node identity or was it the
+         conversion from DOM to XDM that lost it? You can't tell: hence my belief that the
+         claim in the spec that XQuery Update retains node identity is untestable.</p>
+      <p>Closer to home, what about the Saxon implementation? Saxon's implementation of XDM
+         interface is essentially the NodeInfo interface, which in turn has a number of implementations
+         including the tiny tree, the linked tree, and so on. An interesting feature of the
+         NodeInfo interface (and I think this is also true of DOM, though it's not spelled
+         out) is that object identity does not imply node identity: the same node can be represented
+         by different Java objects at different times (or even at once), and you need to use
+         the isSameNodeInfo() method (rather than ==) to determine if two variables refer to
+         the same node. </p>
+      <p>For example, it's possible that when you iterate over the attributes of an element,
+         the Java NodeInfo objects that represent the attributes will be "flyweight" objects
+         created transiently and discarded as soon as you have finished with them. This means
+         that if you do three iterations over the same attributes in parallel, you can have
+         three Java objects representing the same node. What happens to these Java objects
+         when you run XQuery Update to do an in-situ update of the tree? Suppose the update
+         renames an attribute. If you ask one of these objects for the name of the attribute
+         node that it represents, will you get the new name or the old?</p>
+      <p>Under my current design, the answer is undefined: you might get either, depending
+         on the implementation. In some ways that's rather unsatisfactory, but anything else
+         would involve a major rethink of the design philosophy of the NodeInfo interface.
+         The updating API will return you a NodeInfo representing the new updated tree, and
+         that's what you are expected to use: any references to nodes obtained before the update
+         are unsafe and their content is undefined.</p>
+      <p>And to get back to the subject of this article, I think that applies to node identity
+         too. If you held on to a variable that refers to an attribute node before the update,
+         and then ask whether it's the same node (isSameNodeInfo()) as one in the updated tree,
+         the answer is undefined. </p>
+      <p>In practice, with the linked tree, the identity of an attribute node is currently
+         based on the identity of the parent element plus the index number of the attribute.
+         That means that if you delete an attribute, all the identities change. I have to decide
+         (a) whether this is conformant with the spec, and (b) whether it creates any usability
+         problems for users. On (a), I think I've convinced myself that there is no conformance
+         issue: although the spec says that identity is preserved, I think this is unenforceable.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/01/further-progress-on-xquery-update.html">Further progress on XQuery Update</a></div><div class="next-uri"><a href="/mike/2008/07/document-projection.html">Document Projection</a></div></footer></body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>New W3C XML Schema Test Suite</title>
+      <meta name="id" content="133">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-12-14T14:18:44">
+      <meta name="basename" content="new_w3c_xml_schema_test_suite">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>New W3C XML Schema Test Suite</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-12"><span class="date" time="2006-12-14T14:18:44">December&nbsp;14, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>
+         
+         A few weeks ago the W3C Schema working group published a new test suite, containing
+         nearly 40,000 tests: see<a href="http://www.w3.org/XML/2004/xml-schema-test-suite/">http://www.w3.org/XML/2004/xml-schema-test-suite/</a></p>
+      <p>Since then, I've been putting a fair amount of effort into reconciling Saxon's results
+         on these tests with the published results.</p>
+      <p>My first attempt looked like this:</p>
+      <pre><code>    expected    Saxon-SA     No of tests
+    result      result
+    valid       valid           24687
+    invalid     invalid         13150
+    valid       invalid           697
+    invalid     valid             856
+    not run                         9</code></pre>
+      <p>The "not run" tests included 6 that blew memory because of large minOccurs/maxOccurs
+         values, and 3 that crashed for another reason - deriving types directly from xs:anySimpleType.</p>
+      <p>That's not bad for a first run (96% agreement), but obviously analyzing the 1500+
+         discrepancies will take some time!</p>
+      <p>Most of the 697 tests where the expected result was "valid" but Saxon reported "invalid"
+         turned out to be regular expression tests submitted by Microsoft, where they seem
+         to be allowing through all kinds of regex syntax that the Schema spec quite clearly
+         doesn't allow.</p>
+      <p>I'm now getting close to finishing the analysis of one of the three groups of tests,
+         those submitted by Microsoft. I've raised 40 bugs so far against the test suite (go
+         to http://www.w3.org/Bugs/Public/query.cgi and search under the Product heading "XML
+         Schema Test Suite"). However, it's not all one-sided; I've also found about 30 bugs
+         in Saxon schema processing. Unlike the regex tests, some of these tests were clearly
+         written by people who knew the spec extremely well, and in some cases the test results
+         are correct according to the letter of the spec despite being highly counter-intuitive.
+         I haven't been reporting these individually on the SourceForge bug register because
+         most of them are so obscure I think they can simply wait until the next release.&nbsp;</p>
+      <p>Since there have been very few bug reports on Saxon's schema processing from the field,
+         this suggests that there are many corners of the schema spec that few users stray
+         into -- this makes the exercise a little frustrating, because it means that few users
+         will notice the improvement from 99% conformance to 99.9%. It's an educational experience,
+         however. Perhaps one of these days I will finally understand some of the more obscure
+         utterances in Schema Part 1, such as the parenthetical "which must be understood as
+         logically prior to this clause of this constraint, below" in 3.11.4, which has always
+         had me completely baffled. Certainly, I've been spending a lot of time over the last
+         few days poring over that kind of prose. I've also made a few comments on the spec
+         where there seem (still, 5 years after publication and countless errata) to be remaining
+         errors and inconsistencies.</p>
+      <p>The availability of these tests should greatly help interoperability between schema
+         processors, especially if the major processors all publish their results, and if the
+         test suite is properly maintained to remove reported bugs. It will be interesting
+         to see who publishes their results and who doesn't.<br>
+         
+         </p>
+      
+      
+   </main><footer><div class="prev-uri"><a href="/mike/2006/12/compiling-q10.html">Compiling Q10</a></div><div class="next-uri"><a href="/mike/2007/01/how-not-to-fold-constants.html">How not to fold constants</a></div></footer></body>
+</html>

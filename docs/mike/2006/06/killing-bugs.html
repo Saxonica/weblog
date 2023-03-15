@@ -1,0 +1,78 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Killing bugs</title>
+      <meta name="id" content="117">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-06-15T14:18:43">
+      <meta name="basename" content="killing_bugs">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Killing bugs</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-06"><span class="date" time="2006-06-15T14:18:43">June&nbsp;15, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>I've just got Saxon 8.7.3 out of the door, which fixes about 35 bugs found since 8.7.1
+         was shipped two months ago. That prompts some thoughts about whether the number is
+         too high and whether it can be reduced.</p>
+      <p>I hope the following remarks don't sound too defensive:</p>
+      <p>* During the life of Saxon 8.7.1 there were over 10,000 downloads. I bug for every
+         300 downloads is not that bad.</p>
+      <p>* This particular period coincided with the availability of new test suites from W3C,
+         for both XSLT and XQuery. I'm not sure how many of the bugs this accounts for, but
+         certainly a few.</p>
+      <p>* A number of people are stress-testing Saxon, either because they incorporate Saxon
+         technology in their own products, or because they are developing test suites for their
+         own products and running the tests against Saxon is a good way of verifying the tests.</p>
+      <p>* Quite a few of the bugs are in very obscure corners of the specification.</p>
+      <p>The number of tests that I run before release is increasing all the time, to the extent
+         that I'm a bit worried that the build cycle is becoming too long. However, there are
+         definitely areas that are under-tested. There was a bug last week from a user who
+         is writing an application that calls the public Saxon API that provides access to
+         schema information. I have to confess that I don't have a single test in that area:
+         if a user calls this API in a way that's significantly different from the way Saxon
+         uses it internally, then they're in uncharted waters. In fact, it's generally true
+         that the Java API is less thoroughly tested than the XSLT. XQuery, and XML Schema
+         interfaces. Saxon's use of external interfaces such as DOM, JDOM, and DOM4J also gives
+         occasional cause for concern - especially DOM, because that has multiple implementations
+         that each have their own quirks. (XOM is better, because Wolfgang Hoschek does some
+         thorough testing in that area.)</p>
+      <p>In a pure open-source world, I tended to the view that users got what they paid for:
+         I've never really gone in for the collaborative development angle on open-source,
+         but I do incline to the view that testing is an activity where users have a legitimate
+         part to play. It's less clear what the expectations should be with paid-for software.
+         I don't feel comfortable taking money from people and shipping software that doesn't
+         work. On the other hand, everyone in the software industry does it, and no-one knows
+         how to avoid doing it. There are a lot of products costing 100 times the price people
+         pay for Saxon that probably have 100 times as many bugs. If I spent an extra two weeks
+         testing before each release, how many of those 35 bugs would I have found? Not many,
+         I suspect.</p>
+      <p>One way out of this is the formalisation of releases as "beta" releases, so customers
+         know what they are getting. I've resisted that partly because I don't know myself,
+         in advance, what customers are getting: every release will have bugs, and I don't
+         know myself how many there will be, or how serious.</p>
+      <p>Something I like to keep in mind is that the bugginess of a piece of
+         software is the product of the number of bugs and their half-life. As well as minimizing
+         the number of bugs that hit the field, it's important to eliminate them quickly through
+         maintenance releases. Many software vendors are now tackling that through automated
+         updating of installed software. That requires rather more investment in infrastructure
+         than I've been able to make until now, but perhaps the time will come.</p>
+      <p>One thing that I do propose to do once the current round of specs reach Recommendation
+         status is to identify a release as a "gold" release, and maintain it for reliability
+         - fix the bugs, and resist making any functionality changes or optimization changes.
+         Users who need reliability rather than new features can then enjoy a period of stability.
+         This mirrors what has happened with the 6.5.x series: the number of new bugs reported
+         on 6.5.x is probably down to about one every three months, though I know the software
+         is still very widely used.</p>
+      <p>There are a few areas of the software that I know are more bug-prone than others.
+         There's a tendency, for example, for the expression-rewriting performed by the optimizer
+         to leave corruptions in the expression tree, such as infinite loops in the chain of
+         "parent" pointers. The overloading of the TinyTree structure to hold sequences of
+         parentless elements as well as holding a single well-formed document has also led
+         to more than its fair share of problems. There's always an open question whether one
+         should keep patching in the hope of squashing the last bug in such areas, or redesign
+         from scratch. It depends partly on how much future change one expects to see in that
+         area.</p>
+      <p>Is there a conclusion to this little musing? Not really: there are no magic answers.
+         I just want you to know that I'm not complacent about it, and that reliability features
+         very high on my list of priorities.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/05/xqj-republished.html">XQJ republished</a></div><div class="next-uri"><a href="/mike/2006/07/xime-p-in-chicago.html">XIME-P in Chicago</a></div></footer></body>
+</html>

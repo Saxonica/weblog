@@ -1,0 +1,1460 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Maps</title>
+      <meta name="id" content="188">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2012-01-28T19:08:32">
+      <meta name="basename" content="maps">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Maps</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2012-01"><span class="date" time="2012-01-28T19:08:32">January&nbsp;28, 2012 at 07:08p.m.</span></a></div></header><main>
+      
+      <div class="asset-content entry-content">
+         <div class="asset-body">
+            <p>I optimistically assumed that the W3C <a class="zem_slink" href="http://www.w3.org/XML/Query/" title="XQuery" rel="homepage">XQuery</a>/<a class="zem_slink" href="http://en.wikipedia.org/wiki/XSLT" title="XSLT" rel="wikipedia">XSLT</a> 
+               specification for <a class="zem_slink" href="http://en.wikipedia.org/wiki/Map" title="Map" rel="wikipedia">maps</a> would be published long before Saxon 9.4 was 
+               released. I was wrong - the XQuery WG didn't rubber-stamp the XSLT WG's 
+               spec as expected, but insisted on reviewing it from first principles, 
+               starting a long drawn out study of requirements and use-cases which is 
+               still ongoing.
+               </p>
+            <p>
+               So Saxon 9.4 has maps, but no 
+               documentation for them. To remedy this, here is the spec. It happens to 
+               be a snapshot of a draft of the XSLT 3.0 specification, but of course 
+               everything can change before a draft is published. And as always when 
+               Saxon implements features in a draft specification, if the spec changes 
+               then Saxon will change with it, regardless of compatibility. Use at your
+               own risk.
+               </p>
+            <div class="div2">
+               <h3 style="text-align: left; color: rgb(0, 90, 156); background-color: white; font: 120% sans-serif;">20.1 Maps</h3>
+               <p>A map is an additional kind of item.</p>
+               <p><span class="definition" style="font: small-caps 100% sans-serif;">[<a class="zem_slink" href="http://en.wikipedia.org/wiki/Definition" title="Definition" rel="wikipedia">Definition</a>:&nbsp;</span><a href="editor-content.html?cs=UTF-8" name="dt-map" id="dt-map" title="map"></a>A
+                  map comprises a collation and a set of entries. Each entry comprises a 
+                  key which is an arbitrary atomic value, and an arbitrary sequence called
+                  the associated value. Within a map, no two entries have the same key, 
+                  when compared using the&nbsp;<code style="font-family: monospace;">eq</code>&nbsp;operator
+                  under the map's collation. It is not necessary that all the keys should
+                  be mutually comparable (for example, they can include a mixture of 
+                  integers and strings). Key <a class="zem_slink" href="http://en.wikipedia.org/wiki/Value_%28personal_and_cultural%29" title="Value (personal and cultural)" rel="wikipedia">values</a> will never be of type&nbsp;<code style="font-family: monospace;">xs:untypedAtomic</code>, and they will never be the&nbsp;<code style="font-family: monospace;">xs:float</code>&nbsp;or&nbsp;<code style="font-family: monospace;">xs:double</code>&nbsp;value&nbsp;<code style="font-family: monospace;"><a class="zem_slink" href="http://en.wikipedia.org/wiki/NaN" title="NaN" rel="wikipedia">NaN</a></code>.<span class="definition" style="font: small-caps 100% sans-serif;">]</span></p>
+               <p>The <a class="zem_slink" href="http://en.wikipedia.org/wiki/Function_%28mathematics%29" title="Function (mathematics)" rel="wikipedia">function</a> call&nbsp;<code style="font-family: monospace;">map:get($map, $key)</code>&nbsp;can be used to retrieve the value associated with a given key.</p>
+               <p>A
+                  map&nbsp;can also be viewed as a function from keys to associated values. To
+                  achieve this, a map is also a function item. The function corresponding
+                  to the map has the signature<code style="font-family: monospace;">function($key as xs:anyAtomicValue) as item()*</code>. Calling the function has the same effect as calling the&nbsp;<code style="font-family: monospace;">get</code>&nbsp;function: the expression&nbsp;<code style="font-family: monospace;">$map($key)</code>&nbsp;returns the same result as<code style="font-family: monospace;">get($map, $key)</code>. For example, if&nbsp;<code style="font-family: monospace;">$books-by-isbn</code>&nbsp;is a map whose keys are <a class="zem_slink" href="http://en.wikipedia.org/wiki/International_Standard_Book_Number" title="International Standard Book Number" rel="wikipedia">ISBNs</a> and whose assocated values are&nbsp;<code style="font-family: monospace;">book</code>&nbsp;elements, then the expression&nbsp;<code style="font-family: monospace;">$books-by-isbn("0470192747")</code>&nbsp;returns the&nbsp;<code style="font-family: monospace;">book</code>&nbsp;element
+                  with the given ISBN. The fact that a map is a function item allows it 
+                  to be passed as an argument to <a class="zem_slink" href="http://en.wikipedia.org/wiki/Higher-order_function" title="Higher-order function" rel="wikipedia">higher-order functions</a> that expect a 
+                  function item as one of their arguments.</p>
+               <p>Like all other values, maps&nbsp;are immutable. For example, the map:remove&nbsp;function creates
+                  a new map by removing an entry from an existing map, but the existing
+                  map is not changed by the operation.</p>
+               <p>Like
+                  sequences, maps&nbsp;have no identity. It is meaningful to compare the 
+                  contents of two maps, but there is no way of asking whether they are 
+                  "the same map": two maps with the same content are indistinguishable.</p>
+               <div class="div3" style="font-family: sans-serif; font-size: medium;">
+                  <h4 style="text-align: left; font: bold 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="map-type" id="map-type"></a>20.1.1 The Type of a Map</h4>
+                  <p>The syntax of&nbsp;<a href="http://www.w3.org/TR/xpath-30/#prod-xpath30-ItemType">ItemType</a><sup><small style="font-style: italic; color: rgb(143, 143, 143);">XP30</small></sup>&nbsp;as defined in <a class="zem_slink" href="http://en.wikipedia.org/wiki/XPath" title="XPath" rel="wikipedia">XPath</a> is extended as follows:</p>
+                  <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="d7e39697" id="d7e39697"></a>MapType</h5>
+                  <table class="scrap" summary="Scrap">
+                     
+                     
+                     <tbody>
+                        
+                        
+                        <tr valign="baseline">
+                           
+                           
+                           <td style="font-family: sans-serif;"><a href="editor-content.html?cs=UTF-8" name="NT-ItemType-2" id="NT-ItemType-2"></a>[17]&nbsp;&nbsp;&nbsp;</td>
+                           
+                           
+                           <td style="font-family: sans-serif;"><code style="font-family: monospace;">ItemType</code></td>
+                           
+                           
+                           <td style="font-family: sans-serif;">&nbsp;&nbsp;&nbsp;::=&nbsp;&nbsp;&nbsp;</td>
+                           
+                           
+                           <td style="font-family: sans-serif;"><code style="font-family: monospace;">... | MapType&nbsp;</code></td>
+                           </tr>
+                        
+                        
+                        <tr valign="baseline">
+                           
+                           
+                           <td style="font-family: sans-serif;"><a href="editor-content.html?cs=UTF-8" name="NT-MapType" id="NT-MapType"></a>[18]&nbsp;&nbsp;&nbsp;</td>
+                           
+                           
+                           <td style="font-family: sans-serif;"><code style="font-family: monospace;">MapType</code></td>
+                           
+                           
+                           <td style="font-family: sans-serif;">&nbsp;&nbsp;&nbsp;::=&nbsp;&nbsp;&nbsp;</td>
+                           
+                           
+                           <td style="font-family: sans-serif;"><code style="font-family: monospace;">'map' '(' ( '*' | (<a href="http://www.w3.org/TR/xpath-30/#doc-xpath30-AtomicOrUnionType">AtomicOrUnionType</a><sup><small style="font-style: italic; color: rgb(143, 143, 143);">XP30</small></sup>&nbsp;','&nbsp;<a href="http://www.w3.org/TR/xpath-30/#prod-xpath30-SequenceType">SequenceType</a><sup><small style="font-style: italic; color: rgb(143, 143, 143);">XP30</small></sup>) ')'</code></td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  <p>The&nbsp;<code style="font-family: monospace;">ItemType</code>&nbsp;<code style="font-family: monospace;">map(K, V)</code>&nbsp;matches an item&nbsp;<var>M</var>&nbsp;if (a)&nbsp;<var>M</var>&nbsp;is a map, and (b) every entry in&nbsp;<var>M</var>&nbsp;has a key that matches&nbsp;<code style="font-family: monospace;">K</code>&nbsp;and an associated value that matches&nbsp;<code style="font-family: monospace;">V</code>. For example,<code style="font-family: monospace;">map(xs:integer, element(employee))</code>&nbsp;matches a map if all the keys in the map are integers, and all the associated values
+                     are&nbsp;<code style="font-family: monospace;">employee</code>&nbsp;elements.
+                     Note that a map (like a sequence) carries no intrinsic type information
+                     separate from the types of its entries, and the type of existing 
+                     entries in a map does not constrain the type of new entries that can be 
+                     added to the map.</p>
+                  <p>The&nbsp;<code style="font-family: monospace;">ItemType</code>&nbsp;<code style="font-family: monospace;">map(*)</code>&nbsp;is equivalent to&nbsp;<code style="font-family: monospace;">map(xs:anyAtomicType, item()*)</code>, and matches any map regardless of its contents.</p>
+                  <p>Because a map&nbsp;is a function, the type&nbsp;<code style="font-family: monospace;">map(K, V)</code>&nbsp;is derived from&nbsp;<code style="font-family: monospace;">function(K) as V</code>, and instances of&nbsp;<code style="font-family: monospace;">map(K, V)</code>&nbsp;can be used wherever the required type is&nbsp;<code style="font-family: monospace;">function(K) as V</code>.</p>
+               </div>
+               <div class="div3" style="font-family: sans-serif; font-size: medium;">
+                  <h4 style="text-align: left; font: bold 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="map-functions" id="map-functions"></a>20.1.2 Functions that operate on Maps</h4>
+                  <p>The functions defined in this section use a conventional namespace prefix&nbsp;<code style="font-family: monospace;">map</code>, which is assumed to be bound to the namespace URI&nbsp;<code style="font-family: monospace;">http://www.w3.org/2005/xpath-functions/map</code>.</p>
+                  <p>There is no operation to atomize a map or convert it to a string.</p>
+                  <p>The number of entries in the map may be obtained as&nbsp;<code style="font-family: monospace;">count(map:keys($map))</code>.</p>
+                  <div class="div4">
+                     <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="func-map-new" id="func-map-new"></a>20.1.2.1 map:new</h5>
+                     <dl>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Summary</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>Creates a new map: either an empty map, or a map that combines entries from a number
+                              of existing maps.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Signatures</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p><a href="editor-content.html?cs=UTF-8" name="function-new" id="function-new"></a></p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);"><code class="function" style="font-family: monospace;">new</code>()<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">map(*)</code></div>
+                           
+                           
+                           <p>&nbsp;</p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);"><code class="function" style="font-family: monospace;">new</code>(<code class="arg" style="font-family: monospace;">$maps</code><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">map(*)*</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">map(*)</code></div>
+                           
+                           
+                           <p>&nbsp;</p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                 
+                                 
+                                 <tbody>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td rowspan="2" style="font-family: sans-serif;" valign="baseline"><code class="function" style="font-family: monospace;">new</code>(</td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$maps</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">map(*)*</code>,</td>
+                                       </tr>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$collation</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">xs:string</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">map(*)</code></td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                           </div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;"><br></dt>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Rules</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The function map:new&nbsp;constructs and returns a new map.</p>
+                           
+                           
+                           <p>The
+                              zero-argument form of the function returns an empty map&nbsp;whose collation
+                              is the default collation in the static context. It is equivalent to 
+                              calling the one-argument form of the function with an empty sequence as 
+                              the value of the first argument.</p>
+                           
+                           
+                           <p>The one-argument form of the function returns a map&nbsp;that is formed by combining the
+                              contents of the maps supplied in the&nbsp;<code style="font-family: monospace;">$input</code>&nbsp;argument.
+                              It is equivalent to calling the two-argument form of the function with 
+                              the default collation from the static context as the second argument.</p>
+                           
+                           
+                           <p>The two-argument form of the function returns a map&nbsp;that is formed by combining the
+                              contents of the maps supplied in the&nbsp;<code style="font-family: monospace;">$input</code>&nbsp;argument. The collation of the new map is the value of the&nbsp;<code style="font-family: monospace;">$collation</code>&nbsp;argument. The supplied maps are combined as follows:</p>
+                           
+                           
+                           <ol class="enumar" style="list-style-type: decimal;">
+                              <li>
+                                 
+                                 
+                                 <p>There
+                                    is one entry in the new map for each distinct key value present in the 
+                                    union of the input maps, where keys are considered distinct according to
+                                    the rules of the<code style="font-family: monospace;">fn:distinct-values</code>&nbsp;function with&nbsp;<code style="font-family: monospace;">$collation</code>&nbsp;as the collation.</p>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>The associated value for each such key is taken from the last map in the input sequence&nbsp;<code style="font-family: monospace;">$input</code>&nbsp;that
+                                    contains an entry with this key. If this map contains more than one 
+                                    entry with this key (which can happen if its collation is different from
+                                    that of the new map) then it is&nbsp;<a href="editor-content.html?cs=UTF-8" title="" class="termref">i</a>mplementation-dependent&nbsp;which of them is selected.</p>
+                                 </li>
+                           </ol>
+                           
+                           
+                           <p>There is no requirement that the supplied input maps should have the same or compatible
+                              types. The type of a map (for example&nbsp;<code style="font-family: monospace;">map(xs:integer, xs:string)</code>) is descriptive of the entries it currently contains, but is not a constraint on
+                              how the map may be combined with other maps.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Examples</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>let&nbsp;<code style="font-family: monospace;">$week</code>&nbsp;:=&nbsp;<code style="font-family: monospace;">map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag",
+                                 6:="Samstag"}</code></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:new()</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{}</code>.&nbsp;<em>(Returns an empty map, whose collation is the default collation from the static context).</em></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:new(())</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{}</code>.&nbsp;<em>(Returns an empty map, whose collation is the default collation from the static context).</em></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:new((map:entry(0, "no"), map:entry(1, "yes")))</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{0:="no", 1:="yes"}</code>.&nbsp;<em>(Returns a map with two entries; the collation of the map is the default collation
+                                 from the static context).</em></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:new((map:entry(0, "no"), map:entry(1, "yes")))</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{0:="no", 1:="yes"}</code>.&nbsp;<em>(Returns a map with two entries; the collation of the map is the default collation
+                                 from the static context).</em></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:new(($week, map{7:="Unbekannt"}))</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag",
+                                 6:="Samstag", 7:="Unbekannt"}</code>.&nbsp;<em>(The value of the existing map is unchanged; a new map is created containing all the
+                                 entries from&nbsp;<code style="font-family: monospace;">$week</code>, supplemented with a new entry.).</em></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:new(($week, map{6:="Sonnabend"}))</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag",
+                                 6:="Sonnabend"}</code>.&nbsp;<em>(The value of the existing map is unchanged; a new map is created containing all the
+                                 entries from&nbsp;<code style="font-family: monospace;">$week</code>, with one entry replaced by a new entry. Both input maps contain an entry with the
+                                 key value&nbsp;<code style="font-family: monospace;">6</code>; the one used in the result is the one that comes last in the input sequence.).</em></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:new((map{"A":=1}, map{"a":=2}), "http://collation.example.com/caseblind")</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{"a":=2}</code>.&nbsp;<em>(Assuming
+                                 that the keys of the two entries are equal under the rules of the 
+                                 chosen collation, only one of the entries can appear in the result; the 
+                                 one that is chosen is the one from the last map in the input sequence. 
+                                 If both entries were in the same map, it would be 
+                                 implementation-dependent which was chosen.).</em></p>
+                           </dd>
+                        </dl>
+                  </div>
+                  <div class="div4">
+                     <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="func-map-collation" id="func-map-collation"></a>20.1.2.2&nbsp;map:collation</h5>
+                     <dl>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Summary</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>Returns the URI of the supplied map's collation</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Signature</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p><a href="editor-content.html?cs=UTF-8" name="function-collation" id="function-collation"></a></p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);"><code class="function" style="font-family: monospace;">collation</code>(<code class="arg" style="font-family: monospace;">$input</code><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">map(*)</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">xs:string</code></div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;"><br></dt>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Rules</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The function map:collation&nbsp;returns the collation URI of the map&nbsp;supplied as&nbsp;<code style="font-family: monospace;">$input</code>.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Examples</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:collation(map:new((), "http://collation.example.com/caseblind"))</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">"http://collation.example.com/caseblind"</code>.</p>
+                           </dd>
+                        </dl>
+                  </div>
+                  <div class="div4">
+                     <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="func-map-keys" id="func-map-keys"></a>20.1.2.3 map:keys</h5>
+                     <dl>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Summary</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>Returns a sequence containing all the key values present in a map</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Signature</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p><a href="editor-content.html?cs=UTF-8" name="function-keys" id="function-keys"></a></p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);"><code class="function" style="font-family: monospace;">keys</code>(<code class="arg" style="font-family: monospace;">$input</code><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">map(*)</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">xs:anyAtomicType*</code></div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;"><br></dt>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Rules</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The function map:keys&nbsp;takes any map&nbsp;as its&nbsp;<code style="font-family: monospace;">$input</code>&nbsp;argument and returns the keys that are present in the map as a sequence of atomic
+                              values, in implementation-dependent&nbsp;order.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Examples</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:keys(map{1:="yes", 2:="no"})</code>&nbsp;returns some permutation of&nbsp;<code style="font-family: monospace;">(1,2)</code>.&nbsp;<em>(The result is in implementation-dependent order.).</em></p>
+                           </dd>
+                        </dl>
+                  </div>
+                  <div class="div4">
+                     <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="func-map-contains" id="func-map-contains"></a>20.1.2.4 map:contains&nbsp;</h5>
+                     <dl>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Summary</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>Tests whether a supplied map contains an entry for a given key</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Signature</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p><a href="editor-content.html?cs=UTF-8" name="function-contains" id="function-contains"></a></p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                 
+                                 
+                                 <tbody>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td rowspan="2" style="font-family: sans-serif;" valign="baseline"><code class="function" style="font-family: monospace;">contains</code>(</td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$map</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">map(*)</code>,</td>
+                                       </tr>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$key</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">xs:anyAtomicType</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">xs:boolean</code></td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                           </div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;"><br></dt>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Rules</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The function map:contains&nbsp;returns true if the map&nbsp;supplied as&nbsp;<code style="font-family: monospace;">$map</code>&nbsp;contains an entry with a key equal to the supplied value of&nbsp;<code style="font-family: monospace;">$key</code>;
+                              otherwise it returns false. The equality comparison uses the map's 
+                              collation; no error occurs if the map contains keys that are not 
+                              comparable with the supplied&nbsp;<code style="font-family: monospace;">$key</code>.</p>
+                           
+                           
+                           <p>If the supplied key is&nbsp;<code style="font-family: monospace;">xs:untypedAtomic</code>, it is converted to&nbsp;<code style="font-family: monospace;">xs:string</code>. If the supplied key is the&nbsp;<code style="font-family: monospace;">xs:float</code>&nbsp;or&nbsp;<code style="font-family: monospace;">xs:double</code>&nbsp;value&nbsp;<code style="font-family: monospace;">NaN</code>, the function returns false.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Examples</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>let&nbsp;<code style="font-family: monospace;">$week</code>&nbsp;:=&nbsp;<code style="font-family: monospace;">map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag",
+                                 6:="Samstag"}</code></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:contains($week, 2)</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">true()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:contains($week, 9)</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">false()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:contains(map{}, "xyz")</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">false()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:contains(map{"xyz":=23}, "xyz")</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">true()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:contains(map{"abc":=23, "xyz":=()}, "xyz")</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">true()</code>.</p>
+                           </dd>
+                        </dl>
+                  </div>
+                  <div class="div4">
+                     <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="func-map-get" id="func-map-get"></a>20.1.2.5 map:get</h5>
+                     <dl>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Summary</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>Returns the value associated with a supplied key in a given map.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Signature</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p><a href="editor-content.html?cs=UTF-8" name="function-get" id="function-get"></a></p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                 
+                                 
+                                 <tbody>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td rowspan="2" style="font-family: sans-serif;" valign="baseline"><code class="function" style="font-family: monospace;">get</code>(</td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$map</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">map(*)</code>,</td>
+                                       </tr>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$key</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">xs:anyAtomicType</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">item()*</code></td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                           </div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;"><br></dt>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Rules</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The function map:get&nbsp;attempts to find an entry within the map&nbsp;supplied as&nbsp;<code style="font-family: monospace;">$input</code>&nbsp;that has a key equal to the supplied value of&nbsp;<code style="font-family: monospace;">$key</code>.
+                              If there is such an entry, it returns the associated value; otherwise 
+                              it returns an empty sequence. The equality comparison uses the map's 
+                              collation; no error occurs if the map contains keys that are not 
+                              comparable with the supplied&nbsp;<code style="font-family: monospace;">$key</code>.</p>
+                           
+                           
+                           <p>If the supplied key is&nbsp;<code style="font-family: monospace;">xs:untypedAtomic</code>, it is converted to&nbsp;<code style="font-family: monospace;">xs:string</code>. If the supplied key is the&nbsp;<code style="font-family: monospace;">xs:float</code>&nbsp;or&nbsp;<code style="font-family: monospace;">xs:double</code>&nbsp;value&nbsp;<code style="font-family: monospace;">NaN</code>, the function returns an empty sequence.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Notes</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>A return value of&nbsp;<code style="font-family: monospace;">()</code>&nbsp;from map:get&nbsp;could indicate that the key is present in the map with an associated
+                              value of&nbsp;<code style="font-family: monospace;">()</code>, or it could indicate that the key is not present in the map. The two cases can be
+                              distinguished by calling map:contains.</p>
+                           
+                           
+                           <p>Invoking the map&nbsp;as a function item has the same effect as calling&nbsp;<code style="font-family: monospace;">get</code>: that is, when&nbsp;<code style="font-family: monospace;">$map</code>&nbsp;is a map, the expression&nbsp;<code style="font-family: monospace;">$map($K)</code>&nbsp;is equivalent to&nbsp;<code style="font-family: monospace;">get($map, $K)</code>. Similarly, the expression&nbsp;<code style="font-family: monospace;">get(get(get($map, 'employee'), 'name'), 'first')</code>&nbsp;can be written as&nbsp;<code style="font-family: monospace;">$map('employee')('name')('first')</code>.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Examples</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>let&nbsp;<code style="font-family: monospace;">$week</code>&nbsp;:=&nbsp;<code style="font-family: monospace;">map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag",
+                                 6:="Samstag"}</code></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:get($week, 4)</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">"Donnerstag"</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:get($week, 9)</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">()</code>.&nbsp;<em>(When the key is not present, the function returns an empty sequence.).</em></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:get(map:entry(7,()), 7)</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">()</code>.&nbsp;<em>(An empty sequence as the result can also signify that the key is present and the
+                                 associated value is an empty sequence.).</em></p>
+                           </dd>
+                        </dl>
+                  </div>
+                  <div class="div4">
+                     <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="func-map-entry" id="func-map-entry"></a>20.1.2.6 map:entry</h5>
+                     <dl>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Summary</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>Creates a map that contains a single entry (a key-value pair).</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Signature</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p><a href="editor-content.html?cs=UTF-8" name="function-entry" id="function-entry"></a></p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                 
+                                 
+                                 <tbody>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td rowspan="2" style="font-family: sans-serif;" valign="baseline"><code class="function" style="font-family: monospace;">entry</code>(</td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$key</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">xs:anyAtomicType</code>,</td>
+                                       </tr>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$value</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">item()*</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">map(*)</code></td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                           </div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;"><br></dt>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Rules</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The
+                              function map:entry&nbsp;returns a new map&nbsp;which normally contains a single 
+                              entry. The collation of the new map is the default collation from the 
+                              static context. The key of the entry in the new map is&nbsp;<code style="font-family: monospace;">$key</code>, and its associated value is&nbsp;<code style="font-family: monospace;">$value</code>.</p>
+                           
+                           
+                           <p>If the supplied key is the&nbsp;<code style="font-family: monospace;">xs:float</code>&nbsp;or&nbsp;<code style="font-family: monospace;">xs:double</code>&nbsp;value&nbsp;<code style="font-family: monospace;">NaN</code>, the supplied&nbsp;<code style="font-family: monospace;">$map</code>&nbsp;is empty (that is, it contains no entries).</p>
+                           
+                           
+                           <p>If the supplied key is&nbsp;<code style="font-family: monospace;">xs:untypedAtomic</code>, it is converted to&nbsp;<code style="font-family: monospace;">xs:string</code>.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Notes</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The function&nbsp;<code style="font-family: monospace;">map:entry</code>&nbsp;is intended primarily for use in conjunction with the function&nbsp;<code style="font-family: monospace;">map:new</code>. For example, a map containing seven entries may be constructed like this:</p>
+                           
+                           
+                           <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                              <pre><code>map:new((
+   map:entry("Su", "Sunday"),
+   map:entry("Mo", "Monday"),
+   map:entry("Tu", "Tuesday"),
+   map:entry("We", "Wednesday"),
+   map:entry("Th", "Thursday"),
+   map:entry("Fr", "Friday"),
+   map:entry("Sa", "Saturday")
+   ))
+</code></pre>
+                           </div>
+                           
+                           
+                           <p>Unlike the&nbsp;<code style="font-family: monospace;">map{...}</code>&nbsp;expression, this technique can be used to construct a map with a variable number
+                              of entries, for example:</p>
+                           
+                           
+                           <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                              <pre><code>map:new(for $b in //book return map:entry($b/isbn, $b))
+</code></pre>
+                           </div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Examples</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:entry("M", "Monday")</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{"M":="Monday"}</code>.</p>
+                           </dd>
+                        </dl>
+                  </div>
+                  <div class="div4">
+                     <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="func-map-remove" id="func-map-remove"></a>20.1.2.7 map:remove</h5>
+                     <dl>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Summary</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>Constructs a new map by removing an entry from an existing map</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Signature</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p><a href="editor-content.html?cs=UTF-8" name="function-remove" id="function-remove"></a></p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                 
+                                 
+                                 <tbody>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td rowspan="2" style="font-family: sans-serif;" valign="baseline"><code class="function" style="font-family: monospace;">remove</code>(</td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$map</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">map(*)</code>,</td>
+                                       </tr>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$key</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">xs:anyAtomicType</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">map(*)</code></td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                           </div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;"><br></dt>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Rules</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The function map:remove&nbsp;returns a new map. The collation of the new map is the same
+                              as the collation of the map supplied as&nbsp;<code style="font-family: monospace;">$map</code>. The entries in the new map correspond to the entries of&nbsp;<code style="font-family: monospace;">$map</code>, excluding any entry whose key is equal to&nbsp;<code style="font-family: monospace;">$key</code>.</p>
+                           
+                           
+                           <p>No failure occurs if the input map contains no entry with the supplied key; the input
+                              map is returned unchanged</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Examples</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>let&nbsp;<code style="font-family: monospace;">$week</code>&nbsp;:=&nbsp;<code style="font-family: monospace;">map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag",
+                                 6:="Samstag"}</code></p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:remove($week, 4)</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 5:="Freitag", 6:="Samstag"}</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">map:remove($week, 23)</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">map{0:="Sonntag", 1:="Montag", 2:="Dienstag", 3:="Mittwoch", 4:="Donnerstag", 5:="Freitag",
+                                 6:="Samstag"}</code>.</p>
+                           </dd>
+                        </dl>
+                  </div>
+                  <div class="div4">
+                     <h5 style="text-align: left; font: italic 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="func-deep-equal2" id="func-deep-equal2"></a>20.1.2.8 fn:deep-equal</h5>
+                     <dl>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Summary</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>This function is&nbsp;extended to handle maps.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Signatures</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p><a href="editor-content.html?cs=UTF-8" name="function-deep-equal2" id="function-deep-equal2"></a></p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                 
+                                 
+                                 <tbody>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td rowspan="2" style="font-family: sans-serif;" valign="baseline"><code class="function" style="font-family: monospace;">deep-equal</code>(</td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$parameter1</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">item()*</code>,</td>
+                                       </tr>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$parameter2</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">item()*</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">xs:boolean</code></td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                           </div>
+                           
+                           
+                           <p>&nbsp;</p>
+                           
+                           
+                           <div class="proto" style="border-style: solid; border-width: thin; background-color: rgb(255, 204, 255);">
+                              <table border="0" cellpadding="0" cellspacing="0">
+                                 
+                                 
+                                 <tbody>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td rowspan="3" style="font-family: sans-serif;" valign="baseline"><code class="function" style="font-family: monospace;">deep-equal</code>(</td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$parameter1</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">item()*</code>,</td>
+                                       </tr>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$parameter2</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">item()*</code>,</td>
+                                       </tr>
+                                    
+                                    
+                                    <tr>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="arg" style="font-family: monospace;">$collation</code></td>
+                                       
+                                       
+                                       <td style="font-family: sans-serif;" valign="baseline"><code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="type" style="font-family: monospace;">xs:string</code>)<code class="as" style="font-family: monospace;">&nbsp;as&nbsp;</code><code class="return-type" style="font-family: monospace;">xs:boolean</code></td>
+                                       </tr>
+                                    </tbody>
+                                 </table>
+                           </div>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;"><br></dt>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Rules</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The&nbsp;<code style="font-family: monospace;">$collation</code>&nbsp;argument
+                              identifies a collation which is used at all levels of recursion when 
+                              strings are compared (but not when names are compared), according to the
+                              rules in [FO:choosing-a-collation]<sup><small style="font-style: italic; color: rgb(143, 143, 143);">FO</small></sup>.</p>
+                           
+                           
+                           <p>If the two sequences are both empty, the function returns&nbsp;<code style="font-family: monospace;">true</code>.</p>
+                           
+                           
+                           <p>If the two sequences are of different lengths, the function returns&nbsp;<code style="font-family: monospace;">false</code>.</p>
+                           
+                           
+                           <p>If the two sequences are of the same length, the function returns&nbsp;<code style="font-family: monospace;">true</code>&nbsp;if and only if every item in the sequence&nbsp;<code style="font-family: monospace;">$parameter1</code>&nbsp;is deep-equal to the item at the same position in the sequence&nbsp;<code style="font-family: monospace;">$parameter2</code>. The rules for deciding whether two items are deep-equal follow.</p>
+                           
+                           
+                           <p>Call the two items&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;and&nbsp;<code style="font-family: monospace;">$i2</code>&nbsp;respectively.</p>
+                           
+                           
+                           <p>If&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;and&nbsp;<code style="font-family: monospace;">$i2</code>&nbsp;are both atomic values, they are deep-equal if and only if&nbsp;<code style="font-family: monospace;">($i1 eq $i2)</code>&nbsp;is&nbsp;<code style="font-family: monospace;">true</code>, or if both values are&nbsp;<code style="font-family: monospace;">NaN</code>. If the&nbsp;<code style="font-family: monospace;">eq</code>&nbsp;operator is not defined for&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;and&nbsp;<code style="font-family: monospace;">$i2</code>, the function returns&nbsp;<code style="font-family: monospace;">false</code>.</p>
+                           
+                           
+                           <p>If one of the pair&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;or&nbsp;<code style="font-family: monospace;">$i2</code>&nbsp;is an atomic value and the other is not,&nbsp;<span>or if one is a node and the other is not,</span>&nbsp;the function returns&nbsp;<code style="font-family: monospace;">false</code>.</p>
+                           
+                           
+                           <p>If&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;and&nbsp;<code style="font-family: monospace;">$i2</code>&nbsp;are both maps, the result is&nbsp;<code style="font-family: monospace;">true</code>&nbsp;if and only if all the following conditions apply:</p>
+                           
+                           
+                           <ol class="enumar" style="list-style-type: decimal;">
+                              <li>
+                                 
+                                 
+                                 <p>Both maps have the same number of entries.</p>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>Both maps have the same collation.</p>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>For every entry in the first map, there is an entry in the second map that:</p>
+                                 
+                                 
+                                 <ol class="enumla" style="list-style-type: lower-alpha;">
+                                    <li>
+                                       
+                                       
+                                       <p>has the same key (compared using the&nbsp;<code style="font-family: monospace;">eq</code>&nbsp;operator under the maps' collation), and</p>
+                                       </li>
+                                    <li>
+                                       
+                                       
+                                       <p>has the same associated value (compared using the&nbsp;<code style="font-family: monospace;">fn:deep-equal2</code>&nbsp;function, under the collation supplied in the original call to&nbsp;<code style="font-family: monospace;">fn:deep-equal2</code>).</p>
+                                       </li>
+                                 </ol>
+                                 </li>
+                           </ol>
+                           
+                           
+                           <p>If&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;and&nbsp;<code style="font-family: monospace;">$i2</code>&nbsp;are both nodes, they are compared as described below:</p>
+                           
+                           
+                           <ol class="enumar" style="list-style-type: decimal;">
+                              <li>
+                                 
+                                 
+                                 <p>If the two nodes are of different kinds, the result is&nbsp;<code style="font-family: monospace;">false</code>.</p>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>If the two nodes are both document nodes then they are deep-equal if and only if the
+                                    sequence&nbsp;<code style="font-family: monospace;">$i1/(*|text())</code>&nbsp;is deep-equal to the sequence&nbsp;<code style="font-family: monospace;">$i2/(*|text())</code>.</p>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>If the two nodes are both element nodes then they are deep-equal if and only if all
+                                    of the following conditions are satisfied:</p>
+                                 
+                                 
+                                 <ol class="enumla" style="list-style-type: lower-alpha;">
+                                    <li>
+                                       
+                                       
+                                       <p>The two nodes have the same name, that is&nbsp;<code style="font-family: monospace;">(node-name($i1) eq node-name($i2))</code>.</p>
+                                       </li>
+                                    <li>
+                                       
+                                       
+                                       <p>The two nodes are both annotated as having simple content or both nodes are annotated
+                                          as having complex content.</p>
+                                       </li>
+                                    <li>
+                                       
+                                       
+                                       <p>The two nodes have the same number of attributes, and for every attribute&nbsp;<code style="font-family: monospace;">$a1</code>&nbsp;in&nbsp;<code style="font-family: monospace;">$i1/@*</code>&nbsp;there exists an attribute&nbsp;<code style="font-family: monospace;">$a2</code>&nbsp;in&nbsp;<code style="font-family: monospace;">$i2/@*</code>&nbsp;such that&nbsp;<code style="font-family: monospace;">$a1</code>&nbsp;and&nbsp;<code style="font-family: monospace;">$a2</code>&nbsp;are deep-equal.</p>
+                                       </li>
+                                    <li>
+                                       
+                                       
+                                       <p>One of the following conditions holds:</p>
+                                       
+                                       
+                                       <ul>
+                                          <li>
+                                             
+                                             
+                                             <p>Both element nodes have a type annotation that is simple content, and the typed value
+                                                of&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;is deep-equal to the typed value of&nbsp;<code style="font-family: monospace;">$i2</code>.</p>
+                                             </li>
+                                          <li>
+                                             
+                                             
+                                             <p>Both element nodes have a type annotation that is complex content with elementOnly
+                                                content, and each child element of&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;is deep-equal to the corresponding child element of&nbsp;<code style="font-family: monospace;">$i2</code>.</p>
+                                             </li>
+                                          <li>
+                                             
+                                             
+                                             <p>Both element nodes have a type annotation that is complex content with mixed content,
+                                                and the sequence&nbsp;<code style="font-family: monospace;">$i1/(*|text())</code>&nbsp;is deep-equal to the sequence<code style="font-family: monospace;">$i2/(*|text())</code>.</p>
+                                             </li>
+                                          <li>
+                                             
+                                             
+                                             <p>Both element nodes have a type annotation that is complex content with empty content.</p>
+                                             </li>
+                                       </ul>
+                                       </li>
+                                 </ol>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>If the two nodes are both attribute nodes then they are deep-equal if and only if
+                                    both the following conditions are satisfied:</p>
+                                 
+                                 
+                                 <ol class="enumla" style="list-style-type: lower-alpha;">
+                                    <li>
+                                       
+                                       
+                                       <p>The two nodes have the same name, that is&nbsp;<code style="font-family: monospace;">(node-name($i1) eq node-name($i2))</code>.</p>
+                                       </li>
+                                    <li>
+                                       
+                                       
+                                       <p>The typed value of&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;is deep-equal to the typed value of&nbsp;<code style="font-family: monospace;">$i2</code>.</p>
+                                       </li>
+                                 </ol>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>If
+                                    the two nodes are both processing instruction nodes, then they are 
+                                    deep-equal if and only if both the following conditions are satisfied:</p>
+                                 
+                                 
+                                 <ol class="enumla" style="list-style-type: lower-alpha;">
+                                    <li>
+                                       
+                                       
+                                       <p>The two nodes have the same name, that is&nbsp;<code style="font-family: monospace;">(node-name($i1) eq node-name($i2))</code>.</p>
+                                       </li>
+                                    <li>
+                                       
+                                       
+                                       <p>The string value of&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;is equal to the string value of&nbsp;<code style="font-family: monospace;">$i2</code>.</p>
+                                       </li>
+                                 </ol>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>If the two nodes are both namespace nodes, then they are deep-equal if and only if
+                                    both the following conditions are satisfied:</p>
+                                 
+                                 
+                                 <ol class="enumla" style="list-style-type: lower-alpha;">
+                                    <li>
+                                       
+                                       
+                                       <p>The two nodes either have the same name or are both nameless, that is&nbsp;<code style="font-family: monospace;">fn:deep-equal(node-name($i1), node-name($i2))</code>.</p>
+                                       </li>
+                                    <li>
+                                       
+                                       
+                                       <p>The string value of&nbsp;<code style="font-family: monospace;">$i1</code>&nbsp;is equal to the string value of&nbsp;<code style="font-family: monospace;">$i2</code>&nbsp;when compared using the Unicode codepoint collation.</p>
+                                       </li>
+                                 </ol>
+                                 </li>
+                              <li>
+                                 
+                                 
+                                 <p>If the two nodes are both text nodes or comment nodes, then they are deep-equal if
+                                    and only if their string-values are equal.</p>
+                                 </li>
+                           </ol>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Error Conditions</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>An error is raised [tba] if either input sequence contains a function item&nbsp;<span>that is not a map.</span></p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Notes</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>Two
+                              nodes are not required to have the same type annotation, and they are 
+                              not required to have the same in-scope namespaces. They may also differ 
+                              in their parent, their base URI, and the values returned by the&nbsp;<code style="font-family: monospace;">is-id</code>&nbsp;and&nbsp;<code style="font-family: monospace;">is-idrefs</code>&nbsp;accessors (see&nbsp;<a href="http://www.w3.org/TR/xpath-datamodel-30/#dm-is-id">Section 5.5 is-id Accessor</a>&nbsp;<sup><small style="font-style: italic; color: rgb(143, 143, 143);">DM30</small></sup>&nbsp;and&nbsp;<a href="http://www.w3.org/TR/xpath-datamodel-30/#dm-is-idrefs">Section 5.6 is-idrefs Accessor</a>&nbsp;<sup><small style="font-style: italic; color: rgb(143, 143, 143);">DM30</small></sup>). The order of children is significant, but the order of attributes is insignificant.</p>
+                           
+                           
+                           <p>The
+                              contents of comments and processing instructions are significant only 
+                              if these nodes appear directly as items in the two sequences being 
+                              compared. The content of a comment or processing instruction that 
+                              appears as a descendant of an item in one of the sequences being 
+                              compared does not affect the result. However, the presence of a comment 
+                              or processing instruction, if it causes a text node to be split into two
+                              text nodes, may affect the result.</p>
+                           
+                           
+                           <p>The result of&nbsp;<code style="font-family: monospace;">fn:deep-equal(1, current-dateTime())</code>&nbsp;is&nbsp;<code style="font-family: monospace;">false</code>; it does not raise an error.</p>
+                           </dd>
+                        
+                        
+                        <dt class="label" style="margin-top: 0px; margin-bottom: 0px; font-weight: bold;">Examples</dt>
+                        
+                        
+                        <dd style="margin-top: 0px; margin-bottom: 0px;">
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">fn:deep-equal(map{}, map{})</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">true()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">fn:deep-equal(map{"a":=1, "b":=2}, map{"b":=2, "a":=1.0})</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">true()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">fn:deep-equal(map{"a":=xs:double('NaN')}, map{"a":=xs:float('NaN')})</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">true()</code>.</p>
+                           
+                           
+                           <p>let&nbsp;<code style="font-family: monospace;">$at</code>&nbsp;:=</p>
+                           
+                           
+                           <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                              <pre><code>&lt;attendees&gt;
+  &lt;name last='Parker' first='Peter'/&gt;
+  &lt;name last='Barker' first='Bob'/&gt;
+  &lt;name first='Peter' last='Parker'/&gt;
+&lt;/attendees&gt;
+</code></pre>
+                           </div>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">fn:deep-equal($at, $at/*)</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">false()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">fn:deep-equal($at/name[1], $at/name[2])</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">false()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">fn:deep-equal($at/name[1], $at/name[3])</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">true()</code>.</p>
+                           
+                           
+                           <p>The expression&nbsp;<code style="font-family: monospace;">fn:deep-equal($at/name[1], 'Peter Parker')</code>&nbsp;returns&nbsp;<code style="font-family: monospace;">false()</code>.</p>
+                           </dd>
+                        </dl>
+                  </div>
+               </div>
+               <div class="div3" style="font-family: sans-serif; font-size: medium;">
+                  <h4 style="text-align: left; font: bold 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="map-expressions" id="map-expressions"></a>20.1.3&nbsp;<a href="editor-content.html?cs=UTF-8">Map Expressions</a></h4>
+                  <p>A new kind of expression is added to the syntax of XPath.</p>
+                  <p>The syntax of&nbsp;<a href="http://www.w3.org/TR/xpath-30/#doc-xpath30-PrimaryExpr">PrimaryExpr</a><sup><small style="font-style: italic; color: rgb(143, 143, 143);">XP30</small></sup>&nbsp;is extended to permit&nbsp;<code style="font-family: monospace;">MapExpr</code>&nbsp;as an additional alternative.</p>
+                  <p><code style="font-family: monospace;">MapExpr := "map" "{" (KeyExpr ":=" ValueExpr ("," KeyExpr ":=" ValueExpr )*)? "}"</code></p>
+                  <p><code style="font-family: monospace;">KeyExpr := ExprSingle</code></p>
+                  <p><code style="font-family: monospace;">ValueExpr := ExprSingle</code></p>
+                  <div class="note" style="margin-left: 2em;">
+                     <p class="prefix"><b>Note:</b></p>
+                     <p>Two
+                        variations on this syntax are under consideration: removing the leading
+                        keyword "map", and using the token ":" in place of ":=". This would 
+                        bring the syntax closer to Javascript and JSON notation. However, 
+                        special lexical rules would be needed to disambiguate this use of ":" 
+                        from other uses. Feedback is invited.</p>
+                  </div>
+                  <p>The value of the expression is a map whose entries correspond to the key-value pairs
+                     obtained by evaluating the successive&nbsp;<code style="font-family: monospace;">KeyExpr</code>&nbsp;and&nbsp;<code style="font-family: monospace;">ValueExpr</code>&nbsp;expressions.</p>
+                  <p>Each&nbsp;<code style="font-family: monospace;">KeyExpr</code>&nbsp;expression
+                     is evaluated and atomized; a dynamic error occurs if the result is not a
+                     single atomic value. If the key value is of type&nbsp;<code style="font-family: monospace;">xs:untypedAtomic</code>&nbsp;it is converted to<code style="font-family: monospace;">xs:string</code>. The associated value is the result of evaluating the corresponding&nbsp;<code style="font-family: monospace;">ValueExpr</code>. The collation of the new map is the default collation from the static context. If
+                     the key value is&nbsp;<code style="font-family: monospace;">NaN</code>&nbsp;then
+                     the key/value pair is not added to the map. If two or more keys are 
+                     equal under the collation of the map then the last occurrence is added 
+                     to the map and the others are ignored.</p>
+                  <p>For example, the following expression constructs a map with seven entries:</p>
+                  <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                     <pre><code>map {
+  "Su" := "Sunday",
+  "Mo" := "Monday",
+  "Tu" := "Tuesday",
+  "We" := "Wednesday",
+  "Th" := "Thursday",
+  "Fr" := "Friday",
+  "Sa" := "Saturday
+}
+</code></pre>
+                  </div>
+                  <div class="note" style="margin-left: 2em;">
+                     <p class="prefix"><b>Note:</b></p>
+                     <p>Unlike
+                        the map:new function, the number of entries in a map that is 
+                        constructed using a map expression is known statically, except where 
+                        duplicate keys or NaN values cause some entries to be ignored.</p>
+                  </div>
+               </div>
+               <div class="div3" style="font-family: sans-serif; font-size: medium;">
+                  <h4 style="text-align: left; font: bold 100% sans-serif;"><a href="editor-content.html?cs=UTF-8" name="map-examples" id="map-examples"></a>20.1.4 Examples using maps</h4>
+                  <p>This section gives some examples of where maps can be useful.</p>
+                  <div class="example" style="border-style: solid; border-width: thin; background-color: rgb(64, 224, 208); padding: 1em;">
+                     <div class="exampleHeader" style="font-weight: bold; margin: 4px;"><a href="editor-content.html?cs=UTF-8" name="maps-with-iterate" id="maps-with-iterate"></a>Example: Using maps with xsl:iterate</div>
+                     <p>This
+                        example uses maps in conjunction with the xsl:iterate&nbsp;instruction to 
+                        find the highest-earning employee in each department, in a single 
+                        streaming pass of an input document containing employee records.</p>
+                     <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                        <pre><code>&lt;xsl:stream href="employees.xml"&gt;
+  &lt;xsl:iterate select="*/employee"&gt;
+    &lt;xsl:param name="highest-earners" 
+               as="map(xs:string, element(employee))" 
+               select="map:new()"/&gt;
+    &lt;xsl:variable name="this" select="copy-of(.)" as="element(employee)"/&gt; 
+    &lt;xsl:next-iteration&gt;
+      &lt;xsl:with-param name="highest-earners"
+          select="let $existing := $highest-earners($this/department)
+                  return if ($existing/salary gt $this/salary)
+                         then $highest-earners
+                         else map:new($highest-earners, map:entry($this/department, $this))"/&gt;
+    &lt;/xsl:next-iteration&gt;
+    &lt;xsl:on-completion&gt;
+      &lt;xsl:for-each select="map:keys($highest-earners)"&gt;
+        &lt;department name="{.}"&gt;
+          &lt;xsl:copy-of select="$highest-earners(.)"/&gt;
+        &lt;/department&gt;
+      &lt;/xsl:for-each&gt;
+    &lt;/xsl:on-completion&gt;
+  &lt;/xsl:iterate&gt;
+&lt;/xsl:stream&gt;
+</code></pre>
+                     </div>
+                  </div>
+                  <p>&nbsp;</p>
+                  <div class="example" style="border-style: solid; border-width: thin; background-color: rgb(64, 224, 208); padding: 1em;">
+                     <div class="exampleHeader" style="font-weight: bold; margin: 4px;"><a href="editor-content.html?cs=UTF-8" name="example-complex-numbers" id="example-complex-numbers"></a>Example: Using Maps to implement Complex Numbers</div>
+                     <p>A complex number might be represented as a map with two entries, the keys being the&nbsp;<code style="font-family: monospace;">xs:boolean</code>&nbsp;value&nbsp;<code style="font-family: monospace;">true</code>&nbsp;for the real part, and the&nbsp;<code style="font-family: monospace;">xs:boolean</code>&nbsp;value&nbsp;<code style="font-family: monospace;">false</code>&nbsp;for the imaginary part. A library for manipulation of complex numbers might include
+                        functions such as the following:</p>
+                     <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                        <pre><code>&lt;xsl:function name="i:complex" as="map(xs:boolean, xs:double)"&gt;
+  &lt;xsl:param name="real" as="xs:double"/&gt;
+  &lt;xsl:param name="imaginary" as="xs:double"/&gt;
+  &lt;xsl:sequence select="map{ true() := $real, false() := $imaginary }"/&gt;
+&lt;/xsl:function&gt;
+
+&lt;xsl:function name="i:real" as="xs:double"&gt;
+  &lt;xsl:param name="complex" as="map(xs:boolean, xs:double)"/&gt;
+  &lt;xsl:sequence select="$complex(true())"/&gt;
+&lt;/xsl:function&gt;
+
+&lt;xsl:function name="i:imaginary" as="xs:double"&gt;
+  &lt;xsl:param name="complex" as="map(xs:boolean, xs:double)"/&gt;
+  &lt;xsl:sequence select="$complex(false())"/&gt;
+&lt;/xsl:function&gt;
+
+&lt;xsl:function name="i:add" as="map(xs:boolean, xs:double)"&gt;
+  &lt;xsl:param name="arg1" as="map(xs:boolean, xs:double)"/&gt;
+  &lt;xsl:param name="arg2" as="map(xs:boolean, xs:double)"/&gt;
+  &lt;xsl:sequence select="i:complex(i:real($arg1)+i:real($arg2), i:imaginary($arg1)+i:imaginary($arg2)"/&gt;
+&lt;/xsl:function&gt;
+
+&lt;xsl:function name="i:multiply" as="map(xs:boolean, xs:double)"&gt;
+  &lt;xsl:param name="arg1" as="map(xs:boolean, xs:double)"/&gt;
+  &lt;xsl:param name="arg2" as="map(xs:boolean, xs:double)"/&gt;
+  &lt;xsl:sequence select="i:complex(
+      i:real($arg1)*i:real($arg2) - i:imaginary($arg1)*i:imaginary($arg2),
+      i:real($arg1)*i:imaginary($arg2) + i:imaginary($arg1)*i:real($arg2))"/&gt;
+&lt;/xsl:function&gt;
+</code></pre>
+                     </div>
+                     <div class="note" style="margin-left: 2em;">
+                        <p class="prefix"><b>Note:</b></p>
+                        <p>This
+                           example demonstrates how useful it would be to allow user-defined type 
+                           aliases, so that callers of this function library could write code that 
+                           treats the value simply as a<code style="font-family: monospace;">complex-number</code>, not as a map. A proposal to introduce such type aliases is under consideration.</p>
+                     </div>
+                  </div>
+                  <p>&nbsp;</p>
+                  <div class="example" style="border-style: solid; border-width: thin; background-color: rgb(64, 224, 208); padding: 1em;">
+                     <div class="exampleHeader" style="font-weight: bold; margin: 4px;"><a href="editor-content.html?cs=UTF-8" name="map-as-index" id="map-as-index"></a>Example: Using a Map as an Index</div>
+                     <p>Given a set of&nbsp;<code style="font-family: monospace;">book</code>&nbsp;elements, it is possible to construct an index in the form of a map allowing the
+                        books to be retrieved by ISBN number.</p>
+                     <p>Assume the book elements have the form:</p>
+                     <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                        <pre><code>&lt;book&gt;
+  &lt;isbn&gt;0470192747&lt;/isbn&gt;
+  &lt;author&gt;Michael H. Kay&lt;/author&gt;
+  &lt;publisher&gt;Wiley&lt;/publisher&gt;
+  &lt;title&gt;XSLT 2.0 and XPath 2.0 Programmer's Reference&lt;/title&gt;
+&lt;/book&gt;
+</code></pre>
+                     </div>
+                     <p>An index may be constructed as follows:</p>
+                     <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                        <pre><code>&lt;xsl:variable name="isbn-index" as="map(xs:string, element(book))"
+    select="map:new(for $b in //book return map{$b/isbn := $b})"/&gt;
+</code></pre>
+                     </div>
+                     <p>This index may then be used to retrieve the book for a given ISBN using either of
+                        the expressions&nbsp;<code style="font-family: monospace;">map:get($isbn-index, "0470192747")</code>&nbsp;or&nbsp;<code style="font-family: monospace;">$isbn-index("0470192747")</code>.</p>
+                     <p>In
+                        this simple form, this replicates the functionality available using 
+                        xsl:key&nbsp;and the key&nbsp;function. However, it also provides capabilities not
+                        directly available using the key&nbsp;function: for example, the index can 
+                        include&nbsp;<code style="font-family: monospace;">book</code>&nbsp;elements in multiple source documents. It also allows processing of all the books
+                        using a construct such as&nbsp;<code style="font-family: monospace;">&lt;xsl:for-each select="map:keys($isbn-index)"&gt;</code></p>
+                  </div>
+                  <p>&nbsp;</p>
+                  <div class="example" style="border-style: solid; border-width: thin; background-color: rgb(64, 224, 208); padding: 1em;">
+                     <div class="exampleHeader" style="font-weight: bold; margin: 4px;"><a href="editor-content.html?cs=UTF-8" name="map-as-class" id="map-as-class"></a>Example: A Map containing named Functions</div>
+                     <p>As
+                        in Javascript, a map whose keys are strings and whose associated values
+                        are function items can be used in a similar way to a class in 
+                        object-oriented programming languages.</p>
+                     <p>Suppose an application 
+                        needs to handle customer order information that may arrive in three 
+                        different formats, with different hierarchic arrangement:</p>
+                     <ol class="enumar" style="list-style-type: decimal;">
+                        <li>
+                           
+                           
+                           <p>Flat structure:</p>
+                           
+                           
+                           <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                              <pre><code>&lt;customer id="c123"&gt;...&lt;/customer&gt;
+&lt;product id="p789"&gt;...&lt;/product&gt;
+&lt;order customer="c123" product="p789"&gt;...&lt;/order&gt;
+</code></pre>
+                           </div>
+                           </li>
+                        <li>
+                           
+                           
+                           <p>Orders within customer elements:</p>
+                           
+                           
+                           <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                              <pre><code>&lt;customer id="c123"&gt;
+   &lt;order product="p789"&gt;...&lt;/order&gt;
+&lt;/customer&gt;
+&lt;product id="p789"&gt;...&lt;/product&gt;
+</code></pre>
+                           </div>
+                           </li>
+                        <li>
+                           
+                           
+                           <p>Orders within product elements:</p>
+                           
+                           
+                           <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                              <pre><code>&lt;customer id="c123"&gt;...&lt;/customer&gt;
+&lt;product id="p789"&gt;
+  &lt;order customer id="c123"&gt;...&lt;/order&gt;
+&lt;/product&gt;
+</code></pre>
+                           </div>
+                           </li>
+                     </ol>
+                     <p>An application can isolate itself from these 
+                        differences by defining a set of functions to navigate the relationships
+                        between customers, orders, and products:&nbsp;<code style="font-family: monospace;">orders-for-customer</code>,&nbsp;<code style="font-family: monospace;">orders-for-product</code>,&nbsp;<code style="font-family: monospace;">customer-for-order</code>,&nbsp;<code style="font-family: monospace;">product-for-order</code>.
+                        These functions can be implemented in different ways for the three 
+                        different input formats. For example, with the first format the 
+                        implementation might be:</p>
+                     <div class="exampleInner" style="background-color: rgb(213, 222, 227); border-top: 4px double rgb(211, 211, 211); border-bottom: 4px double rgb(211, 211, 211); padding: 4px; margin: 0em;">
+                        <pre><code>&lt;xsl:variable name="flat-input-functions" as="map(xs:string, function(*))*"
+  select="map {
+            'orders-for-customer' := 
+                 function($c as element(customer)) as element(order)* 
+                    {$c/../order[@customer=$c/@id]},
+            'orders-for-product' := 
+                 function($p as element(product)) as element(order)* 
+                    {$p/../order[@product=$p/@id]},
+            'customer-for-order' := 
+                 function($o as element(order)) as element(customer) 
+                    {$o/../customer[@id=$o/@customer]},
+            'product-for-order' := 
+                 function($o as element(order)) as element(product) 
+                    {$o/../product[@id=$o/@product]} }                    
+         "/&gt;
+</code></pre>
+                     </div>
+                     <p>Having established which input format is in use, the 
+                        application can bind the appropriate implementation of these functions 
+                        to a variable such as&nbsp;<code style="font-family: monospace;">$input-navigator</code>,
+                        and can then process the input using XPath expressions such as the 
+                        following, which selects all products for which there is no order:&nbsp;<code style="font-family: monospace;">//product[empty($input-navigator("orders-for-product")(.))]</code></p>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </main><footer><div class="prev-uri"><a href="/mike/2012/01/a-new-regex-engine.html">A new regex engine</a></div><div class="next-uri"><a href="/mike/2012/02/taking-saxon-ce-forward.html">Taking Saxon-CE Forward</a></div></footer></body>
+</html>

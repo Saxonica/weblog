@@ -1,0 +1,43 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Tweaking the TinyTree</title>
+      <meta name="id" content="149">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2008-09-10T14:18:45">
+      <meta name="basename" content="tweaking_the_tinytree">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Tweaking the TinyTree</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2008-09"><span class="date" time="2008-09-10T14:18:45">September&nbsp;10, 2008 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>It's unusual to find anything these days that gives Saxon a 5% performance boost across
+         the board, but I seem to have achieved that with some tweaks to the TinyTree data
+         structure.</p>
+      <p>Text nodes in the TinyTree aren't stored as separate String objects, but rather as
+         start/length offsets into a single concatenated text buffer. The reason for that is
+         that is to avoid the high Java space overhead associated with every String. At one
+         time I stored this buffer as a single array (that is, char[]), but that requires a
+         lot of character copying when the size increases, so I changed it a while ago to a
+         custom data structure, the LargeStringBuffer, which breaks the text up into an array
+         of segments. The segments were variable length, so that the string value of a text
+         node could always be stored in a single segment, meaning that retrieving the string
+         value never involves character copying. I've been aware for a while, however, from
+         the results of profiling, that with a large document, finding the right segment can
+         take a significant time (it uses a binary chop search).</p>
+      <p>So I've been doing some experiments with a revised implementation of LargeStringBuffer
+         that uses an array of fixed-length character arrays (65536 seems to work best). These
+         means that text nodes can cross a segment boundary, in which case they will need to
+         be copied, but the vast majority of text nodes still reside in one segment, and finding
+         the text corresponding to a start position and length is now much faster. For any
+         document above 1Mb or so the savings seem to be worthwhile, and there are no extra
+         costs for small documents except perhaps that the minimum memory size is now 65536
+         characters (and it may be possible to avoid that).</p>
+      <p>The other long-standing idea on the TODO list for the TinyTree is to identify text
+         nodes and attribute nodes that share the same value and use this fact to reduce the
+         storage requirement. Some data-oriented XML should see a large space reduction from
+         this. The downside, of course, as with any compression technique, is that it will
+         take longer to build the tree. It's not difficult to do - but I hate adding performance
+         features that are only used if the user sets a switch, because 99% of users will never
+         discover its existence.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2008/09/theres-an-r-in-the-month.html">There's an R in the month</a></div><div class="next-uri"><a href="/mike/2008/09/compile-time-performance.html">Compile-time Performance</a></div></footer></body>
+</html>

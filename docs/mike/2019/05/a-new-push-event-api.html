@@ -1,0 +1,141 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>A new push event API</title>
+      <meta name="id" content="227">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2019-05-01T16:34:00">
+      <meta name="basename" content="a_new_push_event_api">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>A new push event API</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2019-05"><span class="date" time="2019-05-01T16:34:00">May&nbsp;01, 2019 at 04:34p.m.</span></a></div></header><main>
+      
+      <p>For various internal and performance reasons, we're making some changes to Saxon's
+         internal Receiver interface for the next release. This interface is a SAX-like interface
+         for sending an XML document (or in general, any XDM instance) from one processing
+         component to another, as a sequence of events such as startElement(), attributes(),
+         characters(), and so on.
+         </p>
+      <p>
+         The interface is very widely used within Saxon: it handles communication from the
+         XML parser to the document builder, document validation, serialization, and much else.
+         It also allows instructions to be executed in "push mode", so for example when XSLT
+         constructs a result tree, the tree is never actually constructed in memory, but instead
+         events representing the tree are sent straight from the transformer to the serializer.<br>
+         I know that although this interface is labelled as internal, some user applications
+         attempt either to implement the interface or to act as a client, sending events to
+         one of Saxon's many implementations of the interface. So in making changes, it seems
+         a good time to recognize that there is a need for an interface at this level, and
+         that existing candidates are really rather clumsy to use.
+         
+         </p>
+      <p>
+         Among those candidates are the venerable SAX ContentHandler interface, and the newer
+         StAX XMLStreamWriter interface.
+         </p>
+      <p>
+         There are a number of structural reasons that make the ContentHandler hard to use:
+         </p>
+      <p>
+         
+         
+         
+         <ul>
+            <li>It offers a number of different configuration options for XML parsers, which cause
+               namespace information to be provided in different ways. But the ContentHandler has
+               no way of discovering which of these options the XML parser (or other originator of
+               events) is actually using.</li>
+            <li>It's not actually one interface but several: some events are sent not to the ContentHandler,
+               but to a LexicalHandler or DTDHandler.</li>
+            <li>The information available to the ContentHandler doesn't align well with the information
+               defined in the XDM data model; for example, comments are available only to the LexicalHandler,
+               not to the ContentHandler</li>
+         </ul>
+         In addition, the way QNames and namespaces are handled makes life unnecessarily difficult
+         for both sides of the interface.
+         
+         </p>
+      <p>
+         In some ways the XMLStreamWriter is an improvement, and I've certainly used it in
+         preference when writing an application that has to construct XML documents in this
+         way. But a major problem of the XMLStreamWriter is that it's underspecified, to the
+         extent that there is a separate guidance document from a third-party suggesting how
+         implementations should interpret the spec. Again, the main culprit is namespace.
+         </p>
+      <p>
+         One of the practical problems with all these event-based interfaces is that debugging
+         can be very difficult. In particular, if you forget to issue an endElement() call,
+         you don't find out until the endDocument() event finds there's a missing end tag somewhere,
+         and tracking down where the unmatched startElement() is in a complex program can be
+         a nightmare. I decided that addressing this problem should be one of the main design
+         aims of a new interface -- and it turns out that it isn't difficult.
+         </p>
+      <p>
+         Let's show off the new design with an example. Here is some code from Saxon's InvalidityReportGenerator,
+         which generates an XML report of errors found during a schema validation episode,
+         using the XMLStreamWriter interface:
+         </p>
+      <pre><strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>, <strong>"meta-data"</strong>);
+<strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>,<strong>"validator"</strong>);
+<strong>writer</strong>.writeAttribute(<strong>"name"</strong>, Version.<em>getProductName</em>() + <strong>"-" </strong>+ getConfiguration().getEditionCode());
+<strong>writer</strong>.writeAttribute(<strong>"version"</strong>, Version.<em>getProductVersion</em>());
+<strong>writer</strong>.writeEndElement(); //&lt;/validator&gt;
+<strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>,<strong>"results"</strong>);
+<strong>writer</strong>.writeAttribute(<strong>"errors"</strong>, <strong>"" </strong>+ <strong>errorCount</strong>);
+<strong>writer</strong>.writeAttribute(<strong>"warnings"</strong>, <strong>"" </strong>+ <strong>warningCount</strong>);
+<strong>writer</strong>.writeEndElement(); //&lt;/results&gt;
+<strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>,<strong>"schema"</strong>);
+<strong>if </strong>(<strong>schemaName </strong>!= <strong>null</strong>) {
+    <strong>writer</strong>.writeAttribute(<strong>"file"</strong>, <strong>schemaName</strong>);
+}
+<strong>writer</strong>.writeAttribute(<strong>"xsd-version"</strong>, <strong>xsdversion</strong>);
+<strong>writer</strong>.writeEndElement(); //&lt;/schema&gt;
+<strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>,<strong>"run"</strong>);
+<strong>writer</strong>.writeAttribute(<strong>"at"</strong>, DateTimeValue.<em>getCurrentDateTime</em>(<strong>null</strong>).getStringValue());
+<strong>writer</strong>.writeEndElement(); //&lt;/run&gt;
+<strong>writer</strong>.writeEndElement(); //&lt;/meta-data&gt;</pre>
+      <p>And here is the equivalent using the new push API:</p>
+      <pre>Push.Element metadata = <strong>report</strong>.element(<strong>"meta-data"</strong>);
+metadata.element(<strong>"validator"</strong>)
+        .attribute(<strong>"name"</strong>, Version.<em>getProductName</em>() + <strong>"-" </strong>+ getConfiguration().getEditionCode())
+        .attribute(<strong>"version"</strong>, Version.<em>getProductVersion</em>());
+metadata.element(<strong>"results"</strong>)
+        .attribute(<strong>"errors"</strong>, <strong>"" </strong>+ <strong>errorCount</strong>)
+        .attribute(<strong>"warnings"</strong>, <strong>"" </strong>+ <strong>warningCount</strong>);
+metadata.element(<strong>"schema"</strong>)
+        .attribute(<strong>"file"</strong>, <strong>schemaName</strong>)
+        .attribute(<strong>"xsd-version"</strong>, <strong>xsdversion</strong>);
+metadata.element(<strong>"run"</strong>)
+        .attribute(<strong>"at"</strong>, DateTimeValue.<em>getCurrentDateTime</em>(<strong>null</strong>).getStringValue());
+metadata.close();</pre>
+      <p>What's different?
+         The most obvious difference is that the method for creating a new element returns
+         an object (a Push.Element) which is used for constructing the attributes and children
+         of the element. This gives it an appearance rather like a tree-building API, but this
+         is an illusion: the objects created are transient. Methods such as attribute() use
+         the "chaining" design - they return the object to which they are applied - making
+         it easy to apply further methods to the same object, without the need to bind variables.
+         The endElement() calls have disappeared - an element is closed automatically when
+         the next child is written to the parent element, which we can do because we know which
+         element the child is being attached to.</p>
+      <p>There are a few other features of the design worthy of attention:</p>
+      <ul>
+         <li>Names of elements and attributes can be supplied either as a plain local name, or
+            as a QName object. A plain local name is interpreted as being in the default namespace
+            in the case of elements (the default namespace can be set at any level), or as being
+            in no namespace in the case of attributes. For the vast majority of documents, there
+            is never any need to use QNames; very often the only namespace handling is a single
+            call on setDefaultNamespace().</li>
+         <li>The close() method on elements (which generates the end tag) is optional. If you write
+            another child element, the previous child is closed automatically. If you close a
+            parent element, any unclosed child element is closed automatically. The specimen code
+            above shows one call on close(), which is useful in this case for readability: the
+            reader can see that no further children are going to be added.</li>
+         <li>The argument of methods such as attribute() and text() that supplies the content may
+            always be null. If the content is null, no attribute or text node is written. This
+            makes it easier to handle optional content without disrupting the method chaining.</li>
+      </ul>
+      <p>I have rewritten several classes that construct content using push APIs to use this
+         interface, and the resulting readability is very encouraging.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2019/02/representing-namespaces-in-xdm-tree-models.html">Representing namespaces in XDM tree models</a></div><div class="next-uri"><a href="/mike/2019/10/alphacodes-for-sequence-types.html">Alphacodes for Sequence Types</a></div></footer></body>
+</html>

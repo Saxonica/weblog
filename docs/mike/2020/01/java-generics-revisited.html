@@ -1,0 +1,100 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Java Generics revisited</title>
+      <meta name="id" content="229">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2020-01-21T21:14:20">
+      <meta name="basename" content="java_generics_revisited">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Java Generics revisited</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2020-01"><span class="date" time="2020-01-21T21:14:20">January&nbsp;21, 2020 at 09:14p.m.</span></a></div></header><main>
+      
+      <p>In Saxon 9.9 we took considerable pains to adopt Java Generics for processing sequences:
+         in particular the Sequence and SequenceIterator classes, and all their subclasses,
+         became Sequence&lt;? extends Item&gt; and SequenceIterator&lt;? extends Item&gt;.
+         </p>
+      <p>
+         I'm now coming to the conclusion that this was a mistake; or at any rate, that we
+         went too far.
+         </p>
+      <p>
+         What exactly are the benefits of using Generics? It's supposed to improve type safety
+         and reduce the need for casts which, if applied incorrectly, can trigger run-time
+         exceptions. So it's all about detecting more of your errors at compile time.
+         </p>
+      <p>
+         Well, I don't think we've been seeing those benefits. And the main reason for that
+         is that in most cases, when we're processing sequences, we don't have any static knowledge
+         of the kind of items we are dealing with.
+         </p>
+      <p>
+         Sure, when we process a particular XPath path expression, we know whether it's going
+         to deliver nodes or atomic values. But when we write the Java code in Saxon to handle
+         path expressions, all we know is that the result will always be a sequence of items.
+         </p>
+      <p>
+         There are some cases where particular kinds of expression only handle nodes, or only
+         handle atomic values. For example, the input sequences for a union operator will always
+         be sequences of nodes. It would be nice if we didn't have to handle a completely general
+         sequence and cast every item to class NodeInfo. But it's an illusion to think we can
+         get extra type safety that way. The operands of a union are arbitrary expressions,
+         and the iterators returned by the subexpressions are going to be arbitrary iterators;
+         there's no way we can translate the type-safety we are implementing at the XPath level
+         into type-safe evaluators at the Java level.
+         </p>
+      <p>
+         It's particularly obvious that generics give us no type-safety at the API level. In
+         s9api, <b>XPathSelector.evaluate()</b> returns an <b>XdmValue</b>. That's a lot better than the JAXP equivalent which just returns <b>Object</b>, but the programmer still has to do casting to convert the items in the return <b>XdmValue</b> to nodes, string, integers, or whatever. And there's no way we can change that; the
+         XPath expression is supplied as a string at run-time, so it's only at run-time that
+         we know what type of items it returns. If that's true at the API level, it's equally
+         true internally. Any kind of expression can invoke any other kind of expression (that's
+         what orthogonality in language design is about), which means that the interfaces between
+         an expression and its subexpressions are always going to be general-purpose sequences
+         whose item type is known only at execution time.
+         </p>
+      <p>
+         There are a couple of aspects of Java &nbsp;generics that cause us real pain.
+         </p>
+      <p>
+         
+         
+         
+         <ul>
+            <li>The first is the XDM rule that every item is itself a <b>Sequence</b>. So if <b>Sequence</b> is a generic type, parameterized by Item type, and <b>Item</b> is a subclass of <b>Sequence</b>, then <b>Item</b> has to be itself a generic type parameterized by its own type. Rather than <b>Item</b>, it has to be <b>Item&lt;? extends Item&gt;</b>; or perhaps it should be <b>Item&lt;? extends Item&lt;? extends Item&gt;&gt;</b>, and so ad infinitum. And then <b>StringValue</b> extends <b>Item&lt;StringValue&gt; </b>and so on. We found ways around that conundrum, but the complexity is horrendous;
+               it certainly doesn't achieve the goal of making it easier to write correct code.</li>
+            <li>The second is arrays. Arrays don't play at all well with generics; you can't create
+               an array of a generic type, for example. And yet there are lots of places where it's
+               useful to use arrays, and some where arrays are the only option. VarArgs functions,
+               for example, present their arguments as an array. In some cases we wanted to carry
+               on using arrays (rather than lists) for compatibility, in other cases we want to use
+               them for convenience or for performance. The natural signature for a function call,
+               for example is <b>public Sequence call(Context context, Sequence[] args)</b>. There's no way we can refine this in a way that passes static information about
+               the argument types from the caller to the callee, because we're using the same Java
+               signature for all XPath functions.</li>
+         </ul>
+         But having got Generics working, at great effort, in 9.9, should we retain them or
+         drop them?
+         
+         </p>
+      <p>
+         One reason I'm motivated to drop them is .NET. We have a significant user base on
+         .NET, but we have something of a potential crisis looming in terms of ongoing support
+         for this platform. Microsoft appear to be basing their future strategy around .NET
+         Core, allowing .NET Framework to fade away into the sunset. But the technology we
+         use for bridging to .NET, namely IKVM, only supports .NET Framework and not .NET Core;
+         and Jeroen Frijters who single-handedly developed IKVM and supported it for umpteen
+         years (with no revenue stream to support it) has thrown in the towel and is no longer
+         taking it forward. So we're looking at a number of options for a way forward on .NET.
+         One of these is source code conversion; and to make source code conversion viable
+         without forking the code, we need to minimise our dependencies on Java features that
+         don't translate easily to C#. Notable among those features is generics.
+         </p>
+      <p>
+         In the short term, I think I'm going to roll back the use of generics in selected
+         areas where they are clearly more trouble than they are worth. That's particularly
+         true of <b>Sequence</b> and its subclasses, including <b>Item</b>. For <b>SequenceIterator</b> it's probably worth keeping generics for the time being, but we'll keep that under
+         review.
+         </p>
+   </main><footer><div class="prev-uri"><a href="/mike/2019/10/alphacodes-for-sequence-types.html">Alphacodes for Sequence Types</a></div><div class="next-uri"><a href="/mike/2020/02/the-java-class-hierarchy-for-xpath-type-objects.html">The Java class hierarchy for XPath type objects</a></div></footer></body>
+</html>

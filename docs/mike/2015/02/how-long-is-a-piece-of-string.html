@@ -1,0 +1,173 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>How long is a (piece of) string?</title>
+      <meta name="id" content="209">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2015-02-09T14:06:09">
+      <meta name="basename" content="how_long_is_a_piece_of_string">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>How long is a (piece of) string?</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2015-02"><span class="date" time="2015-02-09T14:06:09">February&nbsp;09, 2015 at 02:06p.m.</span></a></div></header><main>
+      
+      <p>
+         As I explained in my previous post, I've been re-examining the way functions work
+         in Saxon. In particular, over the last week or two, I've been changing the way system
+         functions (such as fn:string-length) work. There's a terrific amount of detail and
+         complexity here, but I thought it might be interesting to take one simple function
+         (fn:string-length) as an example, to see where the complexity comes from and how it
+         can be reduced.
+         </p>
+      <p>
+         At first sight, fn:string-length looks pretty simple. How long is a (piece of) string?
+         Just ask Java to find out: surely it should just map to a simple call on java.lang.String.length().
+         Well, no actually.
+         </p>
+      <p>
+         If we look to the specification, there are two complications we have to deal with.
+         Firstly we are counting the number of Unicode characters, not (as Java does) the number
+         of 16-bit UTF16 codepoints. In the case of surrogate pairs, one character occupies
+         two codepoints, and that means that a nave implementation of string-length() takes
+         time proportional to the length of the string.
+         </p>
+      <p>
+         Secondly, there are two forms of the string-length() function. With zero arguments,
+         it's defined to mean string-length(string(.)). That's different from nearly all other
+         functions that have 0-argument and 1-argument forms, where (for example) name() means
+         name(.). Saxon handles functions like name() by converting them statically to name(.),
+         and that conversion doesn't work in this case. To illustrate the difference, consider
+         an attribute code="003", defined in the schema as an xs:integer. The function call
+         string-length(@code) returns 1 (it atomizes the attribute to produce an integer, converts
+         the integer to the string "3", and then returns the length of this string. But @code!string-length()
+         returns 3 - the length of the string value of the attribute node.
+         </p>
+      <p>
+         The other complexity applies specifically to string-length#0 (that is, the zero-argument
+         form). Dynamic calls to context-dependent functions bind the context at the point
+         where the function is created, not where it is called. Consider:
+         </p>
+      <pre>&lt;xsl:for-each select="0 to 9"&gt;
+&lt;xsl:variable name="f" select="string-length#0"/&gt;
+&lt;xsl:for-each select="21 to 50"&gt;
+&lt;xsl:value-of select="$f()"/&gt;
+&lt;/xsl:for-each&gt;
+&lt;/xsl:for-each&gt;</pre>
+      <p>This will print the value "1" three hundred times. In each case the context item at
+         the point where $f is bound is a one-digit integer, so $f() returns the length of
+         that integer, which is always one. The context item at the point where $f() is evaluated
+         is irrelevant.
+         </p>
+      <p>
+         Now let's take a look at the Saxon implementation. There's a Java class StringLength
+         which in Saxon 9.6 is about 200 lines of code (including blank lines, comments, etc),
+         and this does most of the work. But not all: in the end all it does is to call StringValue.getStringLength(),
+         which is what really does the work. Atomic values of type xs:string are represented
+         in Saxon by an instance of the class StringValue, which encapsulates a Java CharSequence:
+         often, but not always, a String. The reason for the encapsulating class is to provide
+         type safety on methods like Function.call() which returns a Sequence; StringValue
+         implements AtomicValue which implements Item which implements Sequence, so the XDM
+         data model is faithfully represented in the Java implementation classes.
+         </p>
+      <p>
+         In addition there's a class StringLengthCompiler which generates a bytecode implementation
+         of the string-length function. This is another 60 or so lines.
+         </p>
+      <p>
+         Some functions also have a separate streaming implementation to accept streamed input,
+         and one or two (string-join() and concat(), for example), have an implementation designed
+         to produce streamed output. That's designed to ensure that an instruction like &lt;xsl:value-of
+         select="//emp/name" separator=","/&gt;, which compiles down to a call on string-join()
+         internally, doesn't actually assemble the whole output in memory, but rather writes
+         each part of the result string to the output stream as it becomes available.
+         </p>
+      <p>
+         Since the introduction of dynamic function calls, many system functions have two separate
+         implementations, one for static calls and one for dynamic calls. That's the case for
+         string-length: the evaluateItem() method used for static calls is almost identical
+         to the call() method used for dynamic calls. One reason this happened was because
+         of a fear of performance regression that might occur if the existing code for static
+         calls was generalized, rather than introducing a parallel path.
+         </p>
+      <p>
+         In 9.6, the implementation of dynamic calls to context-dependent functions like string-length#0
+         is rather fudged. In fact, the expression string-length#0 compiles into a call on
+         function-lookup("fn:string", 0). The implementation of function-lookup() keeps a copy
+         of both the static and dynamic context at the point where it is called, and this is
+         then used when evaluating the resulting function. This is vastly more expensive than
+         it needs to be: for functions like string-length#0 where there are no arguments other
+         than the context, the function can actually be pre-evaluated at the point of creation.
+         In the new 9.7 implementation, the result of the expression string-length#0 is a function
+         implemented by the class ConstantFunction, which encapsulates its result and returns
+         this result when it is called. (It's not quite as simple as this, because the constant
+         function also has to remember its name and arity, just in case the user asks.)
+         </p>
+      <p>
+         The method StringValue.getStringLength() attempts to recognize cases where walking
+         through the codepoints of the string to look for surrogate pairs is not actually necessary.
+         In previous releases there was an extra bit kept in StringValue, set when the string
+         was known to contain no surrogate pairs: so having walked the string once, it would
+         never be done again. In 9.6 this mechanism is replaced with a different approach:
+         Saxon includes several implementations of CharSequence that maintain the value as
+         an array of fixed-size integers (8-bit, 16-bit, or 32-bit, as necessary). If the CharSequence
+         within a StringValue is one of these classes (known collectively as UnicodeString),
+         then the length of the string is the length of the array. And when getStringLength()
+         is called on a string the first time, the string is left in this form, in the hope
+         that future operations on the string will benefit. Of course, this will in some cases
+         be counter-productive (and there's a further refinement in the implementation, which
+         I won't go into, that's designed to overcome this).
+         </p>
+      <p>
+         There are a few other optimizations in the implementation of string-length() that
+         are worth mentioning. Firstly, it's quite common for users to write
+         </p>
+      <pre>&lt;xsl:if test="string-length($x) != 0"&gt;
+</pre>
+      <p>
+         Here we don't need to count surrogate pairs in the string: the string is zero-length
+         if and only if the underlying CharSequence is zero-length. Saxon therefore does a
+         static rewrite of such an expression to boolean(string($x)). (If $x is statically
+         known to be a string, the call string($x) will then be further rewritten as $x.)
+         </p>
+      <p>
+         If string-length#1 is applied to a value that can be computed statically, then the
+         string-length function is itself computed statically. (This optimization, for odd
+         historical reasons, is often called "constant folding". It's possible only when there
+         are no context dependencies.)
+         </p>
+      <p>
+         During type-checking, the implementation of string-join#0 keeps a note of whether
+         a context item is known to exist. This is used during byte-code generation; if it's
+         known that the context item won't be absent, then there is no need to generate code
+         to check for this error condition. It's through tiny optimizations like this that
+         generated bytecode ends up being faster than interpreted code.
+         </p>
+      <p>
+         In my current exercise refactoring the implementation of system functions such as
+         string-length, I've been looking at how much of logic is duplicated either across
+         the different implementations of a single function (streamed and unstreamed, static
+         and dynamic, bytecode and interpreted) or across the implementations of functions
+         that have a lot in common (such as string(), string-length(), and normalize-space()).
+         I've found that with the exception of the core code in StringValue.getStringLength,
+         and the optimization of string-length()=0, everything else can be vastly reduced.
+         In place of the original StringLength class, there are now two (inner) classes StringLength_0
+         and StringLength_1 each of which consists of a single one-line method. The code for
+         generating byte-code can also be considerably simplified by achieving more reuse across
+         different functions.
+         </p>
+      <p>
+         The main essence of the reorganization is that the class StringLength (or rather,
+         its two variants) are no longer Expressions, they are now Functions. Previously a
+         call onto string-length($x) compiled to an expression, held as a node on the expression
+         tree. Now it compiles into two object, a StringLength object which is a pure function,
+         and a SystemFunctionCall object which is an expression that calls the function. The
+         SystemFunctionCall object is generic across all functions, while the implementations
+         of SystemFunction contain all the code that is specific to one function. This change
+         was motivated primarily by the need to handle dynamic function calls (and hence first-class
+         function objects) properly, but it has provided a stimulus for a refactoring that
+         achieves much more than this.
+         </p>
+      <p>
+         So, how long is a piece of string? At least we now know how to work it out more efficiently.
+         Sorry this little yarn wasn't shorter.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2015/02/functions-function-calls-function-items.html">Functions, Function Calls, Function Items</a></div><div class="next-uri"><a href="/mike/2015/06/another-look-in-the-namepool.html">Another look in the NamePool</a></div></footer></body>
+</html>

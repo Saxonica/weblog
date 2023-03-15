@@ -1,0 +1,54 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Altova Mudslinging</title>
+      <meta name="id" content="130">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-10-28T14:18:44">
+      <meta name="basename" content="altova_mudslinging">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Altova Mudslinging</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-10"><span class="date" time="2006-10-28T14:18:44">October&nbsp;28, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>A number of users have written to me suggesting that I respond to Altova's latest
+         customer newsletter in which they make the rather suprising claim that their XSLT
+         processor is three times faster than Saxon. At least they had the decency to describe
+         how they measured it - by running a thousand or so conformance tests from the W3C
+         test suite using a batch script in which each transformation was run individually
+         from the command line. Any reasonably competent user knows that that's a hopelessly
+         inefficient way of running Java programs, because the initialisation costs for loading
+         the Java VM a thousand times far exceeds the time spent actually doing useful work.
+         But of course, Altova know that a lot of people will only read the headlines.</p>
+      <p>Well, I did respond: I've put a counter-claim on my web site (see the last item in
+         the <a href="http://www.saxonica.com/questions.html">Questions and Answers</a> section) that Saxon is ten times faster than Altova. I freely admit that my methodology
+         is no more scientific than theirs is, though I think my numbers are probably closer
+         to the truth. It would be nice to see some objective numbers produced carefully by
+         an unbiased third party. Vendor figures, including my own, are not very useful, because
+         a vendor always knows how to make their own product run at maximum speed, and they
+         rarely have either the knowledge or the motivation to do the same for their competitors.</p>
+      <p>Meanwhile, I'm actually quite proud of the fact that Saxonica is now so highly regarded
+         that Altova should feel it necessary to throw mud in this way. When I started the
+         company, nearly three years ago now, I could almost have set that as a business objective:
+         "in three years time, Saxonica will have developed such a strong reputation as a technology
+         leader that competitors will resort to knocking us in their advertising". In marketing
+         circles it's well known that knocking your competition is a strategy that can easily
+         backfire, because it actually raises the profile of the competitor among your own
+         customers, and acknowledges them as a leader. Let's hope that turns out to be true
+         in this case. Certainly, it seems a strategic error to make competitive claims that
+         are so easily disproved.</p>
+      <p>It's worth remembering also that performance is only one dimension. I've worked hard
+         on Saxon performance over the years, and I think it's pretty good (and certainly very
+         competitive), but performance has never been the number one objective. Correctness
+         comes first, in the sense of 100% conformance to the W3C specifications, closely followed
+         by usability, of which the most important ingredient in my view is the quality of
+         the error messages seen by users during the development cycle. At the moment I think
+         Saxon is well ahead of Altova on all three fronts. It's nice to see that Altova are
+         running the W3C conformance tests, but slightly worrying that they are only running
+         a subset; and if I were a user, I would certainly be asking to see their results.</p>
+      <p>I rather enjoy watching the robust way in which my friends at Stylus Studio <a href="http://www.stylusstudio.com/altovaxml.html">attack Altova</a>. But I prefer watching a good fight from the ringside to taking part in it! It's
+         tempting to join in when people starting throwing things at you, but it's not really
+         my style to do business in that way. I'll try and stand back and leave that to others.
+         I prefer to think (perhaps it's an old-fashioned British attitude) that the way to
+         achieve success is to focus on producing the best product.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/10/progress-on-xquery-compilation.html">Progress on XQuery compilation</a></div><div class="next-uri"><a href="/mike/2006/11/first-compiled-xmark-results.html">First compiled XMark results</a></div></footer></body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Transforming 20 Gigabytes</title>
+      <meta name="id" content="142">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2007-09-25T14:18:45">
+      <meta name="basename" content="transforming_20_gigabytes">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Transforming 20 Gigabytes</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2007-09"><span class="date" time="2007-09-25T14:18:45">September&nbsp;25, 2007 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>My heart sank when I received an email yesterday from a Saxonica customer reporting
+         a failure when running a transformation on a 20Gb source file (using the "streaming"
+         capabilities described at <a href="http://www.saxonica.com/documentation/sourcedocs/serial.html">http://www.saxonica.com/documentation/sourcedocs/serial.html</a>.) It was apparently failing half way through with no error message of any kind. How
+         do you go about debugging such a problem, especially when you're in a different continent
+         from the client?</p>
+      <p>Well, every problem is an opportunity, and this was my first chance to experiment
+         with a transformation on this kind of scale - in fact, it's probably 100 times bigger
+         than anything I have personally run before. And I was quite pleasantly surprised that
+         it's more manageable than I expected. Downloading the 2Gb compressed file ran without
+         problems while I was having dinner; decompressing it (using WinRAR) ran again without
+         problems while I watched the news on TV.</p>
+      <p>I decided first to try my old DTDGenerator application on the source data, to check
+         that the XML was well-formed. This is a pure SAX application with no dependencies
+         on Saxon code. The first attempt ran out of memory; I discovered that the DTDGenerator
+         is (unintentionally) heeping a hash table of all distinct attribute values. So I fixed
+         this bug (first code change since 2001!) and fired it off again. After 40 minutes
+         I decided I needed to get on with other work on my laptop and killed it, starting
+         it again on the shiny new Vista machine sitting in the corner, once I had installed
+         Saxon and Java on it. The DTDGenerator ran successfully on that machine in about 25
+         minutes, so I started up the transformation proper, which took around 50 minutes,
+         producing a 1.9Gb CSV file as output, running with a constant memory footprint of
+         around 20Mb. That's a processing rate of about 6Mb/sec, which doesn't seem bad.</p>
+      <p>It's noticeable that the new machine is only running at 25-30% CPU - it's one of the
+         shiny new quad-core processors and of course Saxon isn't fully taking advantage of
+         it. The streaming process actually uses two threads, but I think one of them is doing
+         most of the work. When I bought the box I was hoping to do some experiments on multithreading,
+         and this job seems a good one to start on.</p>
+      <p>I haven't solved the customer's problem yet, but I've shown that there's at least
+         one environment in which Saxon can handle the job, which is reassuring. Now it's a
+         question of finding out what's different in their environment - or indeed, whether
+         they can reproduce the problem systematically at all.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2007/06/a-new-xqj-draft.html">A new XQJ draft</a></div><div class="next-uri"><a href="/mike/2007/11/final-draft-of-xqj.html">Final Draft of XQJ</a></div></footer></body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>Guaranteed Streamability</title>
+      <meta name="id" content="217">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2016-12-09T21:56:27">
+      <meta name="basename" content="guaranteed_streamability">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Guaranteed Streamability</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2016-12"><span class="date" time="2016-12-09T21:56:27">December&nbsp;09, 2016 at 09:56p.m.</span></a></div></header><main>
+      
+      <p>The XSLT 3.0 specification in its current form provides a set of rules (that can be
+         evaluated statically, purely by inspecting the stylesheet) for determining whether
+         the code is (or is not) guaranteed streamable.
+         </p>
+      <p>
+         If the code is guaranteed streamable then every processor (if it claims to support
+         streaming at all) must use streaming to evaluate the stylesheet; if it is not guaranteed
+         streamable then the processor can choose whether to use streaming or not.
+         </p>
+      <p>
+         The tricky bit is that there's a requirement in the spec that if the code isn't guaranteed
+         streamable, then a streaming processor (on request) has to detect this and report
+         it. The status section of the spec says that this requirement is "at risk", meaning
+         it might be removed if it proves too difficult to implement. There are people on the
+         working group who believe passionately that this requirement is really important for
+         interoperability; there are others (including me) who fully understand why users would
+         like to have this, but have been arguing that it is extremely difficult to deliver.
+         </p>
+      <p>
+         In this article I'm going to try to explain why it's so difficult to achieve this
+         requirement, and to explore possibilities for overcoming these difficulties.
+         </p>
+      <p>
+         Streamability analysis can't be performed until various other stages of static analysis
+         are complete. It generally requires that names have been resolved (for example, names
+         of modes and names of streamable functions). It also relies on rudimentary type analysis
+         (determining the static type of constructs). For Saxon, this means that streamability
+         analysis is done after parsing, name fixup, type analysis, and rewrite optimization.
+         </p>
+      <p>
+         When Saxon performs these various stages of analysis, it modifies the expression tree
+         as it goes: not just to record the information obtained from the analysis, but to
+         make use of the information at execution time. It goes without saying that in modifying
+         the expression tree, it's not permitted to replace a streamable construct with a non-streamable
+         one, and that isn't too hard to achieve (though these things are relative...). But
+         the requirement to report departures from guaranteed streamability imposes a second
+         requirement, which is proving much harder. If we are to report any deviations from
+         guaranteed streamability, then up to the point where we do the streamability analysis,
+         we must never replace a non-streamable construct with a streamable one.
+         </p>
+      <p>
+         There are various points at which we currently replace a non-streamable construct
+         with a streamable one.
+         </p>
+      <p>
+         
+         
+         
+         <ul>
+            <li>Very early in the process, the expression tree that is output by the parsing phase
+               uses the same data structure on the expression tree to represent equivalent constructs
+               in the source. For example, the expression tree produced by &lt;xsl:if test="$a=2"&gt;&lt;xsl:sequence
+               select="3"/&gt;&lt;/xsl:if&gt; will be identical to the expression tree produced by &lt;xsl:sequence
+               select="if ($a=2) then 3 else ()"/&gt;. But streamability analysis makes a distinction
+               between these two constructs. It's not a big distinction (in fact, the only thing
+               it affects is exactly where you are allowed to call the accumulator-after() function)
+               but it's big enough to count.</li>
+            <li>At any stage in the process, if we spot a constant expression then we're likely to
+               replace it with its value. For example if we see the expression $v+3, and $v is a
+               global variable whose value is 5, we will replace the expression with the literal
+               8. This won't usually affect streamability one way or the other. However, there are
+               a few cases where it does. The most obvious is where we work out that an expression
+               is void (meaning it always returns an empty sequence). For example, according to the
+               spec, the expression (author[0], author[1]) is not streamable because it makes two
+               downward selections. But Saxon spots that author[0] is void and rewrites the expression
+               as (author[1]), which is streamable. Void expressions often imply some kind of user
+               error, so we often output a warning when this happens, but just because we think the
+               user has written nonsense doesn't absolve us from the conformance requirement to report
+               on guaranteed streamability. Void expressions are particularly likely to be found
+               with schema-aware analysis.</li>
+            <li>Inlining of calls to user-defined functions will often make a non-streamable expression
+               streamable.</li>
+            <li>Many other rewrites performed by the optimizer have a similar effect, for example
+               replacing (X|Y) by *[self::X|self::Y].</li>
+         </ul>
+         My first attempt to meet the requirement is therefore (a) to add information to the
+         expression tree where it's needed to maintain a distinction that affects streamability,
+         and (b) to try to avoid those rewrites that turn non-streamable expressions into streamable
+         ones. As a first cut, skipping the optimization phase completely seems an easy way
+         to achieve (b). But it turns out it's not sufficient, firstly because some rewrites
+         are done during the type-checking phase, and secondly because it turns out that without
+         an optimization pass, we actually end up finding that some expressions that should
+         be streamable are not. The most common case for this is sorting into document order.
+         Given the expression A/B, Saxon actually builds an expression in the form sort(A!B)
+         relying on the sort operation to sort nodes into document order and eliminate duplicates.
+         This relies on the subsequent optimization phase to eliminate the sort() operation
+         when it can. If we skip the optimization phase, we are left with an unstreamable expression.
+         
+         </p>
+      <p>
+         The other issue is that the streamability rules rely on type inferencing rules that
+         are much simpler than the rules Saxon uses. It's only in rare cases that this will
+         make a difference, of course: in fact, it requires considerable ingenuity to come
+         up with such cases. The most obvious case where types make a difference to streamability
+         is with a construct like &lt;xsl:value-of select="$v"/&gt;: this is motionless if $v is
+         a text or attribute node, but consuming if it is a document or element node. If a
+         global variable with private visibility is initialized with select="@price", but has
+         no "as" attribute, Saxon will infer a type of attribute(price) for the variable, but
+         the rules in the spec will infer a type of item()*. So to get the same streamability
+         answer as the spec gives, we need to downgrade the static type inferencing in Saxon.
+         </p>
+      <p>
+         So I think the changes needed to replicate exactly the streamability rules of the
+         XSLT 3.0 spec are fairly disruptive; moreover, implementing the changes by searching
+         for all the cases that need to change is going to be very difficult to get right (and
+         is very difficult to test unless there is another trustworthy implementation of the
+         rules to test against).
+         </p>
+      <p>
+         This brings us to Plan B. Plan B is to meet the requirement by writing a completely
+         free-standing tool for streamability analysis that's completely separate from the
+         current static analysis code. One way to do this would be to build on the tool written
+         by John Lumley and demonstrated at Balisage a couple of years ago. Unfortunately that's
+         incomplete and out of date, so it would be a significant effort to finish it. Meeting
+         the requirement in the spec is different here from doing something useful for users:
+         what the spec demands is a yes/no answer as to whether the code is streamable; what
+         users want to know is why, and what they need to change to make the code streamable.
+         The challenge is to do this without users having to understand the difficult abstractions
+         in the spec (posture, sweep, and the rest). John's tool produces an annotated expression
+         tree revealing all the properties: that's great for a user who understands the methodology
+         but probably rather bewildering to the typical end user. Doing the minimum for conformance,
+         a tool that just says yes or no without saying why, involves a lot of work to get
+         a "tick in the box" with a piece of software that no-one will ever use, but would
+         be a lot easier to produce. Conformance has always been a very high priority for Saxonica,
+         but I can't see anyone being happy with this particular solution.
+         </p>
+      <p>
+         So, assuming the WG maintains its insistence of having this feature (and it seems
+         to me likely that it will), what should we do about it?
+         </p>
+      <p>
+         One option is simply to declare a non-conformance. Once upon a time, standards conformance
+         was very important to Saxon's reputation in the market, but I doubt that this particular
+         non-conformance would affect our sales.
+         </p>
+      <p>
+         Another option is to declare conformance, do our best to achieve it using the current
+         analysis technology, and simply log bugs if anyone reports use cases where we get
+         the answer wrong. That seems sloppy and dishonest, and could leave us with a continuing
+         stream of bugs to be fixed or ignored.
+         </p>
+      <p>
+         Another option is the "minimal Plan B" analyser - a separate tool for streamability
+         analysis, that simply reports a yes/no answer (without explanation). It would be significant
+         piece of work to create this and test it, and it's unclear that anyone would use it,
+         but it's probably the cheapest way of getting the conformance tick-in-the-box.
+         </p>
+      <p>
+         A final option is to go for a "fully featured" but free-standing streamability analysis
+         tool, one which aims to not only answer the conformance question about guaranteed
+         streamability, but also to provide genuinely useful feedback and advice helping users
+         to create streamable stylesheets. Of course ideally such a tool would be integrated
+         into an IDE rather than being free-standing. I've always argued that there's only
+         a need for one such tool: it's not something that every XSLT 3.0 processor needs to
+         provide. Doing this well would be a large project and involves different skills from
+         those we currently have available.
+         </p>
+      <p>
+         In the short term, I think the only honest and affordable approach would be the first
+         option: declare a non-conformance. Unfortunately that could threaten the viability
+         of the spec, because we can only get a spec to Recommendation status if all features
+         have been shown to be implementable.
+         </p>
+      <p>
+         No easy answers.
+         </p>
+      <p>
+         <b>LATER</b></p>
+      <p>
+         I've been thinking about a Plan C which might fly...
+         </p>
+      <p>
+         The idea here is to try and do the streamability analysis using the current expression
+         tree structure and the current streamability logic, but applying the streamability
+         rules to an expression tree that faithfully represents the stylesheet as parsed, with
+         no modifications from type checking or optimization.
+         </p>
+      <p>
+         To do this, we need to:
+         </p>
+      <ul>
+         <li>Define a configuration flag --strictStreamability which invokes the following logic.</li>
+         <li>Fix places where the initial expression tree loses information that's needed for
+            streamability analysis. The two that come to mind are (a) losing the information that
+            something is an instruction rather than an expression (e.g. we lose the distinction
+            between xsl:map-entry and a singleton map expression) - this distinction is needed
+            to assess calls on accumulator-after(); (b) turning path expressions A/B into docSort(A!B).
+            There may be other cases that we will discover along the road (or fail to discover,
+            since we may not have a complete set of test cases...)</li>
+         <li>Write a new type checker that attaches type information to this tree according to
+            the rules in the XSLT 3.0 spec. This will be much simpler than the existing type checker,
+            partly because the rules are much simpler, but more particularly because the only
+            thing it will do is to assign static types: it will never report any type errors,
+            and it will never inject any code to do run-time type checking or conversion.</li>
+         <li>Immediately after this type-checking phase, run the existing streamability rules
+            against the expression tree. As far as I'm aware, the streamability rules in Saxon
+            are equivalent to the W3C rules (at any rate, most of the original differences have
+            now been eliminated).</li>
+      </ul>
+      <p>
+         There are then two options. We could stop here: if the user sets the --strictStreamability
+         flag, they get the report on streamability, but they don't get an executable that
+         can actually be run. The alternative would be, if the streamability analysis succeeds,
+         attempt to convert the expression tree into a form that we can actually use, by running
+         the existing simplify / typecheck / optimize phases. The distinctions introduced to
+         the expression tree by the changes described above would be eliminated by the simplify()
+         phase, and we would then proceed along the current lines, probably including a rerun
+         of the streamability analysis against the optimised expression tree (because the posture+sweep
+         annotations are occasionally needed at run-time).
+         </p>
+      <p>
+         I will do some further exploration to see whether this all looks feasible. It will
+         be very hard to prove that we've got it 100% right. But in a sense that doesn't matter,
+         so long as the design is sound and we're passing known tests then we can report honestly
+         that to the best of our knowledge the requirement is satisfied, which is not the case
+         with the current approach.
+         </p>
+   </main><footer><div class="prev-uri"><a href="/mike/2016/09/tuple-types-and-type-aliases.html">Tuple types, and type aliases</a></div><div class="next-uri"><a href="/mike/2017/02/bugs-how-well-are-we-doing.html">Bugs: How well are we doing?</a></div></footer></body>
+</html>

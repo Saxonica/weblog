@@ -1,0 +1,102 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>The Receiver Pipeline</title>
+      <meta name="id" content="225">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2018-06-20T11:07:12">
+      <meta name="basename" content="the_receiver_pipeline">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>The Receiver Pipeline</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2018-06"><span class="date" time="2018-06-20T11:07:12">June&nbsp;20, 2018 at 11:07a.m.</span></a></div></header><main>
+      
+      <p>A significant feature of the internal architecture of Saxon is the <b style="font-size: 1em;">Receiver</b> pipeline. A receiver is an object that (rather like a SAX ContentHandler) is called
+         with a sequence of events such as <i style="font-size: 1em;">startElement()</i>, <i style="font-size: 1em;">characters()</i>, and<i style="font-size: 1em;"> endElement()</i>; it typically does some processing on these events and then calls similar events
+         on the next Receiver in the pipeline. The mechanism is efficient, because it avoids
+         building a tree in memory, and because it allows much of the conditional logic of
+         the processing (for example, whether or not to validate the document) to be executed
+         at the time the pipeline is constructed, rather than with conditional code executed
+         for every event that occurs.</p>
+      <p>Receiver pipelines are used throughout Saxon: from doing whitespace stripping on the
+         source document, to serialization of the result tree. The schema validator is implemented
+         as a receiver pipeline, as are operations such as namespace fixup.</p>
+      <p>But despite the elegance of the design, there have been some perennial problems with
+         the implementation. For example, there are variations on exactly what input different
+         implementations of Receiver will accept: some for example require an <i>open()</i> event while others don't; some accept entire element or document nodes in an <i>append()</i> event while others don't. This limits the ability to construct a pipeline using arbitrary
+         combinations of Receivers, and worse, it's very hard to establish exactly what the
+         permitted combinations are.</p>
+      <p>This has come to a head recently in trying to get some of the new features in XSLT
+         3.0 and XQuery 3.1 working reliably and robustly. The straw that broke the camel's
+         back was the innocent-seeming <b>item-separator</b> serialization property. The item-separator is used while doing "sequence normalization"
+         as the first stage of serialization; and the problem was that we didn't really do
+         sequence normalization as a separate step in the processing. The obvious symptom that
+         there are design problems here has been that whenever we get all the XQuery tests
+         working, we find we've broken XSLT; and then when we get all the XSLT tests working,
+         we find XQuery is now failing.</p>
+      <p>The model according to the specs is that the transformation or query engine produces
+         "raw" results (which can be any sequence of items), and this is then input to the
+         serialization process (or possibly just to sequence normalization, which wraps the
+         results in a document node and then delivers the document). But although Saxon could
+         deliver raw results from an XQuery running in "pull" mode (the <i>XQueryEvaluator.iterate()</i> method) we never really had the capability to produce raw output in push mode: the
+         push code did sequence normalization within the query/transformation logic, rather
+         than leaving it to the serializer. That's for historic reasons, of course: with XSLT
+         2.0, that's the way it was defined (the result of the transformation was always a
+         document, with optional serialization).</p>
+      <p>So the first principle to establish in sorting this out is: the interface between
+         the query or transformation engine and the Destination (which may or may not be a
+         Serializer) is a raw sequence, delivered over the Receiver interface.</p>
+      <p>This requires a definition of exactly how a raw sequence is delivered over this interface:
+         that is, what's the contract between the provider of the Receiver interface and the
+         client (the sender of events). I've created that definition, and I've also written
+         a Receiver implementation which validates that the sequence of events conforms to
+         this definition; we can put this validation step into the pipeline when we feel it
+         useful (for example, when running with assertions enabled). This exercise has revealed
+         quite a few anomalies that should be fixed, for example cases where<i> endDocument()</i> is not being called before calling <i>close()</i>.</p>
+      <p>There are three ways of delivering output from a query or transformation: raw output,
+         document output (the result of sequence normalization), and serialized output. The
+         next question that arises is, who decides which form is delivered. The simplest solution
+         is: this is decided entirely at the API level, and does not depend on anything in
+         the stylesheet or query. (This means that the XSLT build-tree attribute is ignored
+         entirely.) In s9api terms, your choice of Destination object determines which kind
+         of output you get. And at the implementation level, the Destination object always
+         receives raw output; we don't want the transformation engine doing different things
+         depending what kind of Destination has been supplied.</p>
+      <p>The other related area that needed sorting out was the API interaction with<b> xsl:result-documen</b>t. We've always had the <i>OutputURIResolver</i> as a callback for determining what should happen to secondary result documents, but
+         this is no longer fit for purpose. It was already a struggle to extend it to handle
+         thread safety when the xsl:result-document instruction became asynchronous; further
+         extending it to work with the s9api <i>Destination</i> framework has never been attempted because it just seemed too difficult. Having made
+         the decision to introduce a dependency on Java 8 for the next major Saxon release,
+         I think we can solve this at the API level with two enhancements:</p>
+      <p>
+         
+         
+         <ol>
+            <li style="caret-color: black; color: black; font-family: -webkit-standard;">on <i>XsltTransformer</i> and <i>Xslt30Transformer</i>, a new method <i>setResultDocumentResolver()</i> which takes as argument an implementation of <i>Function&lt;URI, Destination&gt;</i> - that is a function that accepts an absolute URI as input, and returns a <i>Destination</i>;</li>
+            <li>on <i>Destination</i>, a new method <i>onClose()</i> which takes as argument a <i>Consumer&lt;Destination&gt;</i>.</li>
+         </ol>
+         </p>
+      <p>So when <b>xsl:result-document</b> is called, we construct the absolute URI and pass it to the registered result document
+         resolver, and then use the returned <i>Destination</i> to write the result tree. On completion we call any <i>onClose()</i> handler registered with the <i>Destination</i>, which gives the application the opportunity to process the result document (for
+         example, by writing it to a database).</p>
+      <p>Of course, we have to work out how to implement this while retaining a level of backwards
+         compatibility for applications using the existing <i>OutputURIResolver</i>.</p>
+      <p>A tricky case with xsl:result-document has been where the href attribute is omitted
+         or empty. I think the cleanest design here is to call the registered result document
+         resolver passing the base output URI as argument, and use the returned Destination
+         in the normal way. The application then has to sort out the fact that the original
+         primary Destination for the transformation is not actually used.</p>
+      <p>Yet another complication in the design is the rule in XSLT that when <b>xsl:result-document</b> requests schema validation of the output, schema validation is done after sequence
+         normalization and before serialization. This is pretty ugly from a specification point
+         of view: the serialization spec defines serialization as a 6-step process of which
+         sequence normalization is the first; the XSLT spec really has no business inserting
+         an additional step in the middle of this process. When the specification is ugly,
+         the implementation usually ends up being ugly too, and we have to find some way for
+         the transformation engine to inject a validation step into the middle of the pipeline
+         implemented by the Destination, which ought by rights to be completely encapsulated.</p>
+      <p>Standing back from all this, unlike some refactoring exercises, in this case the basic
+         design of the code proved to be sound, but it needed reinforcement to make the implementation
+         more robust. It needed a clear definition and enforcement of the contract implied
+         by the Receiver interface; it needed a clear separation of concerns between the transformation/query
+         engine and the Destination processing; and it needed a clean API to control it all.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2018/04/navigating-xml-trees-using-java-streams.html">Navigating XML trees using Java Streams</a></div><div class="next-uri"><a href="/mike/2019/02/representing-namespaces-in-xdm-tree-models.html">Representing namespaces in XDM tree models</a></div></footer></body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      
+      <title>First compiled XMark results</title>
+      <meta name="id" content="131">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-11-06T14:18:44">
+      <meta name="basename" content="first_compiled_xmark_results">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>First compiled XMark results</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a><br><a href="/">Combined archives</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-11"><span class="date" time="2006-11-06T14:18:44">November&nbsp;06, 2006 at 02:18p.m.</span></a></div></header><main>
+      
+      <p>The code to compile XQuery into Java has now advanced sufficiently that I can run
+         all the XMark benchmark queries, producing correct results, and reproducing the Saxon-SA
+         join optimizations. First results are shown below: there's clearly room for further
+         work in some areas, but overall it's an encouraging milestone. All timings in milliseconds,
+         to run the query on a 12Mb data file</p>
+      <pre>Query&nbsp;  Saxon-B&nbsp; Saxon-SA&nbsp; compiled
+&nbsp; q1&nbsp;&nbsp;&nbsp;&nbsp; 6.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.8
+&nbsp; q2&nbsp;&nbsp;&nbsp;&nbsp; 6.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4.4
+&nbsp; q3&nbsp;&nbsp;&nbsp; 22.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 19.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 14.8
+&nbsp; q4&nbsp;&nbsp;&nbsp; 21.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 21.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 17.0
+&nbsp; q5&nbsp;&nbsp;&nbsp;&nbsp; 6.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.8
+&nbsp; q6&nbsp;&nbsp;&nbsp;&nbsp; 4.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4.6
+&nbsp; q7&nbsp;&nbsp;&nbsp; 32.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 20.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 34.5
+&nbsp; q8 12217.7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 56.3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 21.6
+&nbsp; q9 16700.7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 81.5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 47.5
+&nbsp;q10&nbsp; 1735.7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 163.9&nbsp;&nbsp;&nbsp;&nbsp; 265.3
+&nbsp;q11 12528.0&nbsp;&nbsp;&nbsp;&nbsp; 4256.3&nbsp;&nbsp;&nbsp; 6049.0
+&nbsp;q12&nbsp; 3234.7&nbsp;&nbsp;&nbsp;&nbsp; 1418.7&nbsp;&nbsp;&nbsp; 2697.0
+&nbsp;q13&nbsp;&nbsp;&nbsp;&nbsp; 3.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2.6
+&nbsp;q14&nbsp;&nbsp; 152.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 106.7&nbsp;&nbsp;&nbsp;&nbsp; 115.8
+&nbsp;q15&nbsp;&nbsp;&nbsp;&nbsp; 4.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3.6
+&nbsp;q16&nbsp;&nbsp;&nbsp;&nbsp; 8.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 7.8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4.0
+&nbsp;q17&nbsp;&nbsp;&nbsp; 11.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10.4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6.6
+&nbsp;q18&nbsp;&nbsp;&nbsp; 11.2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 9.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 8.2
+&nbsp;q19&nbsp;&nbsp;&nbsp; 65.5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 58.7&nbsp;&nbsp;&nbsp;&nbsp; 125.2
+&nbsp;q20&nbsp;&nbsp;&nbsp; 34.9&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 27.6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 24.6</pre>
+      <p>These figures are very preliminary. With some of them there's very little scope for
+         further improvement (the compiled code for count(/a/b/c/) is about as good as it's
+         going to get, and the only way to make further improvements is for the compiler to
+         penetrate deeper than the object model and serialization interfaces that the compiled
+         code currently invokes. But there's no reason why any of the figures for compiled
+         code should be slower than the interpreted figures. The results for Q8 and Q9 are
+         the most encouraging, because these rely very heavily on optimization. In fact it's
+         generally true that the more complex the query, the bigger the potential gains.</p>
+      <p>There are a couple of outliers here. Q19 is the only query in XMark that does sorting,
+         and that's clearly an area that needs attention. Q6 and Q7 are both dominated by a
+         count(). Q10, 11, and 12 are probably dominated by conversion of untyped values to
+         typed values in filter predicates (the XMark benchmark is schemaless, which makes
+         it very frustrating to work with at times, because there would be so many ways of
+         speeding it up if source changes to the queries were allowed!)</p>
+      <p>I'll come back with progress reports as these numbers improve. I don't expect to achieve
+         the same kind of speed-up as with the Knight's Tour (a factor of 7) because with these
+         queries, far more of the time is spent in reading the input data, and there's a limit
+         to how fast that can go. A factor of 2 for the more complex queries remains a reasonable
+         goal.</p>
+      <p>It's worth noting that all these figures are very competitive with those reported
+         by other vendors. Compare with the 11Mb database results at <a href="http://monetdb.cwi.nl/XQuery/Overview/Benchmark/XMark/">http://monetdb.cwi.nl/XQuery/Overview/Benchmark/XMark/</a> - the Q9 figure, for example, is 1000 times better than two of the competitive systems
+         cited.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2006/10/altova-mudslinging.html">Altova Mudslinging</a></div><div class="next-uri"><a href="/mike/2006/12/compiling-q10.html">Compiling Q10</a></div></footer></body>
+</html>
