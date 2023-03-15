@@ -126,7 +126,7 @@
                        indent="yes">
     <html>
       <head>
-        <title>def.saxonica.com blog archives</title>
+        <title>Saxonica weblog archives</title>
         <link rel="stylesheet" href="/css/blog.css" type="text/css"/>
         <meta name="viewport"
               content="width=device-width, initial-scale=1.0" />
