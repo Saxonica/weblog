@@ -128,7 +128,7 @@
 
   <xsl:result-document href="{resolve-uri('../build/docs/index.html', static-base-uri())}"
                        indent="yes">
-    <html>
+    <html class="homepage">
       <head>
         <title>Saxonica weblog archives</title>
         <link rel="stylesheet" href="/css/blog.css" type="text/css"/>
@@ -137,7 +137,8 @@
       </head>
       <body>
         <header>
-          <h1>Saxonica weblog archives</h1>
+          <img src="/img/saxonica.png" class="logo-header"/>
+          <h1>Weblog archives</h1>
           <xsl:call-template name="blog-nav"/>
           <div class="byline">
             <xsl:if test="exists($date)">
