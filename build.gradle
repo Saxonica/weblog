@@ -41,6 +41,10 @@ dependencies {
   )
 }
 
+ext {
+  linkCheck = "true".equals(project.property('linkCheck'))
+}
+
 defaultTasks 'publishWeblog'
 
 def weblogAuthors = ['mike': 'michael-kay',
@@ -203,10 +207,19 @@ task publishWeblog(
 
   input "${buildDir}/navigation.xml"
   stylesheet "${projectDir}/xslt/indexes.xsl"
+
+  if (linkCheck) {
+    doLast {
+      exec {
+        commandLine pythonExecutable,
+          'bin/linkcheck.py', '--debug', '-s', 'build/docs'
+      }
+    }
+  }
 }
 
 task server(type: Exec, dependsOn: ["publishWeblog"]) {
-  commandLine "${pythonExecutable}",
+  commandLine pythonExecutable,
     "-m", "http.server",
     "--directory", "${buildDir}/docs",
     serverPort
