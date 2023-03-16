@@ -93,6 +93,10 @@
                 <div class="post-index">
                   <xsl:call-template name="posts-by-years">
                     <xsl:with-param name="posts" select="$posts"/>
+                    <xsl:with-param name="root"
+                                    select="if (count($parts) gt 1)
+                                            then '../'
+                                            else ''"/>
                   </xsl:call-template>
                 </div>
               </main>
@@ -228,6 +232,7 @@
 
 <xsl:template name="posts-by-years">
   <xsl:param name="posts" as="element(h:html)+"/>
+  <xsl:param name="root" as="xs:string"/>
 
   <xsl:variable name="years"
                 select="distinct-values($posts ! f:post-date(.) ! year-from-dateTime(.))"/>
@@ -243,13 +248,14 @@
                         select="format-number($year, '0001') || '-01-01'"/>
           <xsl:variable name="date" select="xs:date($date)"/>
           <li>
-            <a href="{$year}/">
+            <a href="{$root}{$year}/">
               <xsl:sequence select="format-date($date, '[Y0001]')"/>
             </a>
 
             <xsl:call-template name="posts-by-months">
               <xsl:with-param name="posts"
                               select="$posts[f:post-date(.) ! year-from-dateTime(.) = $year]"/>
+              <xsl:with-param name="root" select="$root"/>
             </xsl:call-template>
           </li>
         </xsl:for-each>
@@ -258,6 +264,7 @@
     <xsl:otherwise>
       <xsl:call-template name="posts-by-months">
         <xsl:with-param name="posts" select="$posts"/>
+        <xsl:with-param name="root" select="$root"/>
       </xsl:call-template>
     </xsl:otherwise>
   </xsl:choose>
@@ -265,6 +272,7 @@
 
 <xsl:template name="posts-by-months">
   <xsl:param name="posts" as="element(h:html)+"/>
+  <xsl:param name="root" as="xs:string"/>
 
   <xsl:variable name="year" select="f:post-date($posts[1]) ! year-from-dateTime(.)"/>
   <xsl:variable name="months"
@@ -281,7 +289,7 @@
                         select="$year || '-' || format-number($month, '01') || '-01'"/>
           <xsl:variable name="date" select="xs:date($date)"/>
           <li>
-            <a href="{$year}/{format-number($month, '01')}/">
+            <a href="{$root}{$year}/{format-number($month, '01')}/">
               <xsl:sequence select="format-date($date, '[MNn], [Y0001]')"/>
             </a>
 

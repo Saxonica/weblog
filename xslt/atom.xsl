@@ -76,8 +76,8 @@
 <xsl:template match="idx:index">
   <title>Saxonica Weblogs</title>
   <link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/>
-  <link href="https://blog.saxonica.com/atom/index.xml" rel="self"/>
-  <id>https://blog.saxonica.com/atom/index.xml</id>
+  <link href="https://blog.saxonica.com/atom.xml" rel="self"/>
+  <id>https://blog.saxonica.com/atom.xml</id>
   <updated>
     <xsl:sequence select="adjust-dateTime-to-timezone(
                             current-dateTime(),

@@ -158,7 +158,7 @@ task updateNavigation(type: SaxonXsltTask) {
 task atomize(type: SaxonXsltTask, dependsOn: ["updateNavigation"]) {
   input "${buildDir}/navigation.xml"
   stylesheet "${projectDir}/xslt/atom.xsl"
-  output "${buildDir}/docs/atom/index.xml"
+  output "${buildDir}/docs/atom.xml"
 }
 
 weblogAuthors.each { item ->
