@@ -128,12 +128,22 @@
 
   <xsl:result-document href="{resolve-uri('../build/docs/index.html', static-base-uri())}"
                        indent="yes">
-    <html class="homepage">
+    <html class="homepage" prefix="og: https://ogp.me/ns#">
       <head>
         <title>Saxonica weblog archives</title>
         <link rel="stylesheet" href="/css/blog.css" type="text/css"/>
         <meta name="viewport"
               content="width=device-width, initial-scale=1.0" />
+
+        <meta content="en_GB" property="og:locale" />
+        <meta content="Saxonica weblogs" property="og:site_name" />
+        <meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image" />
+        <meta content="600" property="og:image:width" />
+        <meta content="315" property="og:image:height" />
+        <meta content="Saxonica weblog archives" property="og:title" />
+        <meta content="Weblogs from the Saxonica team." property="og:description" />
+        <meta content="https://blog.saxonica.com/" property="og:url" />
+        <meta content="website" property="og:type" />
       </head>
       <body>
         <header>
