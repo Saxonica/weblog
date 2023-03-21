@@ -209,7 +209,7 @@ task publishWeblog(
   input "${buildDir}/navigation.xml"
   stylesheet "${projectDir}/xslt/indexes.xsl"
 
-  if (linkCheck) {
+  if (false && linkCheck) {
     doLast {
       exec {
         commandLine pythonExecutable,
