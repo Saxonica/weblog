@@ -78,10 +78,51 @@
     <link rel="stylesheet" type="text/css" href="/css/blog.css"/>
 
     <xsl:variable name="author" select="h:meta[@name='author']/@content/string()"/>
-    <xsl:if test="$author">
-      <link rel="stylesheet" type="text/css"
-            href="/css/{f:author-token($author)}.css"/>
-    </xsl:if>
+    <xsl:variable name="token" select="$author ! f:author-token(.)"/>
+
+    <xsl:choose>
+      <xsl:when test="contains(base-uri(.), '/announcements/')">
+        <link rel="stylesheet" type="text/css"
+              href="/css/announcements.css"/>
+        <meta content="Saxonica announcements" property="og:site_name" />
+        <meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image" />
+        <meta content="The latest news from Saxonica." property="og:description" />
+        <meta content="https://blog.saxonica.com/announcements/" property="og:url" />
+      </xsl:when>
+      <xsl:when test="$token = 'michael-kay'">
+        <link rel="stylesheet" type="text/css"
+              href="/css/{$token}.css"/>
+        <meta content="Saxon diaries" property="og:site_name" />
+        <meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image" />
+        <meta content="Michael Kay's blog." property="og:description" />
+        <meta content="https://blog.saxonica.com/mike/" property="og:url" />
+      </xsl:when>
+      <xsl:when test="$token = 'oneil-delpratt'">
+        <link rel="stylesheet" type="text/css"
+              href="/css/{$token}.css"/>
+        <meta content="O'Neil Delpratt's Blog" property="og:site_name" />
+        <meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image" />
+        <meta content="Saxon, XSLT, XQuery, and XML related." property="og:description" />
+        <meta content="https://blog.saxonica.com/oneil" property="og:url" />
+      </xsl:when>
+      <xsl:when test="$token = 'norm-tovey-walsh'">
+        <link rel="stylesheet" type="text/css"
+              href="/css/{$token}.css"/>
+        <meta content="Saxon Chronicles (in a Norman style)" property="og:site_name" />
+        <meta content="https://blog.saxonica.com/img/sccard.png" property="og:image" />
+        <meta content="Norm Tovey-Walsh's Saxonica weblog." property="og:description" />
+        <meta content="https://blog.saxonica.com/norm" property="og:url" />
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- nop -->
+      </xsl:otherwise>
+    </xsl:choose>
+
+    <meta content="600" property="og:image:width" />
+    <meta content="315" property="og:image:height" />
+    <meta content="{string(h:title)}" property="og:title" />
+    <meta content="en_GB" property="og:locale" />
+    <meta content="website" property="og:type" />
 
     <xsl:if test="not(h:title) and ../h:body/h:h1">
       <title><xsl:value-of select="(../h:body/h:h1)[1]"/></title>
@@ -91,6 +132,7 @@
       <meta name="viewport"
             content="width=device-width, initial-scale=1.0" />
     </xsl:if>
+
   </xsl:copy>
 </xsl:template>
 
@@ -126,8 +168,13 @@
   <xsl:variable name="date" as="xs:dateTime?"
                 select="if ($date) then xs:dateTime($date) else ()"/>
 
+  <xsl:variable name="blogid"
+                select="substring-after(base-uri(.), 'weblog/src/')
+                        =&gt; substring-before('/')"/>
+
   <header>
     <xsl:call-template name="banner">
+      <xsl:with-param name="blogid" select="$blogid"/>
       <xsl:with-param name="author" select="$author"/>
     </xsl:call-template>
     <h2>
@@ -197,10 +244,11 @@
         </form>
       </div>
       <div id='blogroll'>
+        <a href="/">Home (combined archives)</a><br/>
+        <a href="/announcements/">Announcements</a><br/>
         <a href="/mike/">Saxon diaries</a><br/>
         <a href="/oneil/">O’Neil Delpratt’s Blog</a><br/>
-        <a href="/norm/">Saxon Chronicles</a><br/>
-        <a href="/">Combined archives</a>
+        <a href="/norm/">Saxon Chronicles</a>
       </div>
     </div>
   </aside>

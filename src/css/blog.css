@@ -69,7 +69,9 @@ main {
 
 img.logo-header {
     padding-top: 1rem;
+    padding-bottoM: 1rem;
     max-width: var(--max-width);
+    border-bottom: 3px solid rgb(121, 138, 177);
 }
 
 footer {
@@ -133,6 +135,17 @@ h3 a, h3 a:visited,
 .post-index ul.months > li > a,
 .post-index ul.months > li > a:visited {
     text-decoration: none;
+}
+
+li.announcements::before {
+    color: rgb(140,72,64);
+    content: "🎉";
+    display: inline-block;
+    width: 0.65rem;
+}
+
+li.announcements {
+    text-indent: -0.65rem;
 }
 
 a, a:visited {

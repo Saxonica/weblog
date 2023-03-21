@@ -21,6 +21,7 @@
 
 <xsl:template name="blog-nav">
   <xsl:param name="feed" as="xs:string?" select="()"/>
+  <xsl:param name="homepage" as="xs:boolean" select="false()"/>
 
   <aside class="nav">
     <div class="navlinks">
@@ -43,20 +44,28 @@
         </form>
       </div>
       <div class='blogroll'>
+        <xsl:if test="not($homepage)">
+          <a href="/">Home (combined archives)</a><br/>
+        </xsl:if>
+        <a href="/announcements/">Announcements</a><br/>
         <a href="/mike/">Saxon diaries</a><br/>
         <a href="/oneil/">O’Neil Delpratt’s Blog</a><br/>
-        <a href="/norm/">Saxon Chronicles</a><br/>
-        <a href="/">Combined archives</a>
+        <a href="/norm/">Saxon Chronicles</a>
       </div>
     </div>
   </aside>
 </xsl:template>
 
 <xsl:template name="banner">
-  <xsl:param name="author" as="xs:string" required="yes"/>
+  <xsl:param name="blogid" as="xs:string" required="yes"/>
+  <xsl:param name="author" as="xs:string?"/>
 
   <div class="banner">
     <xsl:choose>
+      <xsl:when test="$blogid = 'announcements'">
+        <h1><a href="/announcements/">Saxonica announcements</a></h1>
+        <div class="tagline">The latest news from Saxonica</div>
+      </xsl:when>
       <xsl:when test="$author = 'Michael Kay'">
         <h1><a href="/mike/">Saxon diaries</a></h1>
         <div class="tagline">Michael Kay’s blog</div>
@@ -70,7 +79,7 @@
         <div class="tagline">( in a Norman style )</div>
       </xsl:when>
       <xsl:otherwise>
-        <!-- nop -->
+        <xsl:sequence select="error((), 'Error: unknown author:' || $author)"/>
       </xsl:otherwise>
     </xsl:choose>
   </div>

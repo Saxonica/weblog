@@ -54,7 +54,10 @@
 
         <xsl:variable name="posts"
                       select="$posts/@href ! doc($srcdir || .)/h:html"/>
-        <xsl:variable name="author" select="f:post-author($posts[1])"/>
+        <xsl:variable name="author"
+                      select="if (contains($path, '/announcements'))
+                              then ()
+                              else f:post-author($posts[1])"/>
 
         <xsl:result-document href="{$path}/index.html" indent="yes">
           <html>
@@ -63,16 +66,31 @@
                     content="width=device-width, initial-scale=1.0" />
               <title><xsl:sequence select="$datestr"/> Archive</title>
               <link rel="stylesheet" href="/css/blog.css" type="text/css"/>
-              <xsl:if test="$author">
-                <link rel="stylesheet" type="text/css"
-                      href="/css/{f:author-token($author)}.css"/>
-              </xsl:if>
+
+              <xsl:choose>
+                <xsl:when test="contains($path, '/announcements')">
+                  <link rel="stylesheet" type="text/css"
+                        href="/css/announcements.css"/>
+                </xsl:when>
+                <xsl:when test="$author">
+                  <link rel="stylesheet" type="text/css"
+                        href="/css/{f:author-token($author)}.css"/>
+                </xsl:when>
+                <xsl:otherwise>
+                  <!-- nop -->
+                </xsl:otherwise>
+              </xsl:choose>
+
               <link href="/{$parts[1]}/atom.xml"
                     type="application/atom+xml" rel="alternate" title="Atom feed" />
             </head>
-            <body class="{f:author-token($author)}">
+            <body>
+              <xsl:if test="$author">
+                <xsl:attribute name="class" select="f:author-token($author)"/>
+              </xsl:if>
               <header>
                 <xsl:call-template name="banner">
+                  <xsl:with-param name="blogid" select="$parts[1]"/>
                   <xsl:with-param name="author" select="$author"/>
                 </xsl:call-template>
                 <h2><xsl:sequence select="$datestr"/> Archive</h2>
@@ -80,14 +98,16 @@
                   <xsl:with-param name="feed"
                                   select="'/' || $parts[1] || '/atom.xml'"/>
                 </xsl:call-template>
-                <div class="byline">
-                  <span class="by">By </span>
-                  <span class="name">
-                    <a href="/authors.html#{f:author-token($author)}">
-                      <xsl:sequence select="$author"/>
-                    </a>
-                  </span>
-                </div>
+                <xsl:if test="$author">
+                  <div class="byline">
+                    <span class="by">By </span>
+                    <span class="name">
+                      <a href="/authors.html#{f:author-token($author)}">
+                        <xsl:sequence select="$author"/>
+                      </a>
+                    </span>
+                  </div>
+                </xsl:if>
               </header>
               <main>
                 <div class="post-index">
@@ -135,6 +155,10 @@
         <meta name="viewport"
               content="width=device-width, initial-scale=1.0" />
 
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+
         <meta content="en_GB" property="og:locale" />
         <meta content="Saxonica weblogs" property="og:site_name" />
         <meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image" />
@@ -149,7 +173,10 @@
         <header>
           <img src="/img/saxonica.png" class="logo-header"/>
           <h1>Weblog archives</h1>
-          <xsl:call-template name="blog-nav"/>
+          <xsl:call-template name="blog-nav">
+            <xsl:with-param name="feed" select="'/atom.xml'"/>
+            <xsl:with-param name="homepage" select="true()"/>
+          </xsl:call-template>
           <div class="byline">
             <xsl:if test="exists($date)">
               <span class="date" time="{$date}">
@@ -190,22 +217,20 @@
           </div>
         </header>
         <main>
-          <xsl:variable name="akeys"
-                        select="distinct-values(idx:post/@href
-                                                ! substring-before(., '/'))"/>
+          <xsl:variable
+              name="akeys"
+              select="distinct-values($posts/h:head/h:meta[@name='author']/@content)"/>
 
           <p>
             <xsl:text>Authors: </xsl:text>
             <xsl:for-each select="$akeys">
-              <xsl:sort select="count(f:posts-by-akey($index/idx:post, .))"
-                        order="descending"/>
+              <xsl:sort select="." order="ascending"/>
               <xsl:variable name="akey" select="."/>
               <xsl:if test="position() gt 1">, </xsl:if>
 
               <xsl:variable name="post"
-                            select="($index/idx:post[starts-with(@href, $akey)]
-                                     ! @href)[1]
-                                    ! doc($srcdir || .)/h:html"/>
+                            select="$posts[h:head/h:meta
+                                           [@name='author' and @content=$akey]][1]"/>
 
               <a href="#{f:author-token(f:post-author($post))}">
                 <xsl:sequence select="f:post-author($post)"/>
@@ -214,14 +239,12 @@
           </p>
 
           <xsl:for-each select="$akeys">
-            <xsl:sort select="count(f:posts-by-akey($index/idx:post, .))"
-                      order="descending"/>
+            <xsl:sort select="." order="ascending"/>
             <xsl:variable name="akey" select="."/>
 
             <xsl:variable name="posts"
-                          select="$index/idx:post[starts-with(@href, $akey)]
-                                  ! @href
-                                  ! doc($srcdir || .)/h:html"/>
+                          select="$posts[h:head/h:meta
+                                         [@name='author' and @content=$akey]]"/>
 
             <div class="author">
               <h2 id="{f:author-token(f:post-author($posts[1]))}">
@@ -381,7 +404,12 @@
                   <xsl:for-each select="$posts">
                     <xsl:sort select="f:post-date(.)" order="descending"/>
                     <xsl:variable name="post" select="."/>
-                    <li>
+
+                    <xsl:variable name="blogid"
+                                  select="substring-after(base-uri(.), 'weblog/src/')
+                                          =&gt; substring-before('/')"/>
+
+                    <li class="{$blogid}">
                       <span class="title">
                         <a href="/{substring-after(base-uri(.), $srcdir)}">
                           <xsl:sequence select="f:post-title($post)"/>

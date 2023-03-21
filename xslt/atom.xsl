@@ -27,7 +27,7 @@
   <subtitle>(in a Norman style)</subtitle>
   <link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/>
   <link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/>
-  <id>https://blog.saxonica.com/atom/norm.xml</id>
+  <id>https://blog.saxonica.com/norm/atom.xml</id>
   <updated>
     <xsl:sequence select="adjust-dateTime-to-timezone(
                             current-dateTime(),
@@ -44,7 +44,7 @@
   <subtitle>Michael Kay’s blog</subtitle>
   <link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/>
   <link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/>
-  <id>https://blog.saxonica.com/atom/mike.xml</id>
+  <id>https://blog.saxonica.com/mike/atom.xml</id>
   <updated>
     <xsl:sequence select="adjust-dateTime-to-timezone(
                             current-dateTime(),
@@ -61,7 +61,7 @@
   <subtitle>Saxon, XSLT, XQuery and XML related</subtitle>
   <link href="https://blog.saxonica.com/oneil/" rel="alternate" type="text/html"/>
   <link href="https://blog.saxonica.com/atom/oneil.xml" rel="self"/>
-  <id>https://blog.saxonica.com/oneil.xml</id>
+  <id>https://blog.saxonica.com/oneil/atom.xml</id>
   <updated>
     <xsl:sequence select="adjust-dateTime-to-timezone(
                             current-dateTime(),
@@ -78,6 +78,19 @@
   <link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/>
   <link href="https://blog.saxonica.com/atom.xml" rel="self"/>
   <id>https://blog.saxonica.com/atom.xml</id>
+  <updated>
+    <xsl:sequence select="adjust-dateTime-to-timezone(
+                            current-dateTime(),
+                            xs:dayTimeDuration('PT0H'))"/>
+  </updated>
+  <xsl:apply-templates select="f:select-posts(.)"/>
+</xsl:template>
+
+<xsl:template match="idx:index[$author-id='announcements']">
+  <title>Saxonica announcements</title>
+  <link href="https://blog.saxonica.com/announcements/" rel="alternate" type="text/html"/>
+  <link href="https://blog.saxonica.com/announcements/atom.xml" rel="self"/>
+  <id>https://blog.saxonica.com/announcements/atom.xml</id>
   <updated>
     <xsl:sequence select="adjust-dateTime-to-timezone(
                             current-dateTime(),
@@ -146,10 +159,18 @@
   <xsl:param name="index" as="element(idx:index)"/>
 
   <xsl:variable name="posts" as="element()+">
-    <xsl:sequence select="if (exists($author-id))
-                          then $index/idx:post[idx:author[@id=$author-id]]
-                          else $index/idx:post"/>
+    <xsl:choose>
+      <xsl:when test="$author-id = 'announcements'">
+        <xsl:sequence select="$index/idx:post[starts-with(@href, 'announcements/')]"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="if (exists($author-id))
+                              then $index/idx:post[idx:author[@id=$author-id]]
+                              else $index/idx:post"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:variable>
+
   <xsl:sequence select="$posts[position() le 30]"/>
 </xsl:function>
 

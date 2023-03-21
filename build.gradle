@@ -47,7 +47,8 @@ ext {
 
 defaultTasks 'publishWeblog'
 
-def weblogAuthors = ['mike': 'michael-kay',
+def weblogAuthors = ['announcements': 'announcements',
+                     'mike': 'michael-kay',
                      'oneil': 'oneil-delpratt',
                      'norm': 'norm-tovey-walsh']
 
