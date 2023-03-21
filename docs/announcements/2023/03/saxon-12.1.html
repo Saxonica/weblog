@@ -1,0 +1,121 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>Announcing Saxon 12.1</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2023-03-21T15:20:00">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/announcements.css"><meta content="Saxonica announcements" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="The latest news from Saxonica." property="og:description"><meta content="https://blog.saxonica.com/announcements/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Announcing Saxon 12.1" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/announcements/">Saxonica announcements</a></h1><div class="tagline">The latest news from Saxonica</div></div><h2>Announcing Saxon 12.1!</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2023-03"><span class="date" time="2023-03-21T15:20:00">March&nbsp;21, 2023 at 03:20p.m.</span></a></div></header><main>
+
+
+<p>The Saxon 12.1 maintenance release has been published. This is a
+maintenance release for Java, C#, C, PHP, and Python that fixes a
+number of issues reported since the first Saxon 12.0 release,
+in particular it now runs on Java 8.</p>
+
+<p>Saxon 12.1 was released on 21 March 2023. This release has been
+uploaded to the usual locations on the Saxonica website, GitHub, and
+Maven, PyPi, and NuGet. SaxonCS 12.1 is built with .NET 6.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=90&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.1&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.1">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
+our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Partial list of issues resolved</h2>
+
+<p>This section is a subset of the complete list of resolved issues.
+It’s curated to bring attention to the bugs that seem most likely to
+impact customers. For a full list, consult
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=90&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the full issue list</a>.
+</p>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5624">5624</a>:
+    SaxonCS validate problem</li>
+<li><a href="https://saxonica.plan.io/issues/5801">5801</a>:
+    Dependency on axiom pom causes maven-dependency-plugin error</li>
+<li><a href="https://saxonica.plan.io/issues/5805">5805</a>:
+    Set locator to XmlProcessingIncident</li>
+<li><a href="https://saxonica.plan.io/issues/5809">5809</a>:
+    NPE on failure to load user-supplied collation class</li>
+<li><a href="https://saxonica.plan.io/issues/5823">5823</a>:
+    The implemented fn:slice function signature differs from the Saxonica docs and the specification</li>
+<li><a href="https://saxonica.plan.io/issues/5824">5824</a>:
+    SaxonJ 12.0 does not run with Java 8</li>
+<li><a href="https://saxonica.plan.io/issues/5839">5839</a>:
+    SaxonCS query problem</li>
+<li><a href="https://saxonica.plan.io/issues/5852">5852</a>:
+    XML Transformer generates invalid XHTML</li>
+<li><a href="https://saxonica.plan.io/issues/5880">5880</a>:
+    XQuery error with -p:on command line option</li>
+<li><a href="https://saxonica.plan.io/issues/5884">5884</a>:
+    SaxonCS 12 doesn't find elements in HTML DOM based on [@class = 'foo'] predicate</li>
+<li><a href="https://saxonica.plan.io/issues/5906">5906</a>:
+    C# context item absent</li>
+<li><a href="https://saxonica.plan.io/issues/5908">5908</a>:
+    saxon:for-each-member was dropped in Saxon 11</li>
+<li><a href="https://saxonica.plan.io/issues/5910">5910</a>:
+    Double reporting of template execution in timing profile</li>
+<li><a href="https://saxonica.plan.io/issues/5911">5911</a>:
+    SaxonCS crashes when package version number is wrong</li>
+<li><a href="https://saxonica.plan.io/issues/5913">5913</a>:
+    Tail recursion overwrites value of variable</li>
+<li><a href="https://saxonica.plan.io/issues/5920">5920</a>:
+    Java reflexive API fails to run, throws ClassNotFoundException</li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5849">5849</a>:
+    transform_to_file() in PyXslt30Processor not working.</li>
+<li><a href="https://saxonica.plan.io/issues/5850">5850</a>:
+    Error when compiling XSLT that uses "i" flag in regular expressions.</li>
+<li><a href="https://saxonica.plan.io/issues/5856">5856</a>:
+    Compilation/build issue PHP 8</li>
+<li><a href="https://saxonica.plan.io/issues/5868">5868</a>:
+    C samples don't build with Ubuntu</li>
+<li><a href="https://saxonica.plan.io/issues/5869">5869</a>:
+    For Windows SaxonC HE 12.0 there is no bat file to build the C samples</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.1, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</main><footer><div class="prev-uri"><a href="/norm/2023/03/16-weblog.html">Brand new weblog, just like the old weblog</a></div></footer></body>
+</html>

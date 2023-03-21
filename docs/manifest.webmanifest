@@ -1,0 +1,8 @@
+// manifest.webmanifest; see
+// https://evilmartians.com/chronicles/how-to-favicon-in-2021-six-files-that-fit-most-needs
+{
+  "icons": [
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ]
+}

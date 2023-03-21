@@ -1,4 +1,116 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-03-17T10:57:13.971624Z</updated><entry><title>Brand new weblog, just like the old weblog</title><link href="https://blog.saxonica.com/norm/2023/03/16-weblog.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/03/16-weblog.html</id><published>2023-03-16T10:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/03/16-weblog.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-03-21T15:46:13.775223Z</updated><entry><title>Announcing Saxon 12.1!</title><link href="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html</id><published>2023-03-21T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 12.1!</h1>
+
+<p>The Saxon 12.1 maintenance release has been published. This is a
+maintenance release for Java, C#, C, PHP, and Python that fixes a
+number of issues reported since the first Saxon 12.0 release,
+in particular it now runs on Java 8.</p>
+
+<p>Saxon 12.1 was released on 21 March 2023. This release has been
+uploaded to the usual locations on the Saxonica website, GitHub, and
+Maven, PyPi, and NuGet. SaxonCS 12.1 is built with .NET 6.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=90&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.1&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.1">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
+our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Partial list of issues resolved</h2>
+
+<p>This section is a subset of the complete list of resolved issues.
+It’s curated to bring attention to the bugs that seem most likely to
+impact customers. For a full list, consult
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=90&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the full issue list</a>.
+</p>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5624">5624</a>:
+    SaxonCS validate problem</li>
+<li><a href="https://saxonica.plan.io/issues/5801">5801</a>:
+    Dependency on axiom pom causes maven-dependency-plugin error</li>
+<li><a href="https://saxonica.plan.io/issues/5805">5805</a>:
+    Set locator to XmlProcessingIncident</li>
+<li><a href="https://saxonica.plan.io/issues/5809">5809</a>:
+    NPE on failure to load user-supplied collation class</li>
+<li><a href="https://saxonica.plan.io/issues/5823">5823</a>:
+    The implemented fn:slice function signature differs from the Saxonica docs and the specification</li>
+<li><a href="https://saxonica.plan.io/issues/5824">5824</a>:
+    SaxonJ 12.0 does not run with Java 8</li>
+<li><a href="https://saxonica.plan.io/issues/5839">5839</a>:
+    SaxonCS query problem</li>
+<li><a href="https://saxonica.plan.io/issues/5852">5852</a>:
+    XML Transformer generates invalid XHTML</li>
+<li><a href="https://saxonica.plan.io/issues/5880">5880</a>:
+    XQuery error with -p:on command line option</li>
+<li><a href="https://saxonica.plan.io/issues/5884">5884</a>:
+    SaxonCS 12 doesn't find elements in HTML DOM based on [@class = 'foo'] predicate</li>
+<li><a href="https://saxonica.plan.io/issues/5906">5906</a>:
+    C# context item absent</li>
+<li><a href="https://saxonica.plan.io/issues/5908">5908</a>:
+    saxon:for-each-member was dropped in Saxon 11</li>
+<li><a href="https://saxonica.plan.io/issues/5910">5910</a>:
+    Double reporting of template execution in timing profile</li>
+<li><a href="https://saxonica.plan.io/issues/5911">5911</a>:
+    SaxonCS crashes when package version number is wrong</li>
+<li><a href="https://saxonica.plan.io/issues/5913">5913</a>:
+    Tail recursion overwrites value of variable</li>
+<li><a href="https://saxonica.plan.io/issues/5920">5920</a>:
+    Java reflexive API fails to run, throws ClassNotFoundException</li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5849">5849</a>:
+    transform_to_file() in PyXslt30Processor not working.</li>
+<li><a href="https://saxonica.plan.io/issues/5850">5850</a>:
+    Error when compiling XSLT that uses "i" flag in regular expressions.</li>
+<li><a href="https://saxonica.plan.io/issues/5856">5856</a>:
+    Compilation/build issue PHP 8</li>
+<li><a href="https://saxonica.plan.io/issues/5868">5868</a>:
+    C samples don't build with Ubuntu</li>
+<li><a href="https://saxonica.plan.io/issues/5869">5869</a>:
+    For Windows SaxonC HE 12.0 there is no bat file to build the C samples</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.1, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>Brand new weblog, just like the old weblog</title><link href="https://blog.saxonica.com/norm/2023/03/16-weblog.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/03/16-weblog.html</id><published>2023-03-16T10:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/03/16-weblog.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>As part of some infrastructure cleanup, we decided to change how
@@ -2575,678 +2687,4 @@ metadata.close();</pre>
          more robust. It needed a clear definition and enforcement of the contract implied
          by the Receiver interface; it needed a clear separation of concerns between the transformation/query
          engine and the Destination processing; and it needed a clean API to control it all.</p>
-   </div></content></entry><entry><title>Navigating XML trees using Java Streams</title><link href="https://blog.saxonica.com/mike/2018/04/navigating-xml-trees-using-java-streams.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2018/04/navigating-xml-trees-using-java-streams.html</id><published>2018-04-13T08:31:44Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2018/04/navigating-xml-trees-using-java-streams.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>
-         
-         
-         
-         <h2><b>Navigating XML trees using Java Streams</b></h2>
-         
-         
-         </p>
-      <p>For the next major Saxon release I am planning an extension to the s9api interface
-         to exploit the facilities of Java 8 streams to allow powerful navigation of XDM trees:
-         the idea is that navigation should be as easy as using XPath, but without the need
-         to drop out of Java into a different programming language. To give a flavour, here
-         is how you might select the elements within a document that have @class='hidden':</p>
-      <p><code>doc.select(descendant(isElement())</code><br/><code>   .where(attribute("class").eq("hidden")))</code></p>
-      <p>We'll see how that works in due course.</p>
-      <h2>Why do we need it?</h2>
-      <p>The combination of Java and XML is as powerful and ubiquitous today as it as been
-         for nearly twenty years.
-         Java has moved on considerably (notably, as far as this article is concerned, with
-         the Java 8 Streams API),
-         and the world of XML processing has also made great strides (we now have XSLT 3.0,
-         XPath 3.1, and XQuery 3.1),
-         but for some reason the two have not moved together. The bulk of Java programmers
-         manipulating XML, if we can
-         judge from the questions they ask on forums such as StackOverflow, are still using
-         DOM interfaces, perhaps with
-         a bit of XPath 1.0 thrown in.</p>
-      <p>DOM shows its age. It was originally designed for HTML, with XML added as an afterthought,
-         and XML namespaces
-         thrown in as a subsequent bolt-on. Its data model predates the XML Infoset and the
-         (XPath-2.0-defined) XDM model.
-         It was designed as a cross-language API and so the designers deliberately eschewed
-         the usual
-         Java conventions and interfaces in areas such as the handling of collections and iterators,
-         not to mention exceptions.
-         It does everything its own way. As a navigational API it carries a lot of baggage
-         because the underlying tree is assumed
-         to be mutable. Many programmers only discover far too late that it's not even thread-safe
-         (even when you confine yourself
-         to retrieval-only operations).</p>
-      <p>There are better APIs than DOM available (for example JDOM2 and XOM) but they're all
-         ten years old and haven't caught up with the times. There's nothing in the Java world
-         that compares with Linq for C# users, or ElementTree in Python.</p>
-      <p>The alternative of calling out from Java to execute XPath or XQuery expressions has
-         its own disadvantages. Any
-         crossing of boundaries from one programming language to another involves data conversions
-         and a loss of type safety.
-         Embedding a sublanguage in the form of character strings within a host language (as
-         with SQL and regular expressions)
-         means that the host language compiler can't do any static syntax checking or type
-         checking of the expressions in the
-         sublanguage. Unless users go to some effort to avoid it, it's easy to find that the
-         cost of compiling XPath expressions
-         is incurred on each execution, rather than being incurred once and amortized. And
-         the API for passing context from the
-         host language to the sublanguage can be very messy. It doesn't have to be quite as
-         messy as the JAXP interface used for
-         invoking XPath from Java, but it still has to involve a fair bit of complexity.</p>
-      <p>Of course, there's the alternative of not using Java (or other general-purpose programming
-         languages) at all: you
-         can write the whole application in XSLT or XQuery. Given the capability that XSLT
-         3.0 and XQuery 3.1 have acquired, that's
-         a real possibility far more often than most users realise. But it remains true that
-         if only 10% of your application is
-         concerned with processing XML input, and the rest is doing something more interesting,
-         then writing the whole application
-         in XQuery would probably be a poor choice.</p>
-      <p>Other programming languages have developed better APIs. Javascript has JQuery, C#
-         programmers have Linq,
-         Scala programmers have something very similar, and PHP users have SimpleXML. These
-         APIs
-         all have the characteristic that they are much more deeply integrated into the host
-         language, and in particular they exploit
-         the host language primitives for manipulation of sequences through functional programming
-         constructs, with a reasonable
-         level of type safety given that the actual structure of the XML document is not statically
-         known.</p>
-      <p>That leads to the question of data binding interfaces: broadly, APIs that exploit
-         static knowledge of the schema of the
-         source document. Such APIs have their place, but I'm not going to consider them any
-         further in this article. In my experience
-         they can work well if the XML schema is very simple and very stable. If the schema
-         is complex or changing, data binding
-         can be a disaster.</p>
-      <p>
-         
-         
-         
-         
-         <section>
-            
-            
-            
-            <h2><b>The Java 8 Streams API</b></h2>
-            
-            
-            
-            <p>This is not the place for an extended tutorial on the new Streams API introduced in
-               Java 8. If you haven't come across
-               it, I suggest you find a good tutorial on the web and read it before you go any further.</p>
-            
-            
-            
-            <p>Java Streams are quite unrelated to XSLT 3.0 streaming. Well, almost unrelated: they
-               share the same high-level objectives
-               of processing large collections of data in a declarative way, making maximum use of
-               lazy evaluation to reduce memory use,
-               and permitting parallel execution. But that's where the similarity ends. Perhaps the
-               biggest difference is that Java 8 streams
-               are designed to process linear data structures (sequences), whereas XSLT 3.0 streaming
-               is designed to process trees.</p>
-            
-            
-            
-            <p>But just to summarise:</p>
-            
-            
-            
-            <ul>
-               <li>Java 8 introduces a new interface, <code>Stream&lt;X&gt;</code>, representing a linear sequence of items of type <code>X</code></li>
-               <li>Like iterators, streams are designed to be used once. Unlike iterators, they are manipulated
-                  using functional operations,
-                  most notably maps and filters, rather than being processed one item at a time. This
-                  makes for less error-prone programming,
-                  and allows parallel execution.</li>
-            </ul>
-            
-            
-            
-            <p>The functional nature of the Java 8 Streams API means it has much in common with the
-               processing model of XPath. The basic thrust
-               of the API design presented in this article is therefore to reproduce the primitives
-               of the XPath processing model, re-expressing
-               them in terms of the constructs provided by the Java 8 Streams API.</p>
-            
-            
-            
-            <p>If the design appears to borrow concepts from other APIs such as LINQ and Scala and
-               SimpleXML, that's not actually because I have a deep familiarity
-               with those APIs: in fact, I have never used them in anger, and I haven't attempted
-               to copy anything across literally. Rather, any similarity is because
-               the functional concepts of XPath processing map so cleanly to this approach.</p>
-            </section>
-         
-         
-         
-         <section>
-            
-            
-            
-            <h2>The Basics of the Saxon s9api API</h2>
-            
-            
-            
-            <p>The Saxon product primarily exists to enable XSLT, XQuery, XPath, and XML Schema processing.
-               Some years ago I decided that the standard
-               APIs (JAXP and XQJ) for invoking such functionality were becoming unfit for purpose.
-               They had grown haphazardly over the years, the various APIs
-               didn't work well together, and they weren't being updated to exploit the newer versions
-               of the W3C specifications. Some appalling design mistakes
-               had been unleashed on the world, and the strict backwards compatibility policy of
-               the JDK meant these could never be corrected. </p>
-            
-            
-            
-            <p>To take one horrid example: the
-               <code>NamespaceContext</code> interface is used to pass a set of namespace bindings from a Java application to
-               an XPath processor. To implement this
-               interface, you need to implement three methods, of which the XPath processor will
-               only ever use one (<code>getNamespaceURI(prefix)</code>). Yet
-               at the same time, there is no way the XPath processor can extract the full set of
-               bindings defined in the <code>NamespaceContext</code> and copy them
-               into its own data structures.</p>
-            
-            
-            
-            <p>So I decided some years ago to introduce a proprietary alternative called <b>s9api</b> into the Saxon product (retaining JAXP support alongside), and it has been a considerable
-               success, in that it has withstood the test of time rather well. The changes to XSLT
-               transformation in 3.0 were sufficiently radical that I forked the
-               <code>XsltTransformer</code> interface to create a 3.0 version, but apart from that it has been largely possible
-               to add new features incrementally. That's partly
-               because of a slightly less obsessive attitude to backwards compatibility: if I decide
-               that something was a bad mistake, I'm prepared to change it.</p>
-            
-            
-            
-            <p>Although s9api is primarily about invoking XSLT, XQuery, and XPath processing, it
-               does include classes that represent objects in the XDM data model,
-               and I will introduce these briefly because the new navigation API relies on these
-               objects as its foundation. The table below lists the main classes.</p>
-            
-            
-            
-            <table>
-               
-               
-               
-               <thead>
-                  
-                  
-                  
-                  <tr>
-                     
-                     
-                     
-                     <th>Class</th>
-                     
-                     
-                     
-                     <th>Description</th>
-                     </tr>
-                  </thead>
-               
-               
-               
-               <tbody>
-                  
-                  
-                  
-                  <tr>
-                     
-                     
-                     
-                     <td valign="top"><code>XdmValue</code></td>
-                     
-                     
-                     
-                     <td>Every value is the XDM model is a sequence of items. The <code>XdmValue</code> class is therefore
-                        the top of the class hierarchy. Because it's a sequence, it implements <code>Iterable&lt;XdmItem&gt;</code>,
-                        so you can use a Java <code>foreach</code> loop to process the items sequentially. In the latest version
-                        I have used Java generics to add a type parameter, so <code>XdmValue&lt;XdmNode&gt;</code> is a sequence
-                        of nodes, and <code>XdmValue&lt;XdmAtomicValue&gt;</code> is a sequence of atomic values. As well as
-                        an <code>iterator()</code> method, it has an <code>itemAt()</code> method to get the <i>N</i>th item,
-                        and a <code>size()</code> method to count the items.
-                        Internally an <code>XdmValue</code> might exist as an actual sequence in memory, or as a "promise": sufficient
-                        data to enable the items to be materialized when they are needed.</td>
-                     </tr>
-                  
-                  
-                  
-                  <tr>
-                     
-                     
-                     
-                     <td valign="top"><code>XdmItem</code></td>
-                     
-                     
-                     
-                     <td>This class represents an Item in the XDM model. As such it is both a component of
-                        an <code>XdmValue</code>,
-                        and also an <code>XdmValue</code> (of length one) in its own right. It's an abstract class, because every
-                        item is actually something more specific (a node, an atomic value, a function). Some
-                        of the methods
-                        inherited from <code>XdmValue</code> become trivial (for example <code>size()</code> always returns 1).
-                        </td>
-                     </tr>
-                  
-                  
-                  
-                  <tr>
-                     
-                     
-                     
-                     <td valign="top"><code>XdmNode</code></td>
-                     
-                     
-                     
-                     <td>This is a subclass of <code>XdmItem</code> used to represent nodes. Unlike many models of XML, we don't
-                        subclass this for different kinds of node: that's mainly because XDM has deliberately
-                        aimed at uniformity,
-                        with the same accessors available for all node kinds. Many of the methods on <code>XdmNode</code>, such
-                        as <code>getNodeName()</code>, <code>getStringValue()</code>, <code>getTypedValue()</code>, and
-                        <code>getNodeKind()</code>, are directly equivalent to accessors defined in the W3C XDM specification.
-                        But in addition, <code>XdmNode</code> has a method <code>axisIterator</code> to navigate the tree
-                        using any of the XPath axes, the result being returned as an iterator over the selected
-                        nodes.</td>
-                     </tr>
-                  
-                  
-                  
-                  <tr>
-                     
-                     
-                     
-                     <td valign="top"><code>XdmAtomicValue</code></td>
-                     
-                     
-                     
-                     <td>Another subclass of <code>XdmItem</code>, this is used to represent atomic values in the XDM model.
-                        As with <code>XdmNode</code>, we don't define further subclasses for different atomic types. There are convenience
-                        methods to convert <code>XdmAtomicValue</code> instances to and from equivalent (or near-equivalent) Java
-                        classes such as <code>String</code>, <code>Double</code>, <code>BigInteger</code>, and <code>Date</code>.</td>
-                     </tr>
-                  
-                  
-                  
-                  <tr>
-                     
-                     
-                     
-                     <td valign="top"><code>XdmFunctionItem</code></td>
-                     
-                     
-                     
-                     <td>From XPath 3.0, functions are first-class values alongside nodes and atomic values.
-                        These are
-                        represented in s9api as instances of <code>XdmFunctionItem</code>. Two specific subclasses of function,
-                        with their own behaviours, are represented using the subclasses <code>XdmMap</code> and <code>XdmArray</code>.
-                        I won't be saying much about these in this article, because I'm primarily concerned
-                        with navigating
-                        XML trees.</td>
-                     </tr>
-                  </tbody>
-               </table>
-            </section>
-         
-         
-         
-         <section>
-            
-            
-            <h2>The new API: Steps and Predicates</h2>
-            
-            
-            
-            <p>The basic concept behind the new extensions to the s9api
-               API is navigation using steps and predicates. I'll introduce
-               these concepts briefly in this section, and then go on to
-               give a more detailed exposition.</p>
-            
-            
-            
-            <p>The class <code>XdmValue&lt;T&gt;</code> acquires a new method:</p>
-            
-            
-            
-            <p><code>XdmStream select(Step step)</code></p>
-            
-            
-            
-            <p>The <code>Step</code> here is a function that takes an item of class <code>T</code> as its input, and returns a stream of items. If we consider a very simple <code>Step</code>, namely <code>child()</code>, this takes a node as input and returns a stream of nodes
-               as its result. We can apply this step to an <code>XdmValue</code> consisting entirely of nodes, and it returns the concatenation of the streams
-               of nodes obtained by applying the step to each node in the input value. This operation
-               is equivalent to the "!" operator in XPath 3.0, or to the
-               <code>flatMap()</code> method in many functional programming languages. It's not quite the same as the familiar
-               "/" operator in XPath, because
-               it doesn't eliminate duplicates or sort the result into document order. But for most
-               purposes it does the same job.</p>
-            
-            
-            
-            
-            <p>There's a class <code>net.sf.saxon.s9api.streams.Steps</code> containing static methods which provide commonly-used steps such
-               as <code>child()</code>. In my examples, I'll assume
-               that the Java application has <code>import net.sf.saxon.s9api.streams.Steps.*;</code> in its header, so it can use these fields and methods without further
-               qualification.</p>
-            
-            
-            
-            
-            <p>One of the steps defined by this class is <code>net.sf.saxon.s9api.streams.Steps.child()</code>: this step is a function which, given a node, returns its children. There are
-               other similar steps for the other XPath axes. So you can find the children of a node
-               <code>N</code> by writing <code>N.select(child())</code>.</p>
-            
-            
-            
-            
-            <p>Any two steps <code>S</code> and <code>T</code>
-               can be combined into a single composite step by writing <code>S.then(T)</code>: for example <code>Step grandchildren = child().then(child())</code> gives you
-               a step which can be used in the expression <code>N.select(grandchildren)</code> to select all the grandchildren.</p>
-            
-            
-            
-            
-            <p>The class <code>Step</code> inherits from the standard Java class <code>Function</code>, so it can be used more generally in any Java context where a
-               <code>Function</code> is required.</p>
-            
-            
-            
-            
-            <p><code>Predicate&lt;T&gt;</code> is a standard Java 8 class: it defines a function that can be applied to an object
-               of type <code>T</code> to return
-               true or false. The class <code>net.sf.saxon.s9api.streams.Predicates</code> defines some standard predicates that are useful when processing XML. For example
-               <code>isElement()</code> gives you a predicate that can be applied to any <code>XdmItem</code> to determine if it is an element node.</p>
-            
-            
-            
-            
-            <p>Given a <code>Step</code> <code>A</code> and a <code>Predicate</code> <code>P</code>, the expression <code>A.where(P)</code> returns a new
-               <code>Step</code> that filters the results of <code>A</code> to include only those items that satisfy the predicate <code>P</code>. So, for example,
-               <code>child().where(isElement())</code> is a step that selects the element children of a node, so that <code>N.select(child().where(isElement()))</code>
-               selects the element children of <code>N</code>. This is sufficiently common that we provide a shorthand: it can also be written
-               
-               <code>N.select(child(isElement()))</code>.</p>
-            
-            
-            
-            
-            <p>The predicate <code>hasLocalName("foo")</code> matches nodes having a local name of "foo": so <code>N.select(child().where(hasLocalName("foo"))</code>
-               selects the relevant children. Again this is so common that we provide a shorthand:
-               <code>N.select(child("foo"))</code>. There is also a two argument version
-               <code>child(ns, "foo")</code> which selects children with a given namespace URI and local name.</p>
-            
-            
-            
-            
-            <p>Another useful predicate is <code>exists(step)</code> which tests whether the result of applying a given step returns at least one item.
-               So, for example
-               <code>N.select(child().where(exists(attribute("id"))))</code> returns those children of <code>N</code> that have an attribute named "id".</p>
-            
-            
-            
-            
-            <p>The result of the <code>select()</code> method is always a stream of items, so you can use methods from the Java Stream class
-               such as filter() and flatMap() to process the result. Here are some of the standard
-               things you can do
-               with a stream of items in Java:</p>
-            
-            
-            
-            
-            <ul>
-               <li>You can get the results as an array: <code>N.select(child()).toArray()</code></li>
-               <li>Or as a list: <code>N.select(child()).collect(Collectors.toList())</code></li>
-               <li>You can apply a function to each item in the stream: <code>N.select(child()).forEach(System.err::println)</code></li>
-               <li>You can get the first item in the stream: <code>N.select(child()).findFirst().get()</code></li>
-            </ul>
-            
-            
-            
-            
-            <p>However, Saxon methods such as <code>select()</code> always return a subclass of <code>Stream</code> called <code>XdmStream</code>, and this offers additional methods. For example:</p>
-            
-            
-            
-            
-            <ul>
-               <li>You can get the results as an <code>XdmValue</code>: <code>N.select(child()).asXdmValue()</code></li>
-               <li>A more convenient way to get the results as a Java <code>List</code>: <code>N.select(child()).asList()</code></li>
-               <li>If you know that the stream contains a single node (or nothing), you can get this
-                  using the methods <code>asNode()</code>
-                  or <code>asOptionalNode()</code></li>
-               <li>Similarly, if you know that the stream contains a single atomic value (or nothing),
-                  you can get this using the methods <code>asAtomic()</code> or <code>asOptionalAtomic()</code></li>
-               <li>You can get the last item in the stream: <code>N.select(child("para")).last()</code></li>
-            </ul>
-            
-            
-            
-            
-            <section>
-               
-               
-               
-               <h2><b>More about Steps</b></h2>
-               
-               
-               
-               <p>The actual definition of the <code>Step</code> class is:</p>
-               
-               
-               
-               
-               <p><code>public abstract class Step&lt;T extends XdmItem&gt;
-                     implements Function&lt;XdmItem, Stream&lt;? extends T&gt;&gt; </code></p>
-               
-               
-               
-               
-               <p>What that means is that it's a function that any <code>XdmItem</code> as input, and delivers a stream of <code>U</code> items as its result (where <code>U</code> is <code>XdmItem</code>
-                  or some possibly-different subclass). (I experimented by also parameterizing the class
-                  on the type of items accepted, but that didn't work out well.)</p>
-               
-               
-               
-               
-               <p>Because the types are defined, Java can make type inferences: for example it knows
-                  that <code>N.select(child())</code> will return nodes
-                  (because <code>child()</code> is a step that returns nodes).</p>
-               
-               
-               
-               
-               <p>As a user of this API, you can define your own kinds of <code>Step</code> if you want to: but most of the time you will be able to do everything
-                  you need with the standard Steps available from the class <code>net.sf.saxon.s9api.stream.Steps</code>. The standard steps include:</p>
-               
-               
-               
-               
-               <ul>
-                  <li>The axis steps <code>ancestor()</code>, <code>ancestor-or-self()</code>, <code>attribute()</code>, <code>child()</code>,
-                     <code>descendant()</code>, <code>descendantOrSelf()</code>, <code>following()</code>, <code>followingSibling()</code>,
-                     <code>namespace()</code>, <code>parent()</code>, <code>preceding()</code>, <code>precedingSibling()</code>,
-                     <code>self()</code>.</li>
-                  <li>For each axis, three filtered versions: for example <code>child("foo")</code> filters the axis to select elements by
-                     local name (ignoring the namespace if any); <code>child(ns, local)</code> filters the axis to select elements by
-                     namespace URI and local name, and <code>child(predicate)</code> filters the axis using an arbitrary predicate: this is
-                     a shorthand for <code>child().where(predicate)</code>.</li>
-                  <li>A composite step can be constructed using the method <code>step1.then(step2)</code>. This applies <code>step2</code>
-                     to every item in the result of <code>step1</code>, retaining the order of results and flattening them into a single stream.</li>
-                  <li>A filtered step can be constructed using the method <code>step1.where(predicate1)</code>. This selects those items in the
-                     result of <code>step1</code> for which <code>predicate1</code> returns true.</li>
-                  <li>A path with several steps can be constructed using a call such as<code>path(child(isElement()), attribute("id"))</code>. This returns a step whose effect is to return the <code>id</code> attributes of all the children of the target node.</li>
-                  <li>If the steps are sufficiently simple, a path can also by written means of a simple
-                     micro-syntax similar to XPath abbreviated steps. The previous example could also be
-                     written <code>path("*", "@id")</code>. Again, this returns a step that can be used like any other step.
-                     (In my own applications, I have found myself using this approach very extensively).</li>
-                  <li>The step <code>atomize()</code> extracts the typed values of nodes in the input, following the rules in the XPath
-                     specification. The result
-                     is a stream of atomic values</li>
-                  <li>The step <code>toString()</code> likewise extracts the string values, while <code>toNumber()</code> has the same effect as the
-                     XPath <code>number()</code> function</li>
-               </ul>
-               
-               
-               
-               
-               <p>Last but not least, <code>xpath(path)</code> returns a <code>Step</code> that evaluates an XPath expression. For example,
-                  <code>doc.select(xpath("//foo"))</code> has the same effect as <code>doc.select(descendant("foo"))</code>. A second argument
-                  to the <code>xpath()</code> method may be used to supply a static context for the evaluation. Note that compilation
-                  of the XPath expression
-                  occurs while the step is being created, not while it is being evaluated; so if you
-                  bind the result of <code>xpath("//foo")</code> to
-                  a variable, then the expression can be evaluated repeatedly without recompilation.</p>
-               </section>
-            
-            
-            
-            <section>
-               
-               
-               
-               <h2><b>More about Predicates</b></h2>
-               
-               
-               
-               <p>The <code>Predicate</code> class is a standard Java 8 interface: it is a function that takes any object as input,
-                  and returns a boolean.
-                  You can use any predicates you like with this API, but the class <code>net.sf.saxon.s9api.streams.Predicates</code> provides some implementations
-                  of <code>Predicate</code> that are particularly useful when navigating XML documents. These include the following:</p>
-               
-               
-               
-               
-               <ul>
-                  <li><code>isElement()</code>, <code>isAttribute()</code>, <code>isText()</code>, <code>isComment()</code>,
-                     <code>isDocument()</code>, <code>isProcessingInstruction()</code>, <code>isNamespace()</code> test that the item
-                     is a node of a particular kind</li>
-                  <li><code>hasName("ns", "local")</code>, <code>hasLocalName("n")</code>, and <code>hasNamespaceUri("ns")</code> make tests
-                     against the name of the node</li>
-                  <li><code>hasType(t)</code> tests the type of the item: for example <code>hasType(ItemType.DATE)</code> tests for
-                     atomic values of type <code>xs:date</code></li>
-                  <li><code>exists(step)</code> tests whether the result of applying the given step is a sequence containing at least
-                     one item; conversely <code>empty(step)</code> tests whether the result of the step is empty. For example, <code>exists(CHILD)</code>
-                     is true for a node that has children.</li>
-                  <li><code>some(step, predicate)</code> tests whether at least one item selected by the step satisfies the given predicate.
-                     For example,
-                     <code>some(CHILD, IS_ELEMENT)</code> tests whether the item is a node with at least one element child. Similarly <code>every(step, predicate)</code>
-                     tests whether the predicate is true for every item selected by the step.</li>
-                  <li><code>eq(string)</code> tests whether the string value of the item is equal to the given string; while <code>eq(double)</code> does
-                     a numeric comparison. A two-argument version <code>eq(step, string)</code> is shorthand for <code>some(step, eq(string))</code>.
-                     For example, <code>descendant(eq(attribute("id"), "ABC"))</code> finds all descendant elements
-                     having an "id" attribute equal to "ABC".</li>
-                  <li>Java provides standard methods for combining predicates using <code>and</code>, <code>or</code>, and <code>not</code>. For example
-                     <code>isElement().and(eq("foo"))</code> is a predicate that tests whether an item is an element with string-value "foo".</li>
-               </ul>
-               </section>
-            
-            
-            
-            <section>
-               
-               
-               
-               <h2><b>The XdmStream class</b></h2>
-               
-               
-               <p>The fact that all this machinery is built on Java 8 streams and functions is something
-                  that many users can safely ignore; they are essential foundations, but they are hidden
-                  below the surface. At the same time, a user who understands that steps and predicates
-                  are Java Functions, and that the result of the select() method is a Java Stream, can
-                  take advantage of this knowledge.
-                  
-                  
-                  </p>
-               
-               
-               <p>
-                  
-                  
-                  One of the key ideas that made this possible was the idea of subclassing <code>Stream</code> with <code>XdmStream</code>. This idea was shamelessly stolen from the open-source <strong>StreamEx</strong> library by Tagir Valeev (though no StreamEx code is actually used). Subclassing <code>Stream</code> enables additional methods to be provided to handle the results of the stream, avoiding
-                  the need for clumsy calls on the generic <code>collect()</code> method. Another motivating factor here is to allow for early exit (short-circuit
-                  evaluation) when a result can be delivered without reading the whole stream. Saxon
-                  handles this by registering <code>onClose()</code> handlers with the stream pipeline, so that when the consumer of the stream calls
-                  the <code>XdmStream.close()</code> method, the underlying supplier of data to the stream is notified that no more data
-                  is needed.
-                  </p>
-               
-               
-               
-               <h2><b>Examples</b></h2>
-               
-               
-               
-               <p>This section provides some examples extracted from an actual program that uses s9api
-                  interfaces and does a
-                  mixture of Java navigation and XPath and XQuery processing
-                  to extract data from an input document.</p>
-               
-               
-               
-               
-               <p>First, some very simple examples. Constructs like this are not uncommon:</p>
-               
-               
-               
-               <p><code>XdmNode testInput = (XdmNode) xpath.evaluateSingle("test", testCase);</code></p>
-               
-               
-               
-               <p>This can be replaced with the much simpler and more efficient:</p>
-               
-               
-               
-               <p><code>XdmNode testInput = testCase.selectFirst(child("test"));</code></p>
-               
-               
-               
-               <p>Similarly, the slightly more complex expression:</p>
-               
-               
-               
-               <p><code>XdmNode principalPackage = (XdmNode) xpath.evaluateSingle("package[@role='principal']",
-                     testInput);</code></p>
-               
-               
-               
-               <p>becomes:</p>
-               
-               
-               
-               <p><code>XdmNode principalPackage = testInput.selectFirst(child("package").where(eq(attribute("role"),
-                     "principal"));</code></p>
-               
-               
-               
-               
-               <p>A more complex example from the same application is this one:</p>
-               
-               
-               
-               <p><code>boolean definesError = xpath.evaluate("result//error[starts-with(@code, 'XTSE')]",
-                     testCase).size() &gt; 0;
-                     </code></p>
-               
-               
-               
-               <p>Note here how the processing is split between XPath code and Java code. This is also
-                  using an XPath function for which we haven't provided a built-in
-                  predicate in s9api. But that's no problem, because we can invoke Java methods as predicates.
-                  So this becomes:</p>
-               
-               
-               
-               <pre><code>boolean definesError = testCase.selectFirst(child("result"), descendant("error").where(
-                     some(attribute("code"), (XdmNode n) -&gt; n.getStringValue().startsWith("XTSE"))) != null;</code></pre>
-               
-               
-               </section>
-            
-            </section>
-         </p>
    </div></content></entry></feed>
