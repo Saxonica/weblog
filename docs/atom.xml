@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-03-21T15:46:13.775223Z</updated><entry><title>Announcing Saxon 12.1!</title><link href="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html</id><published>2023-03-21T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-03-21T16:04:58.310477Z</updated><entry><title>Announcing Saxon 12.1!</title><link href="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html</id><published>2023-03-21T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.1!</h1>
 
 <p>The Saxon 12.1 maintenance release has been published. This is a
-maintenance release for Java, C#, C, PHP, and Python that fixes a
+maintenance release for Java, C#, C/C++, PHP, and Python that fixes a
 number of issues reported since the first Saxon 12.0 release,
 in particular it now runs on Java 8.</p>
 
