@@ -69,14 +69,26 @@ def linkcheck(root, server_root, debug):
 <xsl:function name="f:resolve" as="xs:string">
   <xsl:param name="href" as="xs:string"/>
   <xsl:param name="context" as="element()"/>
-  <xsl:choose>
-    <xsl:when test="exists($server-base-uri) and starts-with($href, '/')">
-      <xsl:sequence select="$server-base-uri || substring($href, 2)"/>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:sequence select="resolve-uri($href, base-uri($context))"/>
-    </xsl:otherwise>
-  </xsl:choose>
+
+  <!-- work around for bug in SaxonC HE 12.1 -->
+  <xsl:variable name="baseuri"
+                select="if (contains(base-uri($context), '/file:'))
+                        then 'file:' || substring-after(base-uri($context), '/file:')
+                        else base-uri($context)"/>
+
+  <xsl:variable name="res" as="xs:string">
+    <xsl:choose>
+      <xsl:when test="exists($server-base-uri) and starts-with($href, '/')">
+        <xsl:sequence select="$server-base-uri || substring($href, 2)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="resolve-uri($href, $baseuri)"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:variable>
+
+  <!--<xsl:message select="$href, '→', $res"/>-->
+  <xsl:sequence select="$res"/>
 </xsl:function>
 
 </xsl:stylesheet>
