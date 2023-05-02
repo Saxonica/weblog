@@ -1,4 +1,116 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-03-22T09:17:36.805778Z</updated><entry><title>Announcing Saxon 12.1!</title><link href="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html</id><published>2023-03-21T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-05-02T13:31:27.250898Z</updated><entry><title>Announcing Saxon 12.2!</title><link href="https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html</id><published>2023-05-02T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 12.2!</h1>
+
+<p>The Saxon 12.2 maintenance release has been published. This is a
+maintenance release for Java, C#, C/C++, PHP, and Python that fixes a
+number of issues reported since the Saxon 12.1 release.</p>
+
+<p>Saxon 12.2 was released on 2 May 2023. This release has been
+uploaded to the usual locations on the Saxonica website, GitHub, and
+Maven, PyPi, and NuGet. SaxonCS 12.2 is built with .NET 6. This
+release includes SaxonC and Python releases for the ARM 64
+architecture as well as X86 64 architecture.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=91&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.2&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.2">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
+our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Partial list of issues resolved</h2>
+
+<p>This section is a subset of the complete list of resolved issues.
+It’s curated to bring attention to the bugs that seem most likely to
+impact customers. 
+</p>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<p>For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=91&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5997">5997</a>:
+    XSLT version for fn:transform</li>
+<li><a href="https://saxonica.plan.io/issues/5996">5996</a>:
+    Union types extension is available in Saxon-PE</li>
+<li><a href="https://saxonica.plan.io/issues/5995">5995</a>:
+    JavaDoc for XPathCompiler.setLanguageVersion should mention 4.0 is accepted</li>
+<li><a href="https://saxonica.plan.io/issues/5978">5978</a>:
+    StackOverflow during multithreaded schema processing</li>
+<li><a href="https://saxonica.plan.io/issues/5970">5970</a>:
+    DirectResourceResolver - unresolved XML classpath resources</li>
+<li><a href="https://saxonica.plan.io/issues/5957">5957</a>:
+    Disabling DTD validation</li>
+<li><a href="https://saxonica.plan.io/issues/5953">5953</a>:
+    JAXP ValidatorHandler throws an exception if the document is invalid</li>
+<li><a href="https://saxonica.plan.io/issues/5952">5952</a>:
+    unparsed-text-available throws an un-catchable IllegalCharsetNameException</li>
+<li><a href="https://saxonica.plan.io/issues/5939">5939</a>:
+    Using -u and a file: URI as the source argument for a query doesn't work</li>
+<li><a href="https://saxonica.plan.io/issues/5937">5937</a>:
+    Extension function gives NullPointerException in 12.1 when returning empty sequence</li>
+<li><a href="https://saxonica.plan.io/issues/5931">5931</a>:
+    Remove outdated xml-apis from the Maven artifacts</li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.2&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5983">5983</a>:
+    Saxon.C.API/SaxonApiException.cpp calculates wrong strlen</li>
+<li><a href="https://saxonica.plan.io/issues/5954">5954</a>:
+    The XPath 4.0 function parse-html not available</li>
+<li><a href="https://saxonica.plan.io/issues/5944">5944</a>:
+    set_cwd on PySchemaValidator seems to be ignored under some circumstances</li>
+<li><a href="https://saxonica.plan.io/issues/5941">5941</a>:
+    SaxonC EE 12.1 Validate command line tool seems broken; doesn't give any output</li>
+<li><a href="https://saxonica.plan.io/issues/5938">5938</a>:
+    Trying to compile XSLT from file after setting allowedProtocols raises an NPE</li>
+<li><a href="https://saxonica.plan.io/issues/5936">5936</a>:
+    Fix exception reporting for Python on Windows</li>
+<li><a href="https://saxonica.plan.io/issues/5934">5934</a>:
+    Python wheels don’t work in a virtual environment on Windows</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.2, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 12.1!</title><link href="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html</id><published>2023-03-21T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.1!</h1>
 
 <p>The Saxon 12.1 maintenance release has been published. This is a
@@ -2602,94 +2714,4 @@ metadata.close();</pre>
          third-party tree models that continue to use declarations and undeclarations). But
          initial experiments are looking encouraging.
          </p>
-   </div></content></entry><entry><title>The Receiver Pipeline</title><link href="https://blog.saxonica.com/mike/2018/06/the-receiver-pipeline.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2018/06/the-receiver-pipeline.html</id><published>2018-06-20T11:07:12Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2018/06/the-receiver-pipeline.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>A significant feature of the internal architecture of Saxon is the <b style="font-size: 1em;">Receiver</b> pipeline. A receiver is an object that (rather like a SAX ContentHandler) is called
-         with a sequence of events such as <i style="font-size: 1em;">startElement()</i>, <i style="font-size: 1em;">characters()</i>, and<i style="font-size: 1em;"> endElement()</i>; it typically does some processing on these events and then calls similar events
-         on the next Receiver in the pipeline. The mechanism is efficient, because it avoids
-         building a tree in memory, and because it allows much of the conditional logic of
-         the processing (for example, whether or not to validate the document) to be executed
-         at the time the pipeline is constructed, rather than with conditional code executed
-         for every event that occurs.</p>
-      <p>Receiver pipelines are used throughout Saxon: from doing whitespace stripping on the
-         source document, to serialization of the result tree. The schema validator is implemented
-         as a receiver pipeline, as are operations such as namespace fixup.</p>
-      <p>But despite the elegance of the design, there have been some perennial problems with
-         the implementation. For example, there are variations on exactly what input different
-         implementations of Receiver will accept: some for example require an <i>open()</i> event while others don't; some accept entire element or document nodes in an <i>append()</i> event while others don't. This limits the ability to construct a pipeline using arbitrary
-         combinations of Receivers, and worse, it's very hard to establish exactly what the
-         permitted combinations are.</p>
-      <p>This has come to a head recently in trying to get some of the new features in XSLT
-         3.0 and XQuery 3.1 working reliably and robustly. The straw that broke the camel's
-         back was the innocent-seeming <b>item-separator</b> serialization property. The item-separator is used while doing "sequence normalization"
-         as the first stage of serialization; and the problem was that we didn't really do
-         sequence normalization as a separate step in the processing. The obvious symptom that
-         there are design problems here has been that whenever we get all the XQuery tests
-         working, we find we've broken XSLT; and then when we get all the XSLT tests working,
-         we find XQuery is now failing.</p>
-      <p>The model according to the specs is that the transformation or query engine produces
-         "raw" results (which can be any sequence of items), and this is then input to the
-         serialization process (or possibly just to sequence normalization, which wraps the
-         results in a document node and then delivers the document). But although Saxon could
-         deliver raw results from an XQuery running in "pull" mode (the <i>XQueryEvaluator.iterate()</i> method) we never really had the capability to produce raw output in push mode: the
-         push code did sequence normalization within the query/transformation logic, rather
-         than leaving it to the serializer. That's for historic reasons, of course: with XSLT
-         2.0, that's the way it was defined (the result of the transformation was always a
-         document, with optional serialization).</p>
-      <p>So the first principle to establish in sorting this out is: the interface between
-         the query or transformation engine and the Destination (which may or may not be a
-         Serializer) is a raw sequence, delivered over the Receiver interface.</p>
-      <p>This requires a definition of exactly how a raw sequence is delivered over this interface:
-         that is, what's the contract between the provider of the Receiver interface and the
-         client (the sender of events). I've created that definition, and I've also written
-         a Receiver implementation which validates that the sequence of events conforms to
-         this definition; we can put this validation step into the pipeline when we feel it
-         useful (for example, when running with assertions enabled). This exercise has revealed
-         quite a few anomalies that should be fixed, for example cases where<i> endDocument()</i> is not being called before calling <i>close()</i>.</p>
-      <p>There are three ways of delivering output from a query or transformation: raw output,
-         document output (the result of sequence normalization), and serialized output. The
-         next question that arises is, who decides which form is delivered. The simplest solution
-         is: this is decided entirely at the API level, and does not depend on anything in
-         the stylesheet or query. (This means that the XSLT build-tree attribute is ignored
-         entirely.) In s9api terms, your choice of Destination object determines which kind
-         of output you get. And at the implementation level, the Destination object always
-         receives raw output; we don't want the transformation engine doing different things
-         depending what kind of Destination has been supplied.</p>
-      <p>The other related area that needed sorting out was the API interaction with<b> xsl:result-documen</b>t. We've always had the <i>OutputURIResolver</i> as a callback for determining what should happen to secondary result documents, but
-         this is no longer fit for purpose. It was already a struggle to extend it to handle
-         thread safety when the xsl:result-document instruction became asynchronous; further
-         extending it to work with the s9api <i>Destination</i> framework has never been attempted because it just seemed too difficult. Having made
-         the decision to introduce a dependency on Java 8 for the next major Saxon release,
-         I think we can solve this at the API level with two enhancements:</p>
-      <p>
-         
-         
-         <ol>
-            <li style="caret-color: black; color: black; font-family: -webkit-standard;">on <i>XsltTransformer</i> and <i>Xslt30Transformer</i>, a new method <i>setResultDocumentResolver()</i> which takes as argument an implementation of <i>Function&lt;URI, Destination&gt;</i> - that is a function that accepts an absolute URI as input, and returns a <i>Destination</i>;</li>
-            <li>on <i>Destination</i>, a new method <i>onClose()</i> which takes as argument a <i>Consumer&lt;Destination&gt;</i>.</li>
-         </ol>
-         </p>
-      <p>So when <b>xsl:result-document</b> is called, we construct the absolute URI and pass it to the registered result document
-         resolver, and then use the returned <i>Destination</i> to write the result tree. On completion we call any <i>onClose()</i> handler registered with the <i>Destination</i>, which gives the application the opportunity to process the result document (for
-         example, by writing it to a database).</p>
-      <p>Of course, we have to work out how to implement this while retaining a level of backwards
-         compatibility for applications using the existing <i>OutputURIResolver</i>.</p>
-      <p>A tricky case with xsl:result-document has been where the href attribute is omitted
-         or empty. I think the cleanest design here is to call the registered result document
-         resolver passing the base output URI as argument, and use the returned Destination
-         in the normal way. The application then has to sort out the fact that the original
-         primary Destination for the transformation is not actually used.</p>
-      <p>Yet another complication in the design is the rule in XSLT that when <b>xsl:result-document</b> requests schema validation of the output, schema validation is done after sequence
-         normalization and before serialization. This is pretty ugly from a specification point
-         of view: the serialization spec defines serialization as a 6-step process of which
-         sequence normalization is the first; the XSLT spec really has no business inserting
-         an additional step in the middle of this process. When the specification is ugly,
-         the implementation usually ends up being ugly too, and we have to find some way for
-         the transformation engine to inject a validation step into the middle of the pipeline
-         implemented by the Destination, which ought by rights to be completely encapsulated.</p>
-      <p>Standing back from all this, unlike some refactoring exercises, in this case the basic
-         design of the code proved to be sound, but it needed reinforcement to make the implementation
-         more robust. It needed a clear definition and enforcement of the contract implied
-         by the Receiver interface; it needed a clear separation of concerns between the transformation/query
-         engine and the Destination processing; and it needed a clean API to control it all.</p>
    </div></content></entry></feed>

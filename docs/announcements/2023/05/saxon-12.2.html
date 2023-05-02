@@ -1,0 +1,121 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>Announcing Saxon 12.2</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2023-05-02T13:00:00">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/announcements.css"><meta content="Saxonica announcements" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="The latest news from Saxonica." property="og:description"><meta content="https://blog.saxonica.com/announcements/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Announcing Saxon 12.2" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/announcements/">Saxonica announcements</a></h1><div class="tagline">The latest news from Saxonica</div></div><h2>Announcing Saxon 12.2!</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2023-05"><span class="date" time="2023-05-02T13:00:00">May&nbsp;02, 2023 at 01:00p.m.</span></a></div></header><main>
+
+
+<p>The Saxon 12.2 maintenance release has been published. This is a
+maintenance release for Java, C#, C/C++, PHP, and Python that fixes a
+number of issues reported since the Saxon 12.1 release.</p>
+
+<p>Saxon 12.2 was released on 2 May 2023. This release has been
+uploaded to the usual locations on the Saxonica website, GitHub, and
+Maven, PyPi, and NuGet. SaxonCS 12.2 is built with .NET 6. This
+release includes SaxonC and Python releases for the ARM 64
+architecture as well as X86 64 architecture.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=91&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.2&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.2">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
+our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Partial list of issues resolved</h2>
+
+<p>This section is a subset of the complete list of resolved issues.
+It’s curated to bring attention to the bugs that seem most likely to
+impact customers. 
+</p>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<p>For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=91&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5997">5997</a>:
+    XSLT version for fn:transform</li>
+<li><a href="https://saxonica.plan.io/issues/5996">5996</a>:
+    Union types extension is available in Saxon-PE</li>
+<li><a href="https://saxonica.plan.io/issues/5995">5995</a>:
+    JavaDoc for XPathCompiler.setLanguageVersion should mention 4.0 is accepted</li>
+<li><a href="https://saxonica.plan.io/issues/5978">5978</a>:
+    StackOverflow during multithreaded schema processing</li>
+<li><a href="https://saxonica.plan.io/issues/5970">5970</a>:
+    DirectResourceResolver - unresolved XML classpath resources</li>
+<li><a href="https://saxonica.plan.io/issues/5957">5957</a>:
+    Disabling DTD validation</li>
+<li><a href="https://saxonica.plan.io/issues/5953">5953</a>:
+    JAXP ValidatorHandler throws an exception if the document is invalid</li>
+<li><a href="https://saxonica.plan.io/issues/5952">5952</a>:
+    unparsed-text-available throws an un-catchable IllegalCharsetNameException</li>
+<li><a href="https://saxonica.plan.io/issues/5939">5939</a>:
+    Using -u and a file: URI as the source argument for a query doesn't work</li>
+<li><a href="https://saxonica.plan.io/issues/5937">5937</a>:
+    Extension function gives NullPointerException in 12.1 when returning empty sequence</li>
+<li><a href="https://saxonica.plan.io/issues/5931">5931</a>:
+    Remove outdated xml-apis from the Maven artifacts</li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.2&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5983">5983</a>:
+    Saxon.C.API/SaxonApiException.cpp calculates wrong strlen</li>
+<li><a href="https://saxonica.plan.io/issues/5954">5954</a>:
+    The XPath 4.0 function parse-html not available</li>
+<li><a href="https://saxonica.plan.io/issues/5944">5944</a>:
+    set_cwd on PySchemaValidator seems to be ignored under some circumstances</li>
+<li><a href="https://saxonica.plan.io/issues/5941">5941</a>:
+    SaxonC EE 12.1 Validate command line tool seems broken; doesn't give any output</li>
+<li><a href="https://saxonica.plan.io/issues/5938">5938</a>:
+    Trying to compile XSLT from file after setting allowedProtocols raises an NPE</li>
+<li><a href="https://saxonica.plan.io/issues/5936">5936</a>:
+    Fix exception reporting for Python on Windows</li>
+<li><a href="https://saxonica.plan.io/issues/5934">5934</a>:
+    Python wheels don’t work in a virtual environment on Windows</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.2, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</main><footer><div class="prev-uri"><a href="/announcements/2023/03/saxon-12.1.html">Announcing Saxon 12.1!</a></div></footer></body>
+</html>
