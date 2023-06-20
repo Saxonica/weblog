@@ -1,25 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-06-20T10:33:25.793418Z</updated><entry><title>Schema Modularity</title><link href="https://blog.saxonica.com/mike/2023/06/schema-modules.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/06/schema-modules.html</id><published>2023-06-20T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/06/schema-modules.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-06-20T10:58:00.981409Z</updated><entry><title>Schema Modularity</title><link href="https://blog.saxonica.com/mike/2023/06/schema-modules.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/06/schema-modules.html</id><published>2023-06-20T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/06/schema-modules.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
-     <!--   <header>-->
-<!--             <div class="banner"><h1><a href="/blog/mike/">Saxon diaries</a></h1>
-                 <div class="tagline">Michael Kay’s blog</div>
-             </div>-->
             
-            <!--<aside class="nav"><div class="navlinks"><div id="search">
-                <form action="https://www.google.com/search" target="_parent">
-                    <span>Search: </span>
-                    <input size="20" name="as_q"/>
-                    <input type="hidden" name="hl" value="en"/>
-                    <input type="hidden" name="ie" value="UTF-8"/>
-                    <input type="hidden" name="btnG" value="Google+Search"/>
-                    <input type="hidden" name="as_qdr" value="all"/>
-                    <input type="hidden" name="as_occt" value="any"/>
-                    <input type="hidden" name="as_dt" value="i"/>
-                    <input type="hidden" name="as_sitesearch" value="dev.saxonica.com"/>
-                </form></div><div id="blogroll"><a href="/blog/mike/">Saxon diaries</a><br/>
-                    <a href="/blog/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/blog/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/blog/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/blog/authors.html#michael-kay-D2023-06"><span class="date" time="2023-06-20T12:00:00">June&nbsp;20, 2023 at 12:00p.m.</span></a></div></header><main>
-        -->
-        --&gt;
+
         <p>Saxon, ever since we first introduced schema awareness back in 2004, has always
         worked with a single global schema maintained at the level of the <code>Configuration</code>
         object. This article discusses the advantages and disadvantages of this approach, and
@@ -77,12 +59,12 @@
         allowing it to be non-empty. That's the theory, anyway.    
         </p>
         
-        <p>The most obvious disadvantage of the approach is that an application can't
+        <p>The most obvious <i>disadvantage</i> of the approach is that an application can't
         work with two different versions of the same schema. If you want to write a stylesheet
         that transforms input documents from <i>V1</i> to <i>V2</i> of the same schema, you
         can't import both versions into the same stylesheet, one to validate the input and one
-        to validated the output. In fact, you can't even have both versions in the same
-        <code>Configuration</code> - which means you can't process an input collection containing
+        to validate the output. In fact, you can't even have both versions in the same
+        <code>Configuration</code> — which means you can't process an input collection containing
         a mix of different versions (or if you do, you have to forgo validation).</p>
         
         <p>There are other less obvious disadvantages. One of them is revealed by a recent
@@ -143,7 +125,7 @@
         
         <p>It doesn't really help that all these situations are rare. Should the
         processor simply ignore the problem and hope it doesn't happen? For the first
-        two cases above, Saxon prevents the situation occurring, which imposes an
+        three cases above, Saxon prevents the situation occurring, which imposes an
         inconvenience on users who are actually doing something completely safe.
         For the final case (wildcards), Saxon ignores the problem, which creates
         the theoretical risk that queries and stylesheets are not type-safe: a document
