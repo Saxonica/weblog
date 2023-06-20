@@ -1,4 +1,226 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-05-02T13:31:27.250898Z</updated><entry><title>Announcing Saxon 12.2!</title><link href="https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html</id><published>2023-05-02T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-06-20T10:33:25.793418Z</updated><entry><title>Schema Modularity</title><link href="https://blog.saxonica.com/mike/2023/06/schema-modules.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/06/schema-modules.html</id><published>2023-06-20T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/06/schema-modules.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+     <!--   <header>-->
+<!--             <div class="banner"><h1><a href="/blog/mike/">Saxon diaries</a></h1>
+                 <div class="tagline">Michael Kay’s blog</div>
+             </div>-->
+            
+            <!--<aside class="nav"><div class="navlinks"><div id="search">
+                <form action="https://www.google.com/search" target="_parent">
+                    <span>Search: </span>
+                    <input size="20" name="as_q"/>
+                    <input type="hidden" name="hl" value="en"/>
+                    <input type="hidden" name="ie" value="UTF-8"/>
+                    <input type="hidden" name="btnG" value="Google+Search"/>
+                    <input type="hidden" name="as_qdr" value="all"/>
+                    <input type="hidden" name="as_occt" value="any"/>
+                    <input type="hidden" name="as_dt" value="i"/>
+                    <input type="hidden" name="as_sitesearch" value="dev.saxonica.com"/>
+                </form></div><div id="blogroll"><a href="/blog/mike/">Saxon diaries</a><br/>
+                    <a href="/blog/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/blog/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/blog/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/blog/authors.html#michael-kay-D2023-06"><span class="date" time="2023-06-20T12:00:00">June&nbsp;20, 2023 at 12:00p.m.</span></a></div></header><main>
+        -->
+        --&gt;
+        <p>Saxon, ever since we first introduced schema awareness back in 2004, has always
+        worked with a single global schema maintained at the level of the <code>Configuration</code>
+        object. This article discusses the advantages and disadvantages of this approach, and
+        looks at possible alternatives.</p>
+        
+        <p>Let's start by getting some terminology clear. A <b>schema</b>, in the terminology
+        of the XSD specification, is a set of schema components (such as element declarations
+        and type definitions). Don't confuse it with a <b>schema document</b>, which is an
+        XML document rooted at an <code>xs:schema</code> element. A <b>schema</b>
+        is what you get when you compile a collection of schema documents linked to each
+        other using <code>xs:include</code> and <code>xs:import</code> declarations.</p>
+        
+        <p>Not every set of schema components constitutes a valid schema. Most obviously
+        you can't have two different components (for example, two type definitions) with the
+        same name, unless they are identical. The XSD specification is a bit fuzzy about what
+        it means for two components to be identical.</p>
+        
+        <p>This means that in general, you can try and combine two schemas into one by
+        taking their union, but the operation won't always succeed because the two
+        schemas may be found to be inconsistent with each other.</p>
+        
+        <h2>The Global Schema</h2>
+        
+        <p>Saxon currently maintains a global schema at the level of the <code>Configuration</code>
+        object. This means that every time you introduce a new schema, for example by
+        compiling a schema-aware query or stylesheet that has an <code>import schema</code> declaration,
+        or by validating a document against a schema loaded using the <code>SchemaManager</code>
+        API, or referenced using <code>xsi:schemaLocation</code>, the schema components
+        from that schema are added to the global pool, provided they are consistent with
+        the declarations already present in the pool.</p>
+        
+        <p>These consistency checks are of two kinds:</p>
+        
+        <ul>
+            <li><p>Firstly, the new components must not have names that clash with the old.
+            You can't have two different types with the same name. To test whether two types
+            are the same, Saxon basically checks that they came from the same place: the same
+            line number in the same source schema document.</p></li>
+            <li><p>Secondly, the new components must not change the semantics of existing
+            components, if the existing components have already been used for validation purposes.
+            The test whether components have been used is done at the level of a target
+            namespace: if any declaration or definition in a target namespace has been
+            used for validating a source document, or if it has been used when compiling
+            a stylesheet or query, then the namespace is <b>sealed</b>, which means that its
+            components must not be extended or redefined by any new components.
+            We'll talk later about exactly what this means.</p></li>
+        </ul>
+        
+        <p>The main benefit of the global schema approach is that you can always be sure
+        that type annotations in validated instance documents are consistent with types
+        that are mentioned (or inferred) in compiled queries and stylesheets. If a query
+        is compiled believing that element <i>E</i> will always be empty, then you can be sure
+        that every validated instance of <i>E</i> will be empty, because no-one is allowed, between
+        compilation and validation, to add a type definition that extends or redefines <i>E</i>
+        allowing it to be non-empty. That's the theory, anyway.    
+        </p>
+        
+        <p>The most obvious disadvantage of the approach is that an application can't
+        work with two different versions of the same schema. If you want to write a stylesheet
+        that transforms input documents from <i>V1</i> to <i>V2</i> of the same schema, you
+        can't import both versions into the same stylesheet, one to validate the input and one
+        to validated the output. In fact, you can't even have both versions in the same
+        <code>Configuration</code> - which means you can't process an input collection containing
+        a mix of different versions (or if you do, you have to forgo validation).</p>
+        
+        <p>There are other less obvious disadvantages. One of them is revealed by a recent
+        embarrassing bug where we discovered that schema compilation isn't thread safe: you
+        can't reliably run two schema compilations within a single <code>Configuration</code>
+        at the same time. We've patched that by adding some locking, but it's an imperfect
+        solution because the lock is rather coarse-grained. We need to find a better solution,
+        and that gives us an opportunity to re-examine the design and see whether we can fix some
+        other long-standing issues at the same time.</p>
+        
+        <p>Another outstanding issue is a long-standing bug #3531, concerning a situation where
+        two independently-loaded schemas <i>X</i> and <i>Y</i> both extend the same substitution
+        group. This has remained outstanding because we have had no reports of users being affected
+        by it; but it remains an unsatisfactory state of affairs.</p>
+        
+        <h2>The X+Y Problem</h2>
+        
+        <p>Suppose that <i>X</i> and <i>Y</i> are valid schemas. Then we've already seen
+        that their union, which I will call <i>X+Y</i>, is not necessarily a valid schema;
+        their declarations might be inconsistent. Apart from the obvious inconsistencies
+        where <i>X</i> and <i>Y</i> contain different elements or types with the same name,
+        there can be much more subtle inconsistencies:</p>
+        
+        <ul>
+            <li><p><i>Y</i> might contain a type that redefines a type in <i>X</i>.</p>
+            <p>The semantics of <code>xs:redefine</code> as defined in XSD are a bit
+            fuzzy round the edges, but the effect is supposed to be global: if a type
+            is redefined, then all references to that type are affected. Exactly what
+            happens when the same type is redefined more than once isn't made clear.
+            </p>
+            <p>The introduction of <code>xs:override</code> in XSD 1.1 makes this
+            problem even worse, because <code>xs:override</code> allows existing
+            definitions to be changed in completely arbitrary ways.</p></li>
+            <li><p><i>Y</i> might contain a type that extends a type in <i>X</i>,
+            by allowing additional child elements or attributes. To be valid, 
+            instances that use the extended type have to identify themselves
+            with an <code>xsi:type</code> attribute, but this doesn't alter the
+            fact that adding the extended type to the global schema makes some
+            things valid that were previously invalid. It's bad news if a document
+            that was invalid at breakfast time suddenly becomes valid at tea time
+            because a new schema has been added to the <code>Configuration</code>.
+            It's even worse news if the schema changes during the course of
+            validating an input document. </p></li>
+            <li><p><i>Y</i> might contain an element declaration that
+            adds to the substitution group of an element defined in <i>X</i>.
+            Again, this means that a document that was invalid when validated
+            against schema <i>X</i> becomes valid when validated against
+            <i>X+Y</i>.</p></li>
+            <li><p><i>X</i> might contain a wildcard, for example 
+                <code>&lt;xs:any processContents="lax"/&gt;</code>. Suppose
+            an instance document matches this wildcard with an element
+            named <i>W</i>, and is valid (under the rules for lax validation)
+            because the schema contains no element declaration for <i>W</i>.
+            Now schema <i>Y</i> comes along and adds a definition for
+            element <i>W</i>, and suddenly our source document is no
+            longer valid.</p></li>
+        </ul>
+        
+        <p>It doesn't really help that all these situations are rare. Should the
+        processor simply ignore the problem and hope it doesn't happen? For the first
+        two cases above, Saxon prevents the situation occurring, which imposes an
+        inconvenience on users who are actually doing something completely safe.
+        For the final case (wildcards), Saxon ignores the problem, which creates
+        the theoretical risk that queries and stylesheets are not type-safe: a document
+        that has been validated against a type <i>T</i> might not satisfy all the contraints
+        that the query or stylesheet processor assumes to be true for any valid instance
+        of <i>T</i>.</p>
+        
+        <h2>An Alternative: Modular Schemas</h2>
+        
+        <p>Let's consider an alternative model, where instead of adding all schema
+        components to a single global schema at <code>Configuration</code> level,
+        we keep schemas independent and modular. So two stylesheets that import
+        different schema documents have separate unrelated schemas, and there are
+        no requirements that the two schemas should be consistent with each other.</p>
+        
+        <p>The challenge now is to ensure that a source document validated against
+        a schema <i>S1</i> is consistent with a stylesheet that imports schema <i>S2</i>.
+        If the two schemas are identical, there's no problem (and it's not too hard to
+        detect that they are identical, for example if they load the same schema
+        document as their starting point).</p>
+        
+        <p>But what if <i>S2</i> is a superset of <i>S1</i>? Suppose the document is
+        validated against a schema with target namespace <i>X</i>, while the stylesheet
+        has two <code>xsl:import-schema</code> declarations, for namespaces <i>X</i> 
+        and <i>Y</i>? We're now back with the <i>X+Y</i> problem: a document that is valid
+        against <i>X</i> is not necessarily valid against <i>X+Y</i>.</p>
+        
+        <p>It gets worse: if we have a pipeline of stylesheets, each of which imports
+        schemas for both its input document and its output document, then the first
+        stylesheet might import schemas for <i>X+Y</i>, and the second for <i>Y+Z</i>,
+        and we need to be sure that when the first stylesheet validates its output against
+        <i>X+Y</i>, the result will also be valid input against <i>Y+Z</i>.</p>
+        
+        <p>One possible solution here is to keep the imported schemas within a single
+        stylesheet separate. Import one schema for the input, and another for the output,
+        and don't require the two to be consistent. This also solves the problem of transforming
+        from <i>V1</i> to <i>V2</i> of the same schema. So in our pipeline, the output
+        of the first stylesheet would be validated not against <i>X+Y</i>, but merely
+        against <i>Y</i>, which is the same schema used for the input of the second stylesheet.
+        This would need language changes: <code>xsl:import-schema</code> declarations
+        would need to identify which schema they belong to, and type names used in 
+        <code>type</code> or <code>as</code> attributes would need to qualify the type
+        name with a schema name.</p>
+        
+        <p>I've started doing work to allow free-standing schemas to be constructed
+        and used for validation, independently of the <code>Configuration</code>.
+        There are clearly cases where this is useful. However, there's a lot more
+        work to be done on ensuring consistency of free-standing schemas, when a validated
+        document is used as input to a schema-aware stylesheet or query. Expect a new
+        class of (initially bewildering) error messages saying that element <i>E</i>
+        is known to be valid against type <i>T</i> in schema <i>X</i>. but it isn't known
+        to be valid against type <i>T</i> in schema <i>Y</i>. Hopefully these will be rare.</p>
+        
+        <h2>What about Wildcards?</h2>
+        
+        <p>I mentioned that there's an open issue with wildcards: if a schema type include
+        a lax wildcard, then an element that's valid against that schema (because there's
+        no element declaration matching the actual element name) can become invalid when
+        more element declarations are added.</p>
+        
+        <p>This isn't the only issue with wildcards. XSD 1.1 allows you to say, for example
+        <code>notQName="##defined"</code> which means that the name used for an element or
+        attribute must be one that has no global declaration anywhere in the schema. That's
+        another example of how adding new declarations to a schema can make existing content
+        invalid.</p>
+        
+        <p>I think the answer to this problem is to interpret these definitions in the context
+        of a "schema compilation unit". That is, when you compile a schema, 
+            <code>notQName="##defined"</code> is interpreted as meaning "not a name used for
+        a global element/attribute declaration in the that schema"; any
+        names or declarations added later (by merging this schema with others) have no effect 
+        on the meaning.</p>
+        
+        <p>This seems to solve the problem whether using a global schema or local free-standing
+        schemas, and makes the two cases behave more consistently and predictably.</p>
+        
+    </div></content></entry><entry><title>Announcing Saxon 12.2!</title><link href="https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html</id><published>2023-05-02T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.2!</h1>
 
 <p>The Saxon 12.2 maintenance release has been published. This is a
@@ -2634,84 +2856,4 @@ metadata.close();</pre>
       </ul>
       <p>I have rewritten several classes that construct content using push APIs to use this
          interface, and the resulting readability is very encouraging.</p>
-   </div></content></entry><entry><title>Representing namespaces in XDM tree models</title><link href="https://blog.saxonica.com/mike/2019/02/representing-namespaces-in-xdm-tree-models.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2019/02/representing-namespaces-in-xdm-tree-models.html</id><published>2019-02-01T11:59:58Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2019/02/representing-namespaces-in-xdm-tree-models.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>Most tree representations of XML, including the Saxon TinyTree and LinkedTree implementation,
-         as well as DOM, represent namespace information by holding a set of namespace declarations
-         and undeclarations on each element node.
-         </p>
-      <p>
-         I'm considering a change to this representation (for the Saxon implementations) to
-         do something that more closely reflects the way namespaces are actually defined in
-         XDM: each element node has a set of in-scope namespaces (held in a NamespaceMap object)
-         containing all the information about the namespaces that apply to that element.
-         </p>
-      <p>
-         The obvious objection to this, and the reason I've never done it before, is that it
-         looks at first sight to be very inefficient. But consider:
-         </p>
-      <p>
-         (a) in the vast majority of documents, there are very few namespace declarations on
-         any element other than the root
-         </p>
-      <p>
-         (b) if there are no namespace declarations on an element, it can point to the same
-         NamespaceMap object that its parent element points to; in most cases, all elements
-         in the document will point to the same shared NamespaceMap.
-         </p>
-      <p>
-         (c) having a NamespaceMap object immediately available on every element node means
-         we never need to search up the ancestor axis to resolve namespace prefixes
-         </p>
-      <p>
-         (d) there are still opportunities for implementations of NamespaceMap that use "deltas"
-         if space-saving in pathological cases is considered necessary.
-         </p>
-      <p>
-         Note that the NamespaceMap holds prefix=uri pairs, not namespace nodes. Namespace
-         nodes have node identity and parentage, which is what makes them so expensive. prefix-uri
-         pairs are just pairs of strings without such baggage, and they can be freely shared
-         across element nodes.
-         </p>
-      <p>
-         The current implementation I'm using for NamespaceMap is an immutable map implemented
-         as a pair of String[] arrays, one for prefixes and one for uris. The prefix array
-         is maintained in sorted order so we can use binary search to find a prefix. Insertion
-         of a new prefix/uri mapping is O(n), but this doesn't matter because the number of
-         bindings is usually less than ten, and it's a rare operation anyway that only happens
-         during tree construction.
-         </p>
-      <p>
-         Because the NamespaceMap is immutable, the system is quite easy to implement in a
-         tree builder that gets notified of namespaces incrementally (for example by a SAX
-         parser). The tree builder maintains a stack of NamespaceMap objects. On a startElement
-         event it allocates to the element the same NamespaceMap object that the parent element
-         is using; when a namespace declaration or undeclaration is encountered, this is replaced
-         with a new NamespaceMap with the required modifications.
-         </p>
-      <p>
-         The real motivation for the change is in implementing copy operations. In complex
-         multi-phase transformations both deep and shallow element copy operations are very
-         frequent, and copying of the namespace information is a significant cost. The XSLT
-         and XQuery language semantics require that when an element is copied, all its in-scope
-         namespaces are copied, and this requires searching the ancestor axis to find them
-         (we try quite hard to optimize this away, but we're not always successful). If the
-         in-scope namespaces are readily to hand in a simple immutable object, we save this
-         effort and just pass the complete object down the pipeline.
-         </p>
-      <p>
-         The builder for the tree to which the element is being copied now has to merge this
-         set of namespaces with the existing namespaces inherited from ancestor elements on
-         the receiving tree. It should now be clear why I chose the particular data structure
-         for the NamespaceMap: merging two sets of namespace bindings reduces to merging two
-         sorted arrays, which is quite an efficient operation. It's also easy to optimize for
-         the common case where the in-scope namespaces of the element being copied are exactly
-         the same as the in-scope namespaces of its parent element (typically we'll find that
-         the same NamespaceMap object is in use), in which case the merge becomes a null operation.
-         </p>
-      <p>
-         Of course, there are many details to work through (not least, how we fit this in with
-         third-party tree models that continue to use declarations and undeclarations). But
-         initial experiments are looking encouraging.
-         </p>
    </div></content></entry></feed>

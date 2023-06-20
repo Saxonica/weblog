@@ -1,4 +1,226 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2023-05-02T13:31:26.948795Z</updated><author><name>Michael Kay</name></author><entry><title>The pattern match="para except appendix//para"
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2023-06-20T10:33:25.444554Z</updated><author><name>Michael Kay</name></author><entry><title>Schema Modularity</title><link href="https://blog.saxonica.com/mike/2023/06/schema-modules.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/06/schema-modules.html</id><published>2023-06-20T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/06/schema-modules.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+     <!--   <header>-->
+<!--             <div class="banner"><h1><a href="/blog/mike/">Saxon diaries</a></h1>
+                 <div class="tagline">Michael Kay’s blog</div>
+             </div>-->
+            
+            <!--<aside class="nav"><div class="navlinks"><div id="search">
+                <form action="https://www.google.com/search" target="_parent">
+                    <span>Search: </span>
+                    <input size="20" name="as_q"/>
+                    <input type="hidden" name="hl" value="en"/>
+                    <input type="hidden" name="ie" value="UTF-8"/>
+                    <input type="hidden" name="btnG" value="Google+Search"/>
+                    <input type="hidden" name="as_qdr" value="all"/>
+                    <input type="hidden" name="as_occt" value="any"/>
+                    <input type="hidden" name="as_dt" value="i"/>
+                    <input type="hidden" name="as_sitesearch" value="dev.saxonica.com"/>
+                </form></div><div id="blogroll"><a href="/blog/mike/">Saxon diaries</a><br/>
+                    <a href="/blog/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/blog/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/blog/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/blog/authors.html#michael-kay-D2023-06"><span class="date" time="2023-06-20T12:00:00">June&nbsp;20, 2023 at 12:00p.m.</span></a></div></header><main>
+        -->
+        --&gt;
+        <p>Saxon, ever since we first introduced schema awareness back in 2004, has always
+        worked with a single global schema maintained at the level of the <code>Configuration</code>
+        object. This article discusses the advantages and disadvantages of this approach, and
+        looks at possible alternatives.</p>
+        
+        <p>Let's start by getting some terminology clear. A <b>schema</b>, in the terminology
+        of the XSD specification, is a set of schema components (such as element declarations
+        and type definitions). Don't confuse it with a <b>schema document</b>, which is an
+        XML document rooted at an <code>xs:schema</code> element. A <b>schema</b>
+        is what you get when you compile a collection of schema documents linked to each
+        other using <code>xs:include</code> and <code>xs:import</code> declarations.</p>
+        
+        <p>Not every set of schema components constitutes a valid schema. Most obviously
+        you can't have two different components (for example, two type definitions) with the
+        same name, unless they are identical. The XSD specification is a bit fuzzy about what
+        it means for two components to be identical.</p>
+        
+        <p>This means that in general, you can try and combine two schemas into one by
+        taking their union, but the operation won't always succeed because the two
+        schemas may be found to be inconsistent with each other.</p>
+        
+        <h2>The Global Schema</h2>
+        
+        <p>Saxon currently maintains a global schema at the level of the <code>Configuration</code>
+        object. This means that every time you introduce a new schema, for example by
+        compiling a schema-aware query or stylesheet that has an <code>import schema</code> declaration,
+        or by validating a document against a schema loaded using the <code>SchemaManager</code>
+        API, or referenced using <code>xsi:schemaLocation</code>, the schema components
+        from that schema are added to the global pool, provided they are consistent with
+        the declarations already present in the pool.</p>
+        
+        <p>These consistency checks are of two kinds:</p>
+        
+        <ul>
+            <li><p>Firstly, the new components must not have names that clash with the old.
+            You can't have two different types with the same name. To test whether two types
+            are the same, Saxon basically checks that they came from the same place: the same
+            line number in the same source schema document.</p></li>
+            <li><p>Secondly, the new components must not change the semantics of existing
+            components, if the existing components have already been used for validation purposes.
+            The test whether components have been used is done at the level of a target
+            namespace: if any declaration or definition in a target namespace has been
+            used for validating a source document, or if it has been used when compiling
+            a stylesheet or query, then the namespace is <b>sealed</b>, which means that its
+            components must not be extended or redefined by any new components.
+            We'll talk later about exactly what this means.</p></li>
+        </ul>
+        
+        <p>The main benefit of the global schema approach is that you can always be sure
+        that type annotations in validated instance documents are consistent with types
+        that are mentioned (or inferred) in compiled queries and stylesheets. If a query
+        is compiled believing that element <i>E</i> will always be empty, then you can be sure
+        that every validated instance of <i>E</i> will be empty, because no-one is allowed, between
+        compilation and validation, to add a type definition that extends or redefines <i>E</i>
+        allowing it to be non-empty. That's the theory, anyway.    
+        </p>
+        
+        <p>The most obvious disadvantage of the approach is that an application can't
+        work with two different versions of the same schema. If you want to write a stylesheet
+        that transforms input documents from <i>V1</i> to <i>V2</i> of the same schema, you
+        can't import both versions into the same stylesheet, one to validate the input and one
+        to validated the output. In fact, you can't even have both versions in the same
+        <code>Configuration</code> - which means you can't process an input collection containing
+        a mix of different versions (or if you do, you have to forgo validation).</p>
+        
+        <p>There are other less obvious disadvantages. One of them is revealed by a recent
+        embarrassing bug where we discovered that schema compilation isn't thread safe: you
+        can't reliably run two schema compilations within a single <code>Configuration</code>
+        at the same time. We've patched that by adding some locking, but it's an imperfect
+        solution because the lock is rather coarse-grained. We need to find a better solution,
+        and that gives us an opportunity to re-examine the design and see whether we can fix some
+        other long-standing issues at the same time.</p>
+        
+        <p>Another outstanding issue is a long-standing bug #3531, concerning a situation where
+        two independently-loaded schemas <i>X</i> and <i>Y</i> both extend the same substitution
+        group. This has remained outstanding because we have had no reports of users being affected
+        by it; but it remains an unsatisfactory state of affairs.</p>
+        
+        <h2>The X+Y Problem</h2>
+        
+        <p>Suppose that <i>X</i> and <i>Y</i> are valid schemas. Then we've already seen
+        that their union, which I will call <i>X+Y</i>, is not necessarily a valid schema;
+        their declarations might be inconsistent. Apart from the obvious inconsistencies
+        where <i>X</i> and <i>Y</i> contain different elements or types with the same name,
+        there can be much more subtle inconsistencies:</p>
+        
+        <ul>
+            <li><p><i>Y</i> might contain a type that redefines a type in <i>X</i>.</p>
+            <p>The semantics of <code>xs:redefine</code> as defined in XSD are a bit
+            fuzzy round the edges, but the effect is supposed to be global: if a type
+            is redefined, then all references to that type are affected. Exactly what
+            happens when the same type is redefined more than once isn't made clear.
+            </p>
+            <p>The introduction of <code>xs:override</code> in XSD 1.1 makes this
+            problem even worse, because <code>xs:override</code> allows existing
+            definitions to be changed in completely arbitrary ways.</p></li>
+            <li><p><i>Y</i> might contain a type that extends a type in <i>X</i>,
+            by allowing additional child elements or attributes. To be valid, 
+            instances that use the extended type have to identify themselves
+            with an <code>xsi:type</code> attribute, but this doesn't alter the
+            fact that adding the extended type to the global schema makes some
+            things valid that were previously invalid. It's bad news if a document
+            that was invalid at breakfast time suddenly becomes valid at tea time
+            because a new schema has been added to the <code>Configuration</code>.
+            It's even worse news if the schema changes during the course of
+            validating an input document. </p></li>
+            <li><p><i>Y</i> might contain an element declaration that
+            adds to the substitution group of an element defined in <i>X</i>.
+            Again, this means that a document that was invalid when validated
+            against schema <i>X</i> becomes valid when validated against
+            <i>X+Y</i>.</p></li>
+            <li><p><i>X</i> might contain a wildcard, for example 
+                <code>&lt;xs:any processContents="lax"/&gt;</code>. Suppose
+            an instance document matches this wildcard with an element
+            named <i>W</i>, and is valid (under the rules for lax validation)
+            because the schema contains no element declaration for <i>W</i>.
+            Now schema <i>Y</i> comes along and adds a definition for
+            element <i>W</i>, and suddenly our source document is no
+            longer valid.</p></li>
+        </ul>
+        
+        <p>It doesn't really help that all these situations are rare. Should the
+        processor simply ignore the problem and hope it doesn't happen? For the first
+        two cases above, Saxon prevents the situation occurring, which imposes an
+        inconvenience on users who are actually doing something completely safe.
+        For the final case (wildcards), Saxon ignores the problem, which creates
+        the theoretical risk that queries and stylesheets are not type-safe: a document
+        that has been validated against a type <i>T</i> might not satisfy all the contraints
+        that the query or stylesheet processor assumes to be true for any valid instance
+        of <i>T</i>.</p>
+        
+        <h2>An Alternative: Modular Schemas</h2>
+        
+        <p>Let's consider an alternative model, where instead of adding all schema
+        components to a single global schema at <code>Configuration</code> level,
+        we keep schemas independent and modular. So two stylesheets that import
+        different schema documents have separate unrelated schemas, and there are
+        no requirements that the two schemas should be consistent with each other.</p>
+        
+        <p>The challenge now is to ensure that a source document validated against
+        a schema <i>S1</i> is consistent with a stylesheet that imports schema <i>S2</i>.
+        If the two schemas are identical, there's no problem (and it's not too hard to
+        detect that they are identical, for example if they load the same schema
+        document as their starting point).</p>
+        
+        <p>But what if <i>S2</i> is a superset of <i>S1</i>? Suppose the document is
+        validated against a schema with target namespace <i>X</i>, while the stylesheet
+        has two <code>xsl:import-schema</code> declarations, for namespaces <i>X</i> 
+        and <i>Y</i>? We're now back with the <i>X+Y</i> problem: a document that is valid
+        against <i>X</i> is not necessarily valid against <i>X+Y</i>.</p>
+        
+        <p>It gets worse: if we have a pipeline of stylesheets, each of which imports
+        schemas for both its input document and its output document, then the first
+        stylesheet might import schemas for <i>X+Y</i>, and the second for <i>Y+Z</i>,
+        and we need to be sure that when the first stylesheet validates its output against
+        <i>X+Y</i>, the result will also be valid input against <i>Y+Z</i>.</p>
+        
+        <p>One possible solution here is to keep the imported schemas within a single
+        stylesheet separate. Import one schema for the input, and another for the output,
+        and don't require the two to be consistent. This also solves the problem of transforming
+        from <i>V1</i> to <i>V2</i> of the same schema. So in our pipeline, the output
+        of the first stylesheet would be validated not against <i>X+Y</i>, but merely
+        against <i>Y</i>, which is the same schema used for the input of the second stylesheet.
+        This would need language changes: <code>xsl:import-schema</code> declarations
+        would need to identify which schema they belong to, and type names used in 
+        <code>type</code> or <code>as</code> attributes would need to qualify the type
+        name with a schema name.</p>
+        
+        <p>I've started doing work to allow free-standing schemas to be constructed
+        and used for validation, independently of the <code>Configuration</code>.
+        There are clearly cases where this is useful. However, there's a lot more
+        work to be done on ensuring consistency of free-standing schemas, when a validated
+        document is used as input to a schema-aware stylesheet or query. Expect a new
+        class of (initially bewildering) error messages saying that element <i>E</i>
+        is known to be valid against type <i>T</i> in schema <i>X</i>. but it isn't known
+        to be valid against type <i>T</i> in schema <i>Y</i>. Hopefully these will be rare.</p>
+        
+        <h2>What about Wildcards?</h2>
+        
+        <p>I mentioned that there's an open issue with wildcards: if a schema type include
+        a lax wildcard, then an element that's valid against that schema (because there's
+        no element declaration matching the actual element name) can become invalid when
+        more element declarations are added.</p>
+        
+        <p>This isn't the only issue with wildcards. XSD 1.1 allows you to say, for example
+        <code>notQName="##defined"</code> which means that the name used for an element or
+        attribute must be one that has no global declaration anywhere in the schema. That's
+        another example of how adding new declarations to a schema can make existing content
+        invalid.</p>
+        
+        <p>I think the answer to this problem is to interpret these definitions in the context
+        of a "schema compilation unit". That is, when you compile a schema, 
+            <code>notQName="##defined"</code> is interpreted as meaning "not a name used for
+        a global element/attribute declaration in the that schema"; any
+        names or declarations added later (by merging this schema with others) have no effect 
+        on the meaning.</p>
+        
+        <p>This seems to solve the problem whether using a global schema or local free-standing
+        schemas, and makes the two cases behave more consistently and predictably.</p>
+        
+    </div></content></entry><entry><title>The pattern match="para except appendix//para"
       </title><link href="https://blog.saxonica.com/mike/2022/05/except-patterns.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2022/05/except-patterns.html</id><published>2022-05-26T15:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2022/05/except-patterns.html"><div xmlns="http://www.w3.org/1999/xhtml">
         <h1>The pattern <code>match="para except appendix//para"</code></h1>
         
@@ -4831,165 +5053,4 @@ public synchronized int allocate(QName q) {
          the name associated with a known fingerprint.</p>
       <p>After that, redesign becomes relatively
          straightforward.</p>
-   </div></content></entry><entry><title>How long is a (piece of) string?</title><link href="https://blog.saxonica.com/mike/2015/02/how-long-is-a-piece-of-string.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2015/02/how-long-is-a-piece-of-string.html</id><published>2015-02-09T14:06:09Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2015/02/how-long-is-a-piece-of-string.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>
-         As I explained in my previous post, I've been re-examining the way functions work
-         in Saxon. In particular, over the last week or two, I've been changing the way system
-         functions (such as fn:string-length) work. There's a terrific amount of detail and
-         complexity here, but I thought it might be interesting to take one simple function
-         (fn:string-length) as an example, to see where the complexity comes from and how it
-         can be reduced.
-         </p>
-      <p>
-         At first sight, fn:string-length looks pretty simple. How long is a (piece of) string?
-         Just ask Java to find out: surely it should just map to a simple call on java.lang.String.length().
-         Well, no actually.
-         </p>
-      <p>
-         If we look to the specification, there are two complications we have to deal with.
-         Firstly we are counting the number of Unicode characters, not (as Java does) the number
-         of 16-bit UTF16 codepoints. In the case of surrogate pairs, one character occupies
-         two codepoints, and that means that a nave implementation of string-length() takes
-         time proportional to the length of the string.
-         </p>
-      <p>
-         Secondly, there are two forms of the string-length() function. With zero arguments,
-         it's defined to mean string-length(string(.)). That's different from nearly all other
-         functions that have 0-argument and 1-argument forms, where (for example) name() means
-         name(.). Saxon handles functions like name() by converting them statically to name(.),
-         and that conversion doesn't work in this case. To illustrate the difference, consider
-         an attribute code="003", defined in the schema as an xs:integer. The function call
-         string-length(@code) returns 1 (it atomizes the attribute to produce an integer, converts
-         the integer to the string "3", and then returns the length of this string. But @code!string-length()
-         returns 3 - the length of the string value of the attribute node.
-         </p>
-      <p>
-         The other complexity applies specifically to string-length#0 (that is, the zero-argument
-         form). Dynamic calls to context-dependent functions bind the context at the point
-         where the function is created, not where it is called. Consider:
-         </p>
-      <pre>&lt;xsl:for-each select="0 to 9"&gt;
-&lt;xsl:variable name="f" select="string-length#0"/&gt;
-&lt;xsl:for-each select="21 to 50"&gt;
-&lt;xsl:value-of select="$f()"/&gt;
-&lt;/xsl:for-each&gt;
-&lt;/xsl:for-each&gt;</pre>
-      <p>This will print the value "1" three hundred times. In each case the context item at
-         the point where $f is bound is a one-digit integer, so $f() returns the length of
-         that integer, which is always one. The context item at the point where $f() is evaluated
-         is irrelevant.
-         </p>
-      <p>
-         Now let's take a look at the Saxon implementation. There's a Java class StringLength
-         which in Saxon 9.6 is about 200 lines of code (including blank lines, comments, etc),
-         and this does most of the work. But not all: in the end all it does is to call StringValue.getStringLength(),
-         which is what really does the work. Atomic values of type xs:string are represented
-         in Saxon by an instance of the class StringValue, which encapsulates a Java CharSequence:
-         often, but not always, a String. The reason for the encapsulating class is to provide
-         type safety on methods like Function.call() which returns a Sequence; StringValue
-         implements AtomicValue which implements Item which implements Sequence, so the XDM
-         data model is faithfully represented in the Java implementation classes.
-         </p>
-      <p>
-         In addition there's a class StringLengthCompiler which generates a bytecode implementation
-         of the string-length function. This is another 60 or so lines.
-         </p>
-      <p>
-         Some functions also have a separate streaming implementation to accept streamed input,
-         and one or two (string-join() and concat(), for example), have an implementation designed
-         to produce streamed output. That's designed to ensure that an instruction like &lt;xsl:value-of
-         select="//emp/name" separator=","/&gt;, which compiles down to a call on string-join()
-         internally, doesn't actually assemble the whole output in memory, but rather writes
-         each part of the result string to the output stream as it becomes available.
-         </p>
-      <p>
-         Since the introduction of dynamic function calls, many system functions have two separate
-         implementations, one for static calls and one for dynamic calls. That's the case for
-         string-length: the evaluateItem() method used for static calls is almost identical
-         to the call() method used for dynamic calls. One reason this happened was because
-         of a fear of performance regression that might occur if the existing code for static
-         calls was generalized, rather than introducing a parallel path.
-         </p>
-      <p>
-         In 9.6, the implementation of dynamic calls to context-dependent functions like string-length#0
-         is rather fudged. In fact, the expression string-length#0 compiles into a call on
-         function-lookup("fn:string", 0). The implementation of function-lookup() keeps a copy
-         of both the static and dynamic context at the point where it is called, and this is
-         then used when evaluating the resulting function. This is vastly more expensive than
-         it needs to be: for functions like string-length#0 where there are no arguments other
-         than the context, the function can actually be pre-evaluated at the point of creation.
-         In the new 9.7 implementation, the result of the expression string-length#0 is a function
-         implemented by the class ConstantFunction, which encapsulates its result and returns
-         this result when it is called. (It's not quite as simple as this, because the constant
-         function also has to remember its name and arity, just in case the user asks.)
-         </p>
-      <p>
-         The method StringValue.getStringLength() attempts to recognize cases where walking
-         through the codepoints of the string to look for surrogate pairs is not actually necessary.
-         In previous releases there was an extra bit kept in StringValue, set when the string
-         was known to contain no surrogate pairs: so having walked the string once, it would
-         never be done again. In 9.6 this mechanism is replaced with a different approach:
-         Saxon includes several implementations of CharSequence that maintain the value as
-         an array of fixed-size integers (8-bit, 16-bit, or 32-bit, as necessary). If the CharSequence
-         within a StringValue is one of these classes (known collectively as UnicodeString),
-         then the length of the string is the length of the array. And when getStringLength()
-         is called on a string the first time, the string is left in this form, in the hope
-         that future operations on the string will benefit. Of course, this will in some cases
-         be counter-productive (and there's a further refinement in the implementation, which
-         I won't go into, that's designed to overcome this).
-         </p>
-      <p>
-         There are a few other optimizations in the implementation of string-length() that
-         are worth mentioning. Firstly, it's quite common for users to write
-         </p>
-      <pre>&lt;xsl:if test="string-length($x) != 0"&gt;
-</pre>
-      <p>
-         Here we don't need to count surrogate pairs in the string: the string is zero-length
-         if and only if the underlying CharSequence is zero-length. Saxon therefore does a
-         static rewrite of such an expression to boolean(string($x)). (If $x is statically
-         known to be a string, the call string($x) will then be further rewritten as $x.)
-         </p>
-      <p>
-         If string-length#1 is applied to a value that can be computed statically, then the
-         string-length function is itself computed statically. (This optimization, for odd
-         historical reasons, is often called "constant folding". It's possible only when there
-         are no context dependencies.)
-         </p>
-      <p>
-         During type-checking, the implementation of string-join#0 keeps a note of whether
-         a context item is known to exist. This is used during byte-code generation; if it's
-         known that the context item won't be absent, then there is no need to generate code
-         to check for this error condition. It's through tiny optimizations like this that
-         generated bytecode ends up being faster than interpreted code.
-         </p>
-      <p>
-         In my current exercise refactoring the implementation of system functions such as
-         string-length, I've been looking at how much of logic is duplicated either across
-         the different implementations of a single function (streamed and unstreamed, static
-         and dynamic, bytecode and interpreted) or across the implementations of functions
-         that have a lot in common (such as string(), string-length(), and normalize-space()).
-         I've found that with the exception of the core code in StringValue.getStringLength,
-         and the optimization of string-length()=0, everything else can be vastly reduced.
-         In place of the original StringLength class, there are now two (inner) classes StringLength_0
-         and StringLength_1 each of which consists of a single one-line method. The code for
-         generating byte-code can also be considerably simplified by achieving more reuse across
-         different functions.
-         </p>
-      <p>
-         The main essence of the reorganization is that the class StringLength (or rather,
-         its two variants) are no longer Expressions, they are now Functions. Previously a
-         call onto string-length($x) compiled to an expression, held as a node on the expression
-         tree. Now it compiles into two object, a StringLength object which is a pure function,
-         and a SystemFunctionCall object which is an expression that calls the function. The
-         SystemFunctionCall object is generic across all functions, while the implementations
-         of SystemFunction contain all the code that is specific to one function. This change
-         was motivated primarily by the need to handle dynamic function calls (and hence first-class
-         function objects) properly, but it has provided a stimulus for a refactoring that
-         achieves much more than this.
-         </p>
-      <p>
-         So, how long is a piece of string? At least we now know how to work it out more efficiently.
-         Sorry this little yarn wasn't shorter.</p>
    </div></content></entry></feed>
