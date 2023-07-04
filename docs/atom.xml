@@ -1,4 +1,140 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-06-20T10:58:00.981409Z</updated><entry><title>Schema Modularity</title><link href="https://blog.saxonica.com/mike/2023/06/schema-modules.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/06/schema-modules.html</id><published>2023-06-20T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/06/schema-modules.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-07-04T16:52:06.054695Z</updated><entry><title>Announcing Saxon 12.3!</title><link href="https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html</id><published>2023-07-04T17:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 12.3!</h1>
+
+<p>The Saxon 12.3 maintenance release has been published. This is a
+maintenance release for Java, C#, C/C++, PHP, and Python that fixes a
+number of issues reported since the Saxon 12.2 release.</p>
+
+<p>Saxon 12.3 was released on
+<span title="Happy Independence Day to all our readers in the United States!">4 July 2023</span>.
+This release has been
+uploaded to the usual locations on the Saxonica website, GitHub, and
+Maven, PyPi, and NuGet. SaxonCS 12.3 is built with .NET 6. This
+release includes SaxonC and Python releases for the ARM 64
+architecture as well as X86-64 architecture.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=92&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.3&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.3">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
+our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Partial list of issues resolved</h2>
+
+<p>This section is a subset of the complete list of resolved issues.
+It’s curated to bring attention to the bugs that seem most likely to
+impact customers. 
+</p>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<p>For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=92&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6003">6003</a>:
+    Inline function expression evaluated using xsl:evaluate</li>
+<li><a href="https://saxonica.plan.io/issues/6018">6018</a>:
+    UnicodeString - indexWhere does not start from the expected position</li>
+<li><a href="https://saxonica.plan.io/issues/6022">6022</a>:
+    Eager evaluation prematurely throws exception in analyze-string/non-matching-string.</li>
+<li><a href="https://saxonica.plan.io/issues/6024">6024</a>:
+    java.lang.NoClassDefFoundError: org/jdom2/Document</li>
+<li><a href="https://saxonica.plan.io/issues/6033">6033</a>:
+    Invalid warning about field in xs:key</li>
+<li><a href="https://saxonica.plan.io/issues/6034">6034</a>:
+    Problems with saxon:slice()</li>
+<li><a href="https://saxonica.plan.io/issues/6036">6036</a>:
+    Undeclaration of default namespace is not reported to a SAXResult</li>
+<li><a href="https://saxonica.plan.io/issues/6040">6040</a>:
+    Invalid warning displayed when map:contains() is used</li>
+<li><a href="https://saxonica.plan.io/issues/6054">6054</a>:
+    NamedNodeMap.getNamedItem throw UnsupportedOperationException</li>
+<li><a href="https://saxonica.plan.io/issues/6059">6059</a>:
+    Bug on "-" castable to xs:duration</li>
+<li><a href="https://saxonica.plan.io/issues/6061">6061</a>:
+    Crash in SaxonCS using ";n" in regex flags</li>
+<li><a href="https://saxonica.plan.io/issues/6063">6063</a>:
+    Incorrect attribute indentation</li>
+<li><a href="https://saxonica.plan.io/issues/6067">6067</a>:
+    Fixed NPE in Saxon HE 12.2</li>
+<li><a href="https://saxonica.plan.io/issues/6076">6076</a>:
+    Fixed NPE in Saxon HE 12.2</li>
+<li><a href="https://saxonica.plan.io/issues/6085">6085</a>:
+    Fixed an incomplete path in error messages in a validation report</li>
+<li><a href="https://saxonica.plan.io/issues/6086">6086</a>:
+    Updated the validation-reports.xsd</li>
+<li><a href="https://saxonica.plan.io/issues/6091">6091</a>:
+    Fixed an NPE in ContextStackIterator.getMajorCaller</li>
+<li><a href="https://saxonica.plan.io/issues/6092">6092</a>:
+    Fixed a bug in defaultOpenContent/@appliesToEmpty in XML Schema support</li>
+<li><a href="https://saxonica.plan.io/issues/6093">6093</a>:
+    Fixed a bug in a predicate with last()</li>
+<li><a href="https://saxonica.plan.io/issues/6095">6095</a>:
+    Fixed an index out-of-bounds exception when using an accumulator-rule match with variables</li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.3&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6017">6017</a>:
+    Interrupted by signal 11: SIGSEGV when PyDocumentBuilder.set_schema_validator is set to None</li>
+<li><a href="https://saxonica.plan.io/issues/6023">6023</a>:
+    Thread 1 "python3" received signal SIGSEGV, Segmentation fault</li>
+<li><a href="https://saxonica.plan.io/issues/6025">6025</a>:
+    Python Saxon not releasing memory</li>
+<li><a href="https://saxonica.plan.io/issues/6053">6053</a>:
+    PydmNode object gets deleted before reuse</li>
+<li><a href="https://saxonica.plan.io/issues/6075">6075</a>:
+    Unable to read unicodeBlocks.xml file</li>
+<li><a href="https://saxonica.plan.io/issues/6077">6077</a>:
+    Axis Iterator required on the XdmNode</li>
+<li><a href="https://saxonica.plan.io/issues/6078">6078</a>:
+    Undefined reference to <code>dlopen@GLIBC_2.34</code></li>
+<li><a href="https://saxonica.plan.io/issues/6084">6084</a>:
+    Exception: Initial template parameters can only be of type PyXdmValue</li>
+<li><a href="https://saxonica.plan.io/issues/6098">6098</a>:
+    SaxonApiException::getSystemId() throws NullPointerException</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.3, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>Schema Modularity</title><link href="https://blog.saxonica.com/mike/2023/06/schema-modules.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/06/schema-modules.html</id><published>2023-06-20T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/06/schema-modules.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
             
 
@@ -2709,133 +2845,4 @@ else
       <p>*FM k[1AS] v[?AS] - map(xs:string, xs:string?)*</p>
       <p>1F a[?AS,*AO] r[1AB] - function(xs:string?, xs:double*) as xs:boolean</p>
       <p>Version: 2019-10-30</p>
-   </div></content></entry><entry><title>A new push event API</title><link href="https://blog.saxonica.com/mike/2019/05/a-new-push-event-api.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2019/05/a-new-push-event-api.html</id><published>2019-05-01T16:34:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2019/05/a-new-push-event-api.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>For various internal and performance reasons, we're making some changes to Saxon's
-         internal Receiver interface for the next release. This interface is a SAX-like interface
-         for sending an XML document (or in general, any XDM instance) from one processing
-         component to another, as a sequence of events such as startElement(), attributes(),
-         characters(), and so on.
-         </p>
-      <p>
-         The interface is very widely used within Saxon: it handles communication from the
-         XML parser to the document builder, document validation, serialization, and much else.
-         It also allows instructions to be executed in "push mode", so for example when XSLT
-         constructs a result tree, the tree is never actually constructed in memory, but instead
-         events representing the tree are sent straight from the transformer to the serializer.<br/>
-         I know that although this interface is labelled as internal, some user applications
-         attempt either to implement the interface or to act as a client, sending events to
-         one of Saxon's many implementations of the interface. So in making changes, it seems
-         a good time to recognize that there is a need for an interface at this level, and
-         that existing candidates are really rather clumsy to use.
-         
-         </p>
-      <p>
-         Among those candidates are the venerable SAX ContentHandler interface, and the newer
-         StAX XMLStreamWriter interface.
-         </p>
-      <p>
-         There are a number of structural reasons that make the ContentHandler hard to use:
-         </p>
-      <p>
-         
-         
-         
-         <ul>
-            <li>It offers a number of different configuration options for XML parsers, which cause
-               namespace information to be provided in different ways. But the ContentHandler has
-               no way of discovering which of these options the XML parser (or other originator of
-               events) is actually using.</li>
-            <li>It's not actually one interface but several: some events are sent not to the ContentHandler,
-               but to a LexicalHandler or DTDHandler.</li>
-            <li>The information available to the ContentHandler doesn't align well with the information
-               defined in the XDM data model; for example, comments are available only to the LexicalHandler,
-               not to the ContentHandler</li>
-         </ul>
-         In addition, the way QNames and namespaces are handled makes life unnecessarily difficult
-         for both sides of the interface.
-         
-         </p>
-      <p>
-         In some ways the XMLStreamWriter is an improvement, and I've certainly used it in
-         preference when writing an application that has to construct XML documents in this
-         way. But a major problem of the XMLStreamWriter is that it's underspecified, to the
-         extent that there is a separate guidance document from a third-party suggesting how
-         implementations should interpret the spec. Again, the main culprit is namespace.
-         </p>
-      <p>
-         One of the practical problems with all these event-based interfaces is that debugging
-         can be very difficult. In particular, if you forget to issue an endElement() call,
-         you don't find out until the endDocument() event finds there's a missing end tag somewhere,
-         and tracking down where the unmatched startElement() is in a complex program can be
-         a nightmare. I decided that addressing this problem should be one of the main design
-         aims of a new interface -- and it turns out that it isn't difficult.
-         </p>
-      <p>
-         Let's show off the new design with an example. Here is some code from Saxon's InvalidityReportGenerator,
-         which generates an XML report of errors found during a schema validation episode,
-         using the XMLStreamWriter interface:
-         </p>
-      <pre><strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>, <strong>"meta-data"</strong>);
-<strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>,<strong>"validator"</strong>);
-<strong>writer</strong>.writeAttribute(<strong>"name"</strong>, Version.<em>getProductName</em>() + <strong>"-" </strong>+ getConfiguration().getEditionCode());
-<strong>writer</strong>.writeAttribute(<strong>"version"</strong>, Version.<em>getProductVersion</em>());
-<strong>writer</strong>.writeEndElement(); //&lt;/validator&gt;
-<strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>,<strong>"results"</strong>);
-<strong>writer</strong>.writeAttribute(<strong>"errors"</strong>, <strong>"" </strong>+ <strong>errorCount</strong>);
-<strong>writer</strong>.writeAttribute(<strong>"warnings"</strong>, <strong>"" </strong>+ <strong>warningCount</strong>);
-<strong>writer</strong>.writeEndElement(); //&lt;/results&gt;
-<strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>,<strong>"schema"</strong>);
-<strong>if </strong>(<strong>schemaName </strong>!= <strong>null</strong>) {
-    <strong>writer</strong>.writeAttribute(<strong>"file"</strong>, <strong>schemaName</strong>);
-}
-<strong>writer</strong>.writeAttribute(<strong>"xsd-version"</strong>, <strong>xsdversion</strong>);
-<strong>writer</strong>.writeEndElement(); //&lt;/schema&gt;
-<strong>writer</strong>.writeStartElement(<strong>REPORT_NS</strong>,<strong>"run"</strong>);
-<strong>writer</strong>.writeAttribute(<strong>"at"</strong>, DateTimeValue.<em>getCurrentDateTime</em>(<strong>null</strong>).getStringValue());
-<strong>writer</strong>.writeEndElement(); //&lt;/run&gt;
-<strong>writer</strong>.writeEndElement(); //&lt;/meta-data&gt;</pre>
-      <p>And here is the equivalent using the new push API:</p>
-      <pre>Push.Element metadata = <strong>report</strong>.element(<strong>"meta-data"</strong>);
-metadata.element(<strong>"validator"</strong>)
-        .attribute(<strong>"name"</strong>, Version.<em>getProductName</em>() + <strong>"-" </strong>+ getConfiguration().getEditionCode())
-        .attribute(<strong>"version"</strong>, Version.<em>getProductVersion</em>());
-metadata.element(<strong>"results"</strong>)
-        .attribute(<strong>"errors"</strong>, <strong>"" </strong>+ <strong>errorCount</strong>)
-        .attribute(<strong>"warnings"</strong>, <strong>"" </strong>+ <strong>warningCount</strong>);
-metadata.element(<strong>"schema"</strong>)
-        .attribute(<strong>"file"</strong>, <strong>schemaName</strong>)
-        .attribute(<strong>"xsd-version"</strong>, <strong>xsdversion</strong>);
-metadata.element(<strong>"run"</strong>)
-        .attribute(<strong>"at"</strong>, DateTimeValue.<em>getCurrentDateTime</em>(<strong>null</strong>).getStringValue());
-metadata.close();</pre>
-      <p>What's different?
-         The most obvious difference is that the method for creating a new element returns
-         an object (a Push.Element) which is used for constructing the attributes and children
-         of the element. This gives it an appearance rather like a tree-building API, but this
-         is an illusion: the objects created are transient. Methods such as attribute() use
-         the "chaining" design - they return the object to which they are applied - making
-         it easy to apply further methods to the same object, without the need to bind variables.
-         The endElement() calls have disappeared - an element is closed automatically when
-         the next child is written to the parent element, which we can do because we know which
-         element the child is being attached to.</p>
-      <p>There are a few other features of the design worthy of attention:</p>
-      <ul>
-         <li>Names of elements and attributes can be supplied either as a plain local name, or
-            as a QName object. A plain local name is interpreted as being in the default namespace
-            in the case of elements (the default namespace can be set at any level), or as being
-            in no namespace in the case of attributes. For the vast majority of documents, there
-            is never any need to use QNames; very often the only namespace handling is a single
-            call on setDefaultNamespace().</li>
-         <li>The close() method on elements (which generates the end tag) is optional. If you write
-            another child element, the previous child is closed automatically. If you close a
-            parent element, any unclosed child element is closed automatically. The specimen code
-            above shows one call on close(), which is useful in this case for readability: the
-            reader can see that no further children are going to be added.</li>
-         <li>The argument of methods such as attribute() and text() that supplies the content may
-            always be null. If the content is null, no attribute or text node is written. This
-            makes it easier to handle optional content without disrupting the method chaining.</li>
-      </ul>
-      <p>I have rewritten several classes that construct content using push APIs to use this
-         interface, and the resulting readability is very encouraging.</p>
    </div></content></entry></feed>
