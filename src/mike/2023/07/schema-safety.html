@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>How Safe is your Schema?</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="author" content="Michael Kay" />
+        <meta name="pubdate" content="2023-07-22T12:00:00" />
+
+    </head>
+    <body>
+        <h1>How Safe is your Schema?</h1>
+        
+        <p>When you validate a document, you expect to set the rules for what it can contain.
+        If you specify that your nesting box can only contain wrens and robins, you don't want
+        any cuckoos in there.</p>
+        
+        <p>So you write a schema <code>nesting-box.xsd</code> like this:</p>
+        
+        <pre><&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    version="1.1">
+    
+    &lt;xs:element name="nesting-box" type="nesting-box-type"/>
+    
+    &lt;xs:complexType name="nesting-box-type">
+        &lt;xs:choice minOccurs="0" maxOccurs="unbounded">
+            &lt;xs:element ref="wren"/>
+            &lt;xs:element ref="robin"/>
+        &lt;/xs:choice>
+    &lt;/xs:complexType>
+    
+    &lt;xs:element name="wren" type="xs:string"/>
+    &lt;xs:element name="robin" type="xs:string"/>
+&lt;/xs:schema>         
+        </pre>
+        
+        <p>And you're now comfortable that any <code>&lt;nesting-box&gt;</code> that
+            passes validation will look something like this:</p>
+        
+        <pre>&lt;nesting-box>
+   &lt;wren>Nice!&lt;/wren>
+   &lt;robin>Nicer!&lt;/robin>
+   &lt;robin>Nicest!&lt;/robin>
+&lt;/nesting-box>
+        </pre>
+        
+        <p><b><i>You're wrong!</i></b></p>
+        
+        <p>The following document also passes validation:</p>
+        
+        <pre>&lt;nesting-box xsi:schemaLocation="cuckoo.ns cuckoo.xsd" 
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   &lt;wren>Nice!&lt;/wren>
+   &lt;robin>Nicer!&lt;/robin>
+   &lt;robin>Nicest!&lt;/robin>
+   &lt;cuckoo xmlns="cuckoo.ns">Horrid!&lt;/cuckoo>
+&lt;/nesting-box>
+        </pre>
+        
+        <p>Here <code>cuckoo.xsd</code> is another schema document, like this:</p>
+        
+        <pre>&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    targetNamespace="cuckoo.ns"
+    version="1.1">
+    
+    &lt;xs:import schemaLocation="nesting-box.xsd"/>
+    
+    &lt;xs:element name="cuckoo" type="xs:string"
+       substitutionGroup="robin"/>
+    
+&lt;/xs:schema>
+        </pre>
+        
+        <p>So you thought you were constraining what could appear in the document,
+        and the user found a way past your defenses, submitting a document that
+        your code probably can't handle.</p>
+        
+        <p>Saxon does allow you to disable use of <code>xsi:schemaLocation</code>,
+        but it's enabled by default. I'm inclined to think the default needs to
+        be changed.</p>
+        
+ 
+   
+    </body>
+</html>
