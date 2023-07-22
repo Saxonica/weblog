@@ -1,0 +1,87 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>How Safe is your Schema?</title>
+        
+        <meta name="author" content="Michael Kay">
+        <meta name="pubdate" content="2023-07-22T12:00:00">
+
+    <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="How Safe is your Schema?" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>How Safe is your Schema?</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2023-07"><span class="date" time="2023-07-22T12:00:00">July&nbsp;22, 2023 at 12:00p.m.</span></a></div></header><main>
+        
+        
+        <p>When you validate a document, you expect to set the rules for what it can contain.
+        If you specify that your nesting box can only contain wrens and robins, you don't want
+        any cuckoos in there.</p>
+        
+        <p>So you write a schema <code>nesting-box.xsd</code> like this:</p>
+        
+        <pre>&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    version="1.1"&gt;
+    
+    &lt;xs:element name="nesting-box" type="nesting-box-type"/&gt;
+    
+    &lt;xs:complexType name="nesting-box-type"&gt;
+        &lt;xs:choice minOccurs="0" maxOccurs="unbounded"&gt;
+            &lt;xs:element ref="wren"/&gt;
+            &lt;xs:element ref="robin"/&gt;
+        &lt;/xs:choice&gt;
+    &lt;/xs:complexType&gt;
+    
+    &lt;xs:element name="wren" type="xs:string"/&gt;
+    &lt;xs:element name="robin" type="xs:string"/&gt;
+&lt;/xs:schema&gt;         
+        </pre>
+        
+        <p>And you're now comfortable that any <code>&lt;nesting-box&gt;</code> that
+            passes validation will look something like this:</p>
+        
+        <pre>&lt;nesting-box&gt;
+   &lt;wren&gt;Nice!&lt;/wren&gt;
+   &lt;robin&gt;Nicer!&lt;/robin&gt;
+   &lt;robin&gt;Nicest!&lt;/robin&gt;
+&lt;/nesting-box&gt;
+        </pre>
+        
+        <p><b><i>You're wrong!</i></b></p>
+        
+        <p>The following document also passes validation:</p>
+        
+        <pre>&lt;nesting-box xsi:schemaLocation="cuckoo.ns cuckoo.xsd" 
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+   &lt;wren&gt;Nice!&lt;/wren&gt;
+   &lt;robin&gt;Nicer!&lt;/robin&gt;
+   &lt;robin&gt;Nicest!&lt;/robin&gt;
+   &lt;cuckoo xmlns="cuckoo.ns"&gt;Horrid!&lt;/cuckoo&gt;
+&lt;/nesting-box&gt;
+        </pre>
+        
+        <p>Here <code>cuckoo.xsd</code> is another schema document, like this:</p>
+        
+        <pre>&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified"
+    targetNamespace="cuckoo.ns"
+    version="1.1"&gt;
+    
+    &lt;xs:import schemaLocation="nesting-box.xsd"/&gt;
+    
+    &lt;xs:element name="cuckoo" type="xs:string"
+       substitutionGroup="robin"/&gt;
+    
+&lt;/xs:schema&gt;
+        </pre>
+        
+        <p>So you thought you were constraining what could appear in the document,
+        and the user found a way past your defenses, submitting a document that
+        your code probably can't handle.</p>
+        
+        <p>Saxon does allow you to disable use of <code>xsi:schemaLocation</code>,
+        but it's enabled by default. I'm inclined to think the default needs to
+        be changed.</p>
+        
+ 
+   
+    </main><footer><div class="prev-uri"><a href="/announcements/2023/07/saxon-12.3.html">Announcing Saxon 12.3!</a></div></footer></body>
+</html>
