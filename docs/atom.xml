@@ -1,4 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-07-22T07:48:00.81077Z</updated><entry><title>How Safe is your Schema?</title><link href="https://blog.saxonica.com/mike/2023/07/schema-safety.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/07/schema-safety.html</id><published>2023-07-22T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/07/schema-safety.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-08-16T09:02:47.605547Z</updated><entry><title>XML doclet</title><link href="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html</id><published>2023-08-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>Historically, we’ve used a customized version of
+<a href="https://jeldoclet.sourceforge.net/">JELDoclet</a> to generate
+XML from Javadoc. We use the XML to construct parts of our website.
+The Javadoc APIs used by JELDoclet (and all of the other
+Javadoc-to-XML doclets that I could lay my hands on) have been deprecated as of
+Java 9 and will eventually be removed from the JDK.</p>
+
+<p>On a whim last weekend, I took a stab at simply rebuilding an XML
+doclet on top of the new Javadoc APIs. You can find the results of that
+effort in the <a href="https://github.com/Saxonica/xmldoclet">xmldoclet</a> repository.
+</p>
+
+<p>It’s only version 0.1.0, but I think it’s broadly functional. It
+handles all of the sources I’ve thrown at it, including the Saxon Java
+products which are fairly large and complex. If you try it out and
+discover that it produces output that seems incomplete or incorrect, please
+<a href="https://github.com/Saxonica/xmldoclet/issues">open an issue</a>.</p>
+
+<p>I can’t say I’m especially fond of the Javadoc APIs. In particular,
+although you need to know what imports a class has in order to
+correctly resolve the names of types, the public APIs provide no
+access to that information. In the end, I applied an old maxim:</p>
+
+<blockquote>
+  <p><em>If brute force doesn’t work, you’re not applying enough brute force.</em></p>
+</blockquote>
+
+<p>I simply included the Java parser that we use for the transpiler and 
+parse the sources myself.</p>
+
+<p>Comments most welcome…</p>
+
+</div></content></entry><entry><title>How Safe is your Schema?</title><link href="https://blog.saxonica.com/mike/2023/07/schema-safety.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/07/schema-safety.html</id><published>2023-07-22T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/07/schema-safety.html"><div xmlns="http://www.w3.org/1999/xhtml">
         
         
         <p>When you validate a document, you expect to set the rules for what it can contain.
@@ -2691,93 +2726,5 @@ else
          
          
          
-         </p>
-   </div></content></entry><entry><title>Java Generics revisited</title><link href="https://blog.saxonica.com/mike/2020/01/java-generics-revisited.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2020/01/java-generics-revisited.html</id><published>2020-01-21T21:14:20Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2020/01/java-generics-revisited.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>In Saxon 9.9 we took considerable pains to adopt Java Generics for processing sequences:
-         in particular the Sequence and SequenceIterator classes, and all their subclasses,
-         became Sequence&lt;? extends Item&gt; and SequenceIterator&lt;? extends Item&gt;.
-         </p>
-      <p>
-         I'm now coming to the conclusion that this was a mistake; or at any rate, that we
-         went too far.
-         </p>
-      <p>
-         What exactly are the benefits of using Generics? It's supposed to improve type safety
-         and reduce the need for casts which, if applied incorrectly, can trigger run-time
-         exceptions. So it's all about detecting more of your errors at compile time.
-         </p>
-      <p>
-         Well, I don't think we've been seeing those benefits. And the main reason for that
-         is that in most cases, when we're processing sequences, we don't have any static knowledge
-         of the kind of items we are dealing with.
-         </p>
-      <p>
-         Sure, when we process a particular XPath path expression, we know whether it's going
-         to deliver nodes or atomic values. But when we write the Java code in Saxon to handle
-         path expressions, all we know is that the result will always be a sequence of items.
-         </p>
-      <p>
-         There are some cases where particular kinds of expression only handle nodes, or only
-         handle atomic values. For example, the input sequences for a union operator will always
-         be sequences of nodes. It would be nice if we didn't have to handle a completely general
-         sequence and cast every item to class NodeInfo. But it's an illusion to think we can
-         get extra type safety that way. The operands of a union are arbitrary expressions,
-         and the iterators returned by the subexpressions are going to be arbitrary iterators;
-         there's no way we can translate the type-safety we are implementing at the XPath level
-         into type-safe evaluators at the Java level.
-         </p>
-      <p>
-         It's particularly obvious that generics give us no type-safety at the API level. In
-         s9api, <b>XPathSelector.evaluate()</b> returns an <b>XdmValue</b>. That's a lot better than the JAXP equivalent which just returns <b>Object</b>, but the programmer still has to do casting to convert the items in the return <b>XdmValue</b> to nodes, string, integers, or whatever. And there's no way we can change that; the
-         XPath expression is supplied as a string at run-time, so it's only at run-time that
-         we know what type of items it returns. If that's true at the API level, it's equally
-         true internally. Any kind of expression can invoke any other kind of expression (that's
-         what orthogonality in language design is about), which means that the interfaces between
-         an expression and its subexpressions are always going to be general-purpose sequences
-         whose item type is known only at execution time.
-         </p>
-      <p>
-         There are a couple of aspects of Java  generics that cause us real pain.
-         </p>
-      <p>
-         
-         
-         
-         <ul>
-            <li>The first is the XDM rule that every item is itself a <b>Sequence</b>. So if <b>Sequence</b> is a generic type, parameterized by Item type, and <b>Item</b> is a subclass of <b>Sequence</b>, then <b>Item</b> has to be itself a generic type parameterized by its own type. Rather than <b>Item</b>, it has to be <b>Item&lt;? extends Item&gt;</b>; or perhaps it should be <b>Item&lt;? extends Item&lt;? extends Item&gt;&gt;</b>, and so ad infinitum. And then <b>StringValue</b> extends <b>Item&lt;StringValue&gt; </b>and so on. We found ways around that conundrum, but the complexity is horrendous;
-               it certainly doesn't achieve the goal of making it easier to write correct code.</li>
-            <li>The second is arrays. Arrays don't play at all well with generics; you can't create
-               an array of a generic type, for example. And yet there are lots of places where it's
-               useful to use arrays, and some where arrays are the only option. VarArgs functions,
-               for example, present their arguments as an array. In some cases we wanted to carry
-               on using arrays (rather than lists) for compatibility, in other cases we want to use
-               them for convenience or for performance. The natural signature for a function call,
-               for example is <b>public Sequence call(Context context, Sequence[] args)</b>. There's no way we can refine this in a way that passes static information about
-               the argument types from the caller to the callee, because we're using the same Java
-               signature for all XPath functions.</li>
-         </ul>
-         But having got Generics working, at great effort, in 9.9, should we retain them or
-         drop them?
-         
-         </p>
-      <p>
-         One reason I'm motivated to drop them is .NET. We have a significant user base on
-         .NET, but we have something of a potential crisis looming in terms of ongoing support
-         for this platform. Microsoft appear to be basing their future strategy around .NET
-         Core, allowing .NET Framework to fade away into the sunset. But the technology we
-         use for bridging to .NET, namely IKVM, only supports .NET Framework and not .NET Core;
-         and Jeroen Frijters who single-handedly developed IKVM and supported it for umpteen
-         years (with no revenue stream to support it) has thrown in the towel and is no longer
-         taking it forward. So we're looking at a number of options for a way forward on .NET.
-         One of these is source code conversion; and to make source code conversion viable
-         without forking the code, we need to minimise our dependencies on Java features that
-         don't translate easily to C#. Notable among those features is generics.
-         </p>
-      <p>
-         In the short term, I think I'm going to roll back the use of generics in selected
-         areas where they are clearly more trouble than they are worth. That's particularly
-         true of <b>Sequence</b> and its subclasses, including <b>Item</b>. For <b>SequenceIterator</b> it's probably worth keeping generics for the time being, but we'll keep that under
-         review.
          </p>
    </div></content></entry></feed>

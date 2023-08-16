@@ -1,4 +1,39 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-07-22T07:48:00.610508Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 12.3!</title><link href="https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html</id><published>2023-07-04T17:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-08-16T09:02:47.455306Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>XML doclet</title><link href="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html</id><published>2023-08-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>Historically, we’ve used a customized version of
+<a href="https://jeldoclet.sourceforge.net/">JELDoclet</a> to generate
+XML from Javadoc. We use the XML to construct parts of our website.
+The Javadoc APIs used by JELDoclet (and all of the other
+Javadoc-to-XML doclets that I could lay my hands on) have been deprecated as of
+Java 9 and will eventually be removed from the JDK.</p>
+
+<p>On a whim last weekend, I took a stab at simply rebuilding an XML
+doclet on top of the new Javadoc APIs. You can find the results of that
+effort in the <a href="https://github.com/Saxonica/xmldoclet">xmldoclet</a> repository.
+</p>
+
+<p>It’s only version 0.1.0, but I think it’s broadly functional. It
+handles all of the sources I’ve thrown at it, including the Saxon Java
+products which are fairly large and complex. If you try it out and
+discover that it produces output that seems incomplete or incorrect, please
+<a href="https://github.com/Saxonica/xmldoclet/issues">open an issue</a>.</p>
+
+<p>I can’t say I’m especially fond of the Javadoc APIs. In particular,
+although you need to know what imports a class has in order to
+correctly resolve the names of types, the public APIs provide no
+access to that information. In the end, I applied an old maxim:</p>
+
+<blockquote>
+  <p><em>If brute force doesn’t work, you’re not applying enough brute force.</em></p>
+</blockquote>
+
+<p>I simply included the Java parser that we use for the transpiler and 
+parse the sources myself.</p>
+
+<p>Comments most welcome…</p>
+
+</div></content></entry><entry><title>Announcing Saxon 12.3!</title><link href="https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html</id><published>2023-07-04T17:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.3!</h1>
 
 <p>The Saxon 12.3 maintenance release has been published. This is a
