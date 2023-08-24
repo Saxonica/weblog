@@ -1,4 +1,50 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-08-24T11:19:35.955091Z</updated><entry><title>ICU4J and SaxonJ EE</title><link href="https://blog.saxonica.com/norm/2023/08/24-icu4j.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/24-icu4j.html</id><published>2023-08-24T12:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/24-icu4j.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-08-24T12:27:58.312166Z</updated><entry><title>Announcing Saxon 11.6!</title><link href="https://blog.saxonica.com/announcements/2023/08/saxon-11.6.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/08/saxon-11.6.html</id><published>2023-08-24T13:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/08/saxon-11.6.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 11.6!</h1>
+
+<p>The Saxon 11.6 maintenance release has been published. This is a
+maintenance release for Java, C#, C/C++, PHP, and Python that fixes
+almost 40 issues reported since the 11.5 release.</p>
+
+<p>Saxon 11.6 was released on 24 August 2023. This release has been
+uploaded to the usual locations on the Saxonica website, GitHub,
+Maven, and NuGet. SaxonCS 11.6 is built with .NET 6.</p>
+
+<p>For a list of the issues resolved in this release, please visit the
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=93&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">issue tracker</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/11.6">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
+our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation11">the documentation</a>.
+</p>
+
+<p>If you encounter any issues with Saxon 11.6, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>ICU4J and SaxonJ EE</title><link href="https://blog.saxonica.com/norm/2023/08/24-icu4j.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/24-icu4j.html</id><published>2023-08-24T12:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/24-icu4j.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>ICU4J and SaxonJ EE</h1>
 
 <p>We’ve recently discovered a small discrepancy in how we manage the
@@ -2535,98 +2581,4 @@ product “real soon now.”</p>
 <p>I’m not exactly sure how I’ll divide up my writings between this
 weblog and <a href="https://so.nwalsh.com/">my personal weblog</a>.
 I’ll try to cross-link where it’s appropriate.</p>
-</div></content></entry><entry><title>String, CharSequence, IKVM, and .NET</title><link href="https://blog.saxonica.com/mike/2020/07/string-charsequence-ikvm-and-net.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2020/07/string-charsequence-ikvm-and-net.html</id><published>2020-07-20T09:06:54Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2020/07/string-charsequence-ikvm-and-net.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>A couple of years ago Jeroen Frijters announced that he would no longer be working
-         on new IKVM developments (IKVM is the technology we use to make Saxon, which is written
-         in Java, run on .NET). At one level that's not a problem: the tool works brilliantly
-         and we can continue to use it. However, it doesn't support .NET Core, and Microsoft
-         have announced that .NET 5 will be based on .NET Core, so that creates the risk that
-         Saxon on .NET will hit a brick wall.</p>
-      <p>Various smart people are working on trying to pick up IKVM where Jeroen left off,
-         but I don't particularly want to bet the business on them being successful. Jeroen
-         produced brilliant software but he left very little in the way of documentation or
-         test material, so it's a hard act to follow.</p>
-      <p>Meanwhile Microsoft seem to be back-pedalling on their original promise that .NET
-         5 would support Java interoperability. They've never given any indication of how it
-         would do so, despite much speculation.</p>
-      <p>So we've been looking at alternative ways of taking Saxon on .NET forward into the
-         future, and one of those is source code conversion. I've been looking at tools such
-         as Tangible, which does a good job to a degree: they don't tackle the difficult parts
-         of the problem where Java and C# are most different, but they give a very good insight
-         into understanding what the difficult parts of the problem are going to be.</p>
-      <p>And one of those difficult parts, which I'm focussing on at the moment, is the <b>CharSequence</b> problem. CharSequence is a Java interface that we use very extensively, and there's
-         no equivalent on .NET. Unlike other dependencies on Java classes and interfaces, this
-         one is impossible to emulate directly, because java.lang.String implements CharSequence,
-         and there's no way we can make System.String on .NET do the same.</p>
-      <p>The reason we use CharSequence, as with any interface, is so that we can have multiple
-         implementations with different performance characteristics. To take a simple example,
-         one of our implementations is CompressedWhitespace. A great deal of the text in an
-         XML document is made up of whitespace, which sadly cannot be killed at birth: using
-         a customised representation for strings that contain only whitespace gives a significant
-         space saving. (And space savings also turn into speed improvements, given that execution
-         time these days is dominated by how long it takes to get data in and out of the CPU's
-         internal cache).</p>
-      <p>Given that CharSequence has no equivalent on .NET, it occurred to me to ask how IKVM
-         deals with it. Although Jeroen never wrote much documentaton, he did write a lot of
-         blog posts about interesting design problems, and sure enough it seems that he gave
-         this a lot of attention back in 2003 (how time flies when you're having fun). I thought
-         that he might use an implementation of CharSequence that wraps a System.String, but
-         it seems he rejected that approach in favour of a mechanism of what he calls "ghost
-         interfaces". There's a lot of detail, but the bottom line seems to be that the code:</p>
-      <pre><code>CharSequence seq = "foo";
-seq.charAt(1);</code></pre>
-      <p>is compiled to .NET as:</p>
-      <pre><code>System.Object seq = "foo";
-if(seq instanceof System.String)
-  ((System.String)seq).charAt(1);
-else if(seq instanceof CharSequence)
-  ((CharSequence)seq).charAt(1);
-else
-  throw new IncompatibleClassChangeError()</code></pre>
-      <p>That looks pretty horrifying, and I've belatedly realised that it could account for
-         a lot of our observations on .NET performance over the years.</p>
-      <p>When we first built Saxon on .NET, the performance overhead compared with Java was
-         around 30%, which was quite acceptable. In recent years we've seen it getting worse,
-         with some workloads showing a 300% slow-down, and despite considerable effort we've
-         been at a loss to explain why. Synthetic benchmarks on IKVM continued to show a 30%
-         overhead, but for Saxon the figure was far worse. We looked hard without success to
-         find a hot-spot, something we were doing that IKVM handled particularly badly, but
-         the slow-down seemed to be right across the board. I'm now prepared to conjecture
-         that it's all down to our use of CharSequence - because CharSequence.charAt() is something
-         we do very extensively, throughout the product.</p>
-      <p>When data arrives in Saxon from a SAX parser, the content of text nodes arrives in
-         char[] arrays, while the content of attributes arrives in String objects. And we keep
-         it that way: in the TinyTree, text nodes are effectively slices of a char[] array,
-         and attributes are Strings. All the operations that we perform on text, including
-         performance-critical operations such as equality matching, sorting, and string-to-number
-         conversion, therefore need to work on either representation, and that's essentially
-         why we use CharSequence. In general, we don't want to spend time converting data between
-         different representations so we can perform different operations on it. </p>
-      <p>(In recent releases, though, we've started using a different representation for operations
-         where we need to count Unicode codepoints rather than UTF-16 chars. For regular expressions,
-         and some other operations such as translate(), we first convert the string to a UnicodeString,
-         which is our own interface that supports direct codepoint addressing, with internal
-         implementations using 8, 16, or 32 bits per character depending on the widest character
-         present in the string).</p>
-      <p>So if CharSequence is a problem, what should we do instead? Is there any other way
-         we can implement operations such as collation comparison and string-to-number conversion
-         efficiently without first converting the data to a common internal format?</p>
-      <p>I think part of the solution might be for these operations to be written to use codepoint
-         iterators. Iterating over a string using an IntIterator that delivers codepoints is
-         probably just as efficient as using a for-loop with charAt(), and it's possible to
-         create an IntIterator over any string representation efficiently (meaning, without
-         copying the actual characters).</p>
-      <p>This suggests the following broad approach:</p>
-      <p>(a) For attributes, continue to use Strings</p>
-      <p>(b) For text nodes on the Receiver pipeline and in the TinyTree, use an interface
-         similar to CharSequence - let's call it UniString - that allows multiple implementations,
-         but that doesn't have the magic property that String can be used directly as an implementation.
-         (Instead, there will be an implementation of UniString that wraps a String).</p>
-      <p>(c) For operations on strings and string-like values, use a codepoint iterator wherever
-         possible.</p>
-      <p>This is a gross simplification: we're dealing with half a million lines of code that's
-         all concerned with string handling, so the detail is horrendous. But having a simplified
-         description of the problem and the solution helps greatly when you're hacking through
-         the jungle.</p>
-   </div></content></entry></feed>
+</div></content></entry></feed>
