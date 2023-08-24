@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>ICU4J and Saxon EE</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2023-08-24T12:15:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+</head>
+<body>
+<h1>ICU4J and SaxonJ EE</h1>
+
+<p>We’ve recently discovered a small discrepancy in how we manage the
+dependencies between <a
+href="https://unicode-org.github.io/icu/userguide/icu4j/">ICU4J</a>
+and SaxonJ EE.</p>
+
+<p>If you download the EE release from our website, you get a
+distribution that includes SaxonJ EE, XML Resolver, ICU4J, and JLine
+(used by Gizmo). The manifest in the SaxonJ EE jar file puts those
+additional dependencies on your classpath automatically.</p>
+
+<p>If you get the EE release from our Maven repository, ICU4J is an
+<em>optional</em> dependency. So Maven won’t automatically put it on
+your classpath. That’s the discrepancy.</p>
+
+<p>Saxon EE will function without ICU4J, so it is technically
+optional. I’m unsure which would be better: making it optional in both
+places or non-optional in both places. Having it different certainly
+seems like the worst choice and we should fix it.</p>
+
+<p>In the short term, if you’re using Saxon EE and you want the
+collations supported by ICU4J, make sure you’re also arranging for
+ICU4J to be on your classpath.</p>
+
+<p>We discovered this in the course of examining issue
+<a href="https://saxonica.plan.io/issues/6183">#6183</a>. For slightly
+complicated reasons involving our type hierarchy, if ICU4J is missing,
+you can get an error message that suggests you’re running Saxon HE
+even when you’re running EE. We’ll fix that too.
+</p>
+
+</body>
+</html>
