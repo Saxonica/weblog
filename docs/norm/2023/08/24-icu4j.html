@@ -1,0 +1,42 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>ICU4J and Saxon&nbsp;EE</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2023-08-24T12:15:00">
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/norm-tovey-walsh.css"><meta content="Saxon Chronicles (in a Norman style)" property="og:site_name"><meta content="https://blog.saxonica.com/img/sccard.png" property="og:image"><meta content="Norm Tovey-Walsh's Saxonica weblog." property="og:description"><meta content="https://blog.saxonica.com/norm" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="ICU4J and Saxon&nbsp;EE" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/norm/">Saxon Chronicles</a></h1><div class="tagline">( in a Norman style )</div></div><h2>ICU4J and SaxonJ&nbsp;EE</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2023-08"><span class="date" time="2023-08-24T12:15:00">August&nbsp;24, 2023 at 12:15p.m.</span></a></div></header><main>
+
+
+<p>We’ve recently discovered a small discrepancy in how we manage the
+dependencies between <a href="https://unicode-org.github.io/icu/userguide/icu4j/">ICU4J</a>
+and SaxonJ&nbsp;EE.</p>
+
+<p>If you download the&nbsp;EE release from our website, you get a
+distribution that includes SaxonJ&nbsp;EE, XML Resolver, ICU4J, and JLine
+(used by Gizmo). The manifest in the SaxonJ&nbsp;EE jar file puts those
+additional dependencies on your classpath automatically.</p>
+
+<p>If you get the&nbsp;EE release from our Maven repository, ICU4J is an
+<em>optional</em> dependency. So Maven won’t automatically put it on
+your classpath. That’s the discrepancy.</p>
+
+<p>Saxon&nbsp;EE will function without ICU4J, so it is technically
+optional. I’m unsure which would be better: making it optional in both
+places or non-optional in both places. Having it different certainly
+seems like the worst choice and we should fix it.</p>
+
+<p>In the short term, if you’re using Saxon&nbsp;EE and you want the
+collations supported by ICU4J, make sure you’re also arranging for
+ICU4J to be on your classpath.</p>
+
+<p>We discovered this in the course of examining issue
+<a href="https://saxonica.plan.io/issues/6183">#6183</a>. For slightly
+complicated reasons involving our type hierarchy, if ICU4J is missing,
+you can get an error message that suggests you’re running Saxon&nbsp;HE
+even when you’re running&nbsp;EE. We’ll fix that too.
+</p>
+
+</main><footer><div class="prev-uri"><a href="/norm/2023/08/16-xmldoclet.html">XML doclet</a></div></footer></body>
+</html>

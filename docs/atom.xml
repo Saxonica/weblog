@@ -1,4 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-08-16T09:02:47.605547Z</updated><entry><title>XML doclet</title><link href="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html</id><published>2023-08-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-08-24T11:19:35.955091Z</updated><entry><title>ICU4J and SaxonJ EE</title><link href="https://blog.saxonica.com/norm/2023/08/24-icu4j.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/24-icu4j.html</id><published>2023-08-24T12:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/24-icu4j.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>ICU4J and SaxonJ EE</h1>
+
+<p>We’ve recently discovered a small discrepancy in how we manage the
+dependencies between <a href="https://unicode-org.github.io/icu/userguide/icu4j/">ICU4J</a>
+and SaxonJ EE.</p>
+
+<p>If you download the EE release from our website, you get a
+distribution that includes SaxonJ EE, XML Resolver, ICU4J, and JLine
+(used by Gizmo). The manifest in the SaxonJ EE jar file puts those
+additional dependencies on your classpath automatically.</p>
+
+<p>If you get the EE release from our Maven repository, ICU4J is an
+<em>optional</em> dependency. So Maven won’t automatically put it on
+your classpath. That’s the discrepancy.</p>
+
+<p>Saxon EE will function without ICU4J, so it is technically
+optional. I’m unsure which would be better: making it optional in both
+places or non-optional in both places. Having it different certainly
+seems like the worst choice and we should fix it.</p>
+
+<p>In the short term, if you’re using Saxon EE and you want the
+collations supported by ICU4J, make sure you’re also arranging for
+ICU4J to be on your classpath.</p>
+
+<p>We discovered this in the course of examining issue
+<a href="https://saxonica.plan.io/issues/6183">#6183</a>. For slightly
+complicated reasons involving our type hierarchy, if ICU4J is missing,
+you can get an error message that suggests you’re running Saxon HE
+even when you’re running EE. We’ll fix that too.
+</p>
+
+</div></content></entry><entry><title>XML doclet</title><link href="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html</id><published>2023-08-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>Historically, we’ve used a customized version of
@@ -2597,134 +2629,4 @@ else
          all concerned with string handling, so the detail is horrendous. But having a simplified
          description of the problem and the solution helps greatly when you're hacking through
          the jungle.</p>
-   </div></content></entry><entry><title>The Java class hierarchy for XPath type objects</title><link href="https://blog.saxonica.com/mike/2020/02/the-java-class-hierarchy-for-xpath-type-objects.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2020/02/the-java-class-hierarchy-for-xpath-type-objects.html</id><published>2020-02-10T11:26:47Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2020/02/the-java-class-hierarchy-for-xpath-type-objects.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>The set of interfaces and classes used in the Java code to represent XSD and XDM types
-         has become something of a nightmare. This article is an attempt to explain it. When
-         you don't understand something well, you can often improve your understanding by trying
-         to explain it to others, so that's what I shall attempt to do.
-         </p>
-      <p>
-         The first complication is that we have to model schema types and item types, and these
-         are overlapping categories.
-         </p>
-      <p>
-         Schema types - types as the term is used in XSD - are either simple types or complex
-         types; simple types are either atomic types, union types, or list types. We can forget
-         about complex types for the time being as they are relatively unproblematic. 
-         </p>
-      <p>
-         With simple types, we should mention in passing that one of the problems is that while
-         processing a schema, we don't always immediately know what the variety of a simple
-         type is; if it's derived from a base type and we haven't yet analysed the base type,
-         then we park it as a "SimpleTypeDefinition" to be turned into an AtomicType, UnionType,
-         or ListType later - which means that all references to the type need to be updated.
-         </p>
-      <p>
-         As well as their use in schema processing, schema types are used as type annotations
-         on nodes in XDM, and they also appear in XPath expressions as the target of a "cast"
-         or "castable" expression.
-         </p>
-      <p>
-         Item types are purely an XDM concept, and they include atomic types, node types, function
-         types, map types, array types. Item types when combined with an occurrence indicator
-         form a Sequence type. Sequence types are used in XPath in declaring the types of variables,
-         parameters, and function results; they are also used in "instance of" and "treat as"
-         expressions.
-         </p>
-      <p>
-         Atomic types are both schema types (more specifically, simple types) and item types.
-         Not every schema type is an item type (complex types aren't, list types aren't), and
-         not every item type is a schema type (node types and function types aren't). The categories
-         overlap, so it's not surprising that the Java class hierarchy is complicated.
-         </p>
-      <p>
-         Union types add another complication. A simple union of atomic types (for example
-         the union of xs:date and xs:dateTime) is useful as an item type, for example to define
-         the type of a function argument or variable. But XSD union types aren't always simple
-         unions of atomic types: they can also include list types, and they can define restrictions
-         beyond those present in the member types. So XDM defines the concept of a "pure union
-         type", which is a simple union of atomic types; pure union types are the only kind
-         that can be used as item types. For convenience it's useful to have a term that embraces
-         atomic types and pure union types: the XDM specifications call these "generalized
-         atomic types", and in Saxon they are referred to as "plain types". Again, these overlapping
-         categories make it very hard to get the Java class hierarchy right.
-         </p>
-      <p>
-         Simple types form a lattice; at the top of this lattice is the most general type "xs:anySimpleType",
-         and at the bottom is the "void" type "xs:error" (void because it has no instances).
-         These "edge case" types are simple types, but they don't fit cleanly into the classification
-         of union types, list types, and atomic types.
-         </p>
-      <p>
-         Item types also overlap with XSLT patterns, and with the node tests used in axis steps.
-         Constructs such as element(*) and text() are both node tests (suitable for use in
-         patterns and axis steps) and item types. Not every item type is a node test (for example,
-         array(*) isn't), and not every node test is an item type (for example, *:local isn't).
-         Again, we have two intersecting categories. If we draw the Venn diagram of simple
-         types, item types, and node tests, we find that simple tests don't overlap with node
-         tests, but all other combinations have an intersection.
-         </p>
-      <p>
-         There's another dimension that we try to capture in the Java class hierarchy: we try
-         to distinguish built-in types from user-defined types. There are built-in atomic types
-         (xs:integer), built-in list types (xs:NMTOKENS), and built-in union types (xs:numeric);
-         and there are also used-defined types in each of the three varieties. Capturing two
-         dimensions of classification in a class hierarchy typically introduces multiple inheritance
-         and complicates the hierarchy.
-         </p>
-      <p>
-         There's also a lot of complexity concerned with the relationship of schema types to
-         other kinds of schema component. Again at this level we try to distinguish used-defined
-         schema components (those derived from declarations in an XSD source document) from
-         built-in schema components (which include not only simple types, but also complex
-         types such as xs:anyType and xs:untyped). We distinguish "schema components" as defined
-         in the XSD specification (which include not only schema types, but also element declarations,
-         attribute declarations, identity constraints etc) and "schema structures" which are
-         essentially constructs in a source XSD document; but looking at the code, nearly everything
-         you find in a schema seems to be both a "schema component" and a "schema structure"
-         and I'm having trouble seeing exactly what the difference between the two categories
-         is.
-         </p>
-      <p>
-         The straw that broke the camel's back and made me examine whether refactoring is needed
-         was the introduction of locally-declared union types with the syntax "union(xs:date,
-         xs:time)". These are clearly union types, but they aren't built-in, and they don't
-         correspond to declarations in any source schema, so they don't fit neatly into the
-         existing classification of built-in versus user-defined.
-         </p>
-      <p>
-         We've got an awful lot of multiple inheritance in this hierarchy, and the accepted
-         wisdom is that if you've got a lot of multiple inheritance, then you need to do some
-         refactoring, and replace some of it with delegation.
-         </p>
-      <p>
-         We've got a model for that in the way we handle XSLT match patterns. Although node-tests
-         are a subset of patterns, we don't treat node-tests as a subclass of patterns in the
-         Java class hierarchy; rather, the class hierarchy for patterns includes a NodeTestPattern
-         which contains a reference to a NodeTest. Similarly, atomic types are a subset of
-         schema types, but that doesn't mean they need to implement SchemaType in the Java
-         class hierarchy; rather the class hierarchy for SchemaTypes could include an AtomicSchemaType
-         which contains a reference to an AtomicType.
-         </p>
-      <p>
-         Let's see what we can do.
-         </p>
-      <p>
-         <b>UPDATE 2020-02-18</b></p>
-      <p>Well: I had a good go at refactoring this; but the new scheme was getting just as
-         complex as the old, so I decided to revert all the work.
-         </p>
-      <p>
-         I tried to split the classes representing simple types into two: the "compile time"
-         information used during XSD schema compilation, and the "executable" types used actively
-         for validation. But I ended up with just as many classes (or more), and just as much
-         multiple inheritance. I did manage to eliminate the messy process whereby a SimpleTypeDefinition
-         is converted to an AtomicType, ListType, or UnionType as soon as we know its variety
-         (i.e. when the reference to its base type is resolved -- it can be a forwards reference),
-         but I found that doesn't open the door to any wider simplification.
-         
-         
-         
-         </p>
    </div></content></entry></feed>

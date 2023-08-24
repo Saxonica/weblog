@@ -1,4 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-08-16T09:02:47.455306Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>XML doclet</title><link href="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html</id><published>2023-08-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-08-24T11:19:35.691076Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>ICU4J and SaxonJ EE</title><link href="https://blog.saxonica.com/norm/2023/08/24-icu4j.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/24-icu4j.html</id><published>2023-08-24T12:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/24-icu4j.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>ICU4J and SaxonJ EE</h1>
+
+<p>We’ve recently discovered a small discrepancy in how we manage the
+dependencies between <a href="https://unicode-org.github.io/icu/userguide/icu4j/">ICU4J</a>
+and SaxonJ EE.</p>
+
+<p>If you download the EE release from our website, you get a
+distribution that includes SaxonJ EE, XML Resolver, ICU4J, and JLine
+(used by Gizmo). The manifest in the SaxonJ EE jar file puts those
+additional dependencies on your classpath automatically.</p>
+
+<p>If you get the EE release from our Maven repository, ICU4J is an
+<em>optional</em> dependency. So Maven won’t automatically put it on
+your classpath. That’s the discrepancy.</p>
+
+<p>Saxon EE will function without ICU4J, so it is technically
+optional. I’m unsure which would be better: making it optional in both
+places or non-optional in both places. Having it different certainly
+seems like the worst choice and we should fix it.</p>
+
+<p>In the short term, if you’re using Saxon EE and you want the
+collations supported by ICU4J, make sure you’re also arranging for
+ICU4J to be on your classpath.</p>
+
+<p>We discovered this in the course of examining issue
+<a href="https://saxonica.plan.io/issues/6183">#6183</a>. For slightly
+complicated reasons involving our type hierarchy, if ICU4J is missing,
+you can get an error message that suggests you’re running Saxon HE
+even when you’re running EE. We’ll fix that too.
+</p>
+
+</div></content></entry><entry><title>XML doclet</title><link href="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html</id><published>2023-08-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>Historically, we’ve used a customized version of
