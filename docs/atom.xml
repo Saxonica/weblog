@@ -1,4 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-08-31T12:21:57.299418Z</updated><entry><title>New infrastructure…</title><link href="https://blog.saxonica.com/norm/2023/08/31-infrastructure.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/31-infrastructure.html</id><published>2023-08-31T13:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/31-infrastructure.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-09-14T14:03:28.061319Z</updated><entry><title>XML Resolver 6.x SNAPSHOT</title><link href="https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html</id><published>2023-09-14T14:55:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>Under the hood, Saxon uses a “resolver” whenever it
+attempts to load a document (a source document, stylesheet module,
+unparsed text document, etc.). For the past few releases, the Java,
+C#, and C products have been using resolvers based on the
+<a href="https://xmlresolver.org/">XML Resolver APIs</a>.</p>
+
+<p>I’ve been working on some improvements to those APIs. It’s likely
+that the next releases of Saxon will be ship with XML Resolver
+6.x.</p>
+
+<p>If you’d like to
+<a href="https://xmlresolver.org/6x-snapshot/">preview the planned changes</a>
+and provide feedback about how they work in your applications, that’d
+be grand.</p>
+
+</div></content></entry><entry><title>New infrastructure…</title><link href="https://blog.saxonica.com/norm/2023/08/31-infrastructure.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/31-infrastructure.html</id><published>2023-08-31T13:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/31-infrastructure.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>New infrastructure…</h1>
 
 <p>Just FYI, we’ve moved some things around. Some of our web
@@ -2548,33 +2566,5 @@ putting them back where (I think) they were:</p>
 <p>If you have trouble, please let me know. “It works for me.”</p>
 
 <p>(The irony that this update won’t turn up in your feed reader is not lost on me.)</p>
-
-</div></content></entry><entry><title>Experimenting with Maven</title><link href="https://blog.saxonica.com/norm/2020/10/02-maven.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2020/10/02-maven.html</id><published>2020-10-02T12:27:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2020/10/02-maven.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>Do you have
-<a href="https://www.saxonica.com/license/license.xml">a license</a>
-for Saxon PE or EE? Do you use
-<a href="https://en.wikipedia.org/wiki/Apache_Maven">Maven</a>?
-Would a Maven repository for Saxon PE or EE
-be useful to you? (Saxon HE is already released into
-<a href="https://search.maven.org/artifact/net.sf.saxon/Saxon-HE">Maven Central</a>.)</p>
-
-<p>I’ve sometimes thought it would be useful, and I fielded a customer
-request for it, so I’ve tried to set it up. It’s a bit experimental at
-the moment because I’m not entirely certain that I understand all of
-the metadata files that are expected in a Maven repository.</p>
-
-<p>I’ve only packaged up the Java release of Saxon 10.2 for the
-moment, but if I can get it usefully configured, I’m happy to try to
-make it part of the normal release process. We’re thinking of putting
-some of the older releases up as well to simplify regression
-testing.</p>
-
-<p>The experimental Maven repository is at
-<a href="https://dev.saxonica.com/maven/">https://dev.saxonica.com/maven/</a>.</p>
-
-<p>If you can try it out and let me know if you have trouble (or if you don’t!),
-I’d appreciate it.</p>
 
 </div></content></entry></feed>
