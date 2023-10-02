@@ -1,4 +1,34 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-10-02T09:11:14.37824Z</updated><entry><title>All Change at Saxonica</title><link href="https://blog.saxonica.com/mike/2023/10/eot.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/10/eot.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/10/eot.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-10-02T09:11:31.549728Z</updated><entry><title>Looking forward</title><link href="https://blog.saxonica.com/norm/2023/10/02-saxonica.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/02-saxonica.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/02-saxonica.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>As <a href="/mike/2023/10/eot.html">Mike says</a>, today is a big
+day. It is an honour to be able to announce that I am taking on a new
+role as CEO of Saxonica.</p>
+
+<p>Let me start by offering huge congratulations and thanks to Mike and
+Penny Kay, whose talent, commitment, and hard work have made Saxonica
+into the successful company it is today.</p>
+
+<p>I’m happy (and somewhat relieved!) to say that the Saxonica team
+will continue to benefit from Mike’s experience for the foreseeable
+future, as he moves to a new role as Director of Innovation. Working
+part-time, Mike will continue to support customers and colleagues
+alike, as well as ensuring that his in-depth knowledge of our code
+base continues to be passed on to the rest of the Saxonica engineering
+team, myself included!</p>
+
+<p>Before I had the opportunity to join the company in 2020, I was
+already an enthusiastic part of Saxonica’s user base. I know how
+important our products are to our users; I <em>am</em> one of our users!</p>
+
+<p>Working with this team of talented people to develop software that
+makes a real contribution to the XML community has been a privilege.
+Becoming Saxonica’s CEO is an even greater one. I am committed to
+seeing Saxonica grow and prosper into the next decades, continuing the
+reputation for excellence, innovation, and community-mindedness that
+Mike has worked so hard to establish.</p>
+
+</div></content></entry><entry><title>All Change at Saxonica</title><link href="https://blog.saxonica.com/mike/2023/10/eot.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/10/eot.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/10/eot.html"><div xmlns="http://www.w3.org/1999/xhtml">
         
         
         
@@ -2541,68 +2571,5 @@ on Maven Central), PE, and EE to our Maven repository.</p>
 
 <p>If you can try it out and let me know if you have trouble (or if you don’t!),
 I’d appreciate it.</p>
-
-</div></content></entry><entry><title>helloWorld.Saxon-JS</title><link href="https://blog.saxonica.com/norm/2020/10/27-helloWorld.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2020/10/27-helloWorld.html</id><published>2020-10-27T12:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2020/10/27-helloWorld.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>What happened was, last Friday I decided to make my first foray
-into using <a href="https://www.saxonica.com/saxon-js/">Saxon-JS</a>.
-I have in mind a personal project that would use it for rendering and
-I wanted to get my feet wet.</p>
-
-<p>I was able to follow <a href="https://www.saxonica.com/saxon-js/documentation/">the
-documentation</a> and pretty quickly I had it up and running. But
-along the way, I stumbled a couple of times. I didn’t read the documentation
-carefully enough in one case and in another, I introduced a typo into a URI.</p>
-
-<p>What I would have liked was a simple project that pulled all the
-pieces together, one where I could build it and see it working, and
-then begin to hack on it.</p>
-
-<p>Since I didn’t find one of those, I built one:
-<a href="https://github.com/Saxonica/helloWorldJS">https://github.com/Saxonica/helloWorldJS</a>.
-</p>
-
-<p>On the plus side, this project demonstrates both replacing and
-appending to web page content with an XSLT transformation, responding
-to user events, and calling external JavaScript libraries.</p>
-
-<p>On possibly the less plus side, I’ve used Gradle to pull all the
-pieces together. You might argue that obfuscates things a little bit,
-if you aren’t familiar with Gradle, but I wanted to put things in the
-context of an actual project build and that’s what I use for builds
-these days. PRs for branches that demonstrate Make or Ant or your
-build tool of choice are welcome. That’s not meant to be the
-interesting part.</p>
-
-<p>There are three branches.</p>
-
-<dl>
-<dt><code>main</code></dt>
-<dd>This branch is the simplest. The HTML page fires off a Saxon JS stylesheet
-that transforms an XML document and updates the page with the result.
-</dd>
-<dt><code>use-script</code></dt>
-<dd>This branch does basically the same thing, but instead of loading the XML
-document by making another request to the server, the document is embedded in the
-initial HTML document in a <code>script</code> element. It was an experiment I wanted
-to try. It avoids a round trip to the server to get the XML document at the cost
-of having to extract and parse the document from the HTML.
-</dd>
-<dt><code>render-commonmark</code></dt>
-<dd>The personal project I’m thinking of converting to use Saxon-JS
-stores some content in <a href="https://commonmark.org/">CommonMark</a>.
-I thought it would be interesting to see if I could call an external JavaScript library
-to convert that into HTML and then transform it. Yes, I can.
-The JavaScript in <code>src/main/js/start.js</code> is a bit cleaner in this
-branch, too.
-</dd>
-</dl>
-
-<p>All three branches include a button that responds (by running an XSLT template
-in the stylesheet) when you click it.</p>
-
-<p>I’ve <a href="https://saxonica.github.io/helloWorldJS/">published</a>
-the simplest version online, if you just want to see it in all it’s dull glory.</p>
 
 </div></content></entry></feed>

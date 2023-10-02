@@ -1,4 +1,34 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-10-02T09:11:14.253863Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>XML Resolver 6.x SNAPSHOT</title><link href="https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html</id><published>2023-09-14T14:55:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-10-02T09:11:31.376726Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Looking forward</title><link href="https://blog.saxonica.com/norm/2023/10/02-saxonica.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/02-saxonica.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/02-saxonica.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>As <a href="/mike/2023/10/eot.html">Mike says</a>, today is a big
+day. It is an honour to be able to announce that I am taking on a new
+role as CEO of Saxonica.</p>
+
+<p>Let me start by offering huge congratulations and thanks to Mike and
+Penny Kay, whose talent, commitment, and hard work have made Saxonica
+into the successful company it is today.</p>
+
+<p>I’m happy (and somewhat relieved!) to say that the Saxonica team
+will continue to benefit from Mike’s experience for the foreseeable
+future, as he moves to a new role as Director of Innovation. Working
+part-time, Mike will continue to support customers and colleagues
+alike, as well as ensuring that his in-depth knowledge of our code
+base continues to be passed on to the rest of the Saxonica engineering
+team, myself included!</p>
+
+<p>Before I had the opportunity to join the company in 2020, I was
+already an enthusiastic part of Saxonica’s user base. I know how
+important our products are to our users; I <em>am</em> one of our users!</p>
+
+<p>Working with this team of talented people to develop software that
+makes a real contribution to the XML community has been a privilege.
+Becoming Saxonica’s CEO is an even greater one. I am committed to
+seeing Saxonica grow and prosper into the next decades, continuing the
+reputation for excellence, innovation, and community-mindedness that
+Mike has worked so hard to establish.</p>
+
+</div></content></entry><entry><title>XML Resolver 6.x SNAPSHOT</title><link href="https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html</id><published>2023-09-14T14:55:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>Under the hood, Saxon uses a “resolver” whenever it
