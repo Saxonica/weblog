@@ -1,4 +1,65 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2023-09-14T14:03:27.728482Z</updated><author><name>Michael Kay</name></author><entry><title>How Safe is your Schema?</title><link href="https://blog.saxonica.com/mike/2023/07/schema-safety.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/07/schema-safety.html</id><published>2023-07-22T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/07/schema-safety.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2023-10-02T09:11:14.120125Z</updated><author><name>Michael Kay</name></author><entry><title>All Change at Saxonica</title><link href="https://blog.saxonica.com/mike/2023/10/eot.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/10/eot.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/10/eot.html"><div xmlns="http://www.w3.org/1999/xhtml">
+        
+        
+        
+        <p>Today we are announcing a big change at Saxonica, but it's one 
+            that we hope no-one will notice.</p>
+        
+        <p>Some of you may have noticed that I will be 72 in a couple of weeks, 
+        and you may have been wondering how long I intended to continue. 
+        Well, I'm still enjoying the challenge, and I'm not giving up just yet, 
+        but I have been thinking for some time about how to move the company 
+        into a position where it can thrive without me. I decided a while ago 
+        that the best approach — in the interests of the staff and the user community — 
+        was to move the ownership of the company into an Employee Ownership Trust, 
+        and this has now been effected.</p>
+        
+        <p>What this means is that Saxonica is now owned by a Trust, which 
+        has acquired a 100% shareholding from my wife Penny and myself. 
+        The Trustees are Norm Tovey-Walsh, Sue Schreiber, and myself, and their 
+        task is to appoint directors and approve any big decisions (such as 
+        acquisitions). When making such decisions the Trust is obliged to 
+        take into consideration the best interests of the staff and the user 
+        community, including both paying customers and open-source users.</p>
+        
+        <p>Indeed, there's a specific clause in the trust deed noting that the company's
+        software is used to deliver open data for the wider benefit of society at large,
+        and the Trustees are required to take this into account.</p>
+        
+        <p>The most obvious change will be that Norm Tovey-Walsh is taking over as Chief Executive; 
+        I will remain on the board (with the title "Director of Innovation"), 
+        but Norm is now the boss. I can't think of anyone in the world who 
+        is better qualified to steer the ship.</p>
+        
+        <p>Back at the start of 2020, before the pandemic, I was rather conscious that
+        with several people approaching retirement age,
+        the company was not in a good state to carry on without me; as a result any 
+        acquisition could well have led to serious discontinuity for the user community, 
+        and indeed for the future of the XML ecosystem of which we have become such 
+        a central part. Since then, with Norm joining in a senior technical role, 
+        with Ankita Mohinta taking over the marketing and commercial side so effectively, 
+        and more recently with Matt Patterson joining O'Neil Delpratt and Debbie Lockett 
+        on the development side, we now have a team that has an unmatched depth of talent. 
+        This is reflected in excellent financial results over the last couple of years. 
+        But it's also true that I know the innards of the software better than anyone, 
+        and I don't intend to walk away from my focus on providing technical support 
+        to customers, which is probably the part of the job that I enjoy the most.</p>
+        
+        <p>Penny is taking this opportunity to retire from her role as a director 
+        and employee of the company, and this is a good opportunity to thank 
+        her for her contribution. She may not have been very visible externally, 
+        but she's done a lot of invaluable admin work behind the scenes, 
+        and has been a constant source of good advice, most particularly 
+        in helping to build a happy and productive team — especially 
+        through the pandemic.</p>
+        
+        <p>I'm confident that through this adminstrative change, the company will 
+        retain the core values that have been central to our success: innovation, 
+        commitment to standards, outstanding technical support, honesty and integrity, 
+        admitting to our mistakes when we make them, and above all being active 
+        contributors to the thriving community without which we would not exist. 
+        I hope to remain part of that for many years to come.</p>
+    </div></content></entry><entry><title>How Safe is your Schema?</title><link href="https://blog.saxonica.com/mike/2023/07/schema-safety.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/07/schema-safety.html</id><published>2023-07-22T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/07/schema-safety.html"><div xmlns="http://www.w3.org/1999/xhtml">
         
         
         <p>When you validate a document, you expect to set the rules for what it can contain.
@@ -4831,98 +4892,4 @@ return new SequenceExtent(reservoir);</pre>
                </p>
             </li>
       </ul>
-   </div></content></entry><entry><title>A redesign of the NamePool</title><link href="https://blog.saxonica.com/mike/2015/06/a-redesign-of-the-namepool.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2015/06/a-redesign-of-the-namepool.html</id><published>2015-06-24T14:39:33Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2015/06/a-redesign-of-the-namepool.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>As explained in my previous post, the NamePool in Saxon is a potential problem for
-         scaleability, both because access can cause contention, and also because it has serious
-         limits on the number of names it can hold: there's a maximum of one million QNames,
-         and performance starts getting seriously bad long before this limit is reached.
-         </p>
-      <p>
-         Essentially, the old NamePool is a home-grown hash table. It uses a fixed number of
-         buckets (1024), and when hash collisions occur, the chains of hash duplicates are
-         searched serially. The fact that the number of buckets is fixed, and entries are only
-         added to the end of a chain, is what makes it (reasonably) safe for read access to
-         the pool to occur without locking.
-         </p>
-      <p>
-         One thing I have been doing over a period of time is to reduce the amount of unnecessary
-         use of the NamePool. Most recently I've changed the implementation of the schema component
-         model so that references from one schema component to another are no longer implemented
-         using NamePool fingerprints. But this is peripheral: the core usage of the NamePool
-         for comparing names in a query against names in a source document will always remain
-         the dominant usage, and we need to make this scaleable as parallelism increases.
-         </p>
-      <p>
-         Today I've been exploring an alternative design for the NamePool (and some variations
-         on the implementation of the design). The new design has at its core two Java ConcurrentHashMaps,
-         one from QNames to fingerprints, and one from fingerprints to QNames. The ConcurrentHashMap,
-         which was introduced in Java 5, doesn't just offer safe multi-threaded access, it
-         also offers very low contention: it uses fine-grained locking to ensure that multiple
-         writers, and any number of readers, can access the data structure simulaneously.
-         </p>
-      <p>
-         Using two maps, one of which is the inverse of the other, at first seemed a problem.
-         How can we ensure that the two maps are consistent with each other, without updating
-         both under an exclusive lock, which would negate all the benefits? The answer is that
-         we can't completely, but we can get close enough.
-         </p>
-      <p>
-         The logic is like this:
-         </p>
-      <pre><strong>private final </strong>ConcurrentHashMap&lt;StructuredQName, Integer&gt; <strong>qNameToInteger </strong>= <strong>new </strong>ConcurrentHashMap&lt;StructuredQName, Integer&gt;(1000);
-<strong>private final </strong>ConcurrentHashMap&lt;Integer, StructuredQName&gt; <strong>integerToQName </strong>= <strong>new </strong>ConcurrentHashMap&lt;Integer, StructuredQName&gt;(1000);
-<strong>private </strong>AtomicInteger <strong>unique </strong>= <strong>new </strong>AtomicInteger();
-
-// Allocate fingerprint to QName
-
-Integer existing = <strong>qNameToInteger</strong>.get(qName);
-<strong>if</strong> (existing != <strong>null</strong>) {
-    <strong>return</strong> existing;
-}
-Integer next = <strong>unique</strong>.getAndIncrement();
-existing = <strong>qNameToInteger</strong>.putIfAbsent(qName, next);
-<strong>if </strong>(existing == <strong>null</strong>) {
-    <strong>integerToQName</strong>.put(next, qName);
-    <strong>return</strong> next;
-} <strong>else</strong> {
-    <strong>return</strong> existing;
-}</pre>
-      <p>Now, there are several things slightly unsafe about this. We might find that the QName
-         doesn't exist in the map on our first look, but by the time we get to the "putIfAbsent"
-         call, someone else has added it. The worst that happens here is that we've used up
-         an integer from the "unique" sequence unnecessarily. Also, someone else doing concurrent
-         read access might see the NamePool in a state where one map has been updated and the
-         other hasn't. But I believe this doesn't matter: clients aren't going to look for
-         a fingerprint in the map unless they have good reason to believe that fingerprint
-         exists, and it's highly implausible that this knowledge comes from a different thread
-         that has only just added the fingerprint to the map.
-         </p>
-      <p>There's another ConcurrentHashMap involved as well, which is a map from URIs to lists
-         of prefixes used in conjunction with that URI. I won't go into that detail.</p>
-      <p>The external interface to the NamePool doesn't change at all by this redesign. We
-         still use 20-bit fingerprints plus 10-bit prefix codes, so we still have the limit
-         of a million distinct names. But performance no longer degrades when we get close
-         to that limit; and the limit is no longer quite so hard-coded.</p>
-      <p>My first attempt at measuring the performance of this found the expected benefits
-         in scalability as the concurrency increases and as the size of the vocabulary increases,
-         but the performance under more normal conditions was worse than the existing design:
-         execution time of 5s versus 3s for executing 100,000 cycles each of which performed
-         an addition (from a pool of 10,000 distinct names so 90% of the additions were already
-         present) followed by 20 retrievals.</p>
-      <p>I suspected that the performance degradation was caused by the need to update two
-         maps, whereas the existing design only uses one (it's cleverly done so that the fingerprint
-         generated for a QName is closely related to its hash key, which enables us to use
-         the fingerprint to navigate back into the hash table to reconstruct the original QName).</p>
-      <p>But it turned out that the cause was somewhere else. The old NamePool design was hashing
-         QNames by considering only the local part of the name and ignoring the namespace URI,
-         whereas the new design was computing a hash based on both the local name and the URI.
-         Because URIs are often rather long, computing the hash code is expensive, and in this
-         case it adds very little value: it's unusual for the same local name to be associated
-         with more than one URI, and when it happens, the hash table is perfectly able to cope
-         with the collision. By changing the hashing on QName objects to consider only the
-         local name, the costs for the new design came down slightly below the current implementation
-         (about 10% better, not enough to be noticeable).</p>
-      <p>So I feel comfortable putting this into production. There are a dozen test cases failing
-         (out of 20,000) which I need to sort out first, but it all looks very promising.</p>
    </div></content></entry></feed>
