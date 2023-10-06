@@ -1,4 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-10-02T09:11:31.549728Z</updated><entry><title>Looking forward</title><link href="https://blog.saxonica.com/norm/2023/10/02-saxonica.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/02-saxonica.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/02-saxonica.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-10-06T12:07:25.285752Z</updated><entry><title>SaxonJS 2.5 ** NO LONGER SUPPORTED **</title><link href="https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html</id><published>2023-10-06T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p><a href="https://en.wikipedia.org/wiki/TL;DR">TL;DR</a>, you can
+ignore the message.</p>
+
+<p>Several folks have noticed that, since about yesterday, if you run
+the SaxonJS 2.5 <code>xslt3</code> Node.js command line processor, it
+prints a scary “no longer supported” message.</p>
+
+<p>Sorry. Our bad. The message is only informative and has no effect
+on the performance of the processor.</p>
+
+<p>We support SaxonJS releases for at least a year and a while back
+(far enough back that I can’t easily determine when from the
+repository history), we confidently assumed that we’d always do a
+release at least once a year. So when you got that message, it was to
+encourage you to upgrade.</p>
+
+<p>Except this year, we published a whole bunch of other releases,
+embarked on SaxonJS 3.0, shifted our web infrastructure around, and
+did a bunch of other things. What we didn’t do was publish SaxonJS 3.0
+within a year, and because we were heads-down on that, we didn’t
+notice that we hadn’t published a SaxonJS 2.6 release within a year
+either.</p>
+
+<p>(It’s all a little embarrassing.)</p>
+
+<p>We’ve fixed a handful of bugs in SaxonJS 2.5 since we shipped it,
+and we’ve identified a slightly larger handful that we’d like to
+consider fixing before we ship a SaxonJS 2.6 release. But we will ship
+it, as quickly as practical.</p>
+
+</div></content></entry><entry><title>Looking forward</title><link href="https://blog.saxonica.com/norm/2023/10/02-saxonica.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/02-saxonica.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/02-saxonica.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>As <a href="/mike/2023/10/eot.html">Mike says</a>, today is a big
@@ -2545,31 +2578,4 @@ think the TL;DR is pretty straightforward.</p>
 &lt;xsl:add-entry match="tuple(x, y, *)" key="'area'" value="?x * ?y"/&gt;
 </code></pre>
     <p>I think this could fly: but there's a lot of detail to be worked out. Shame we don't have a WG any more to bounce ideas off (and get the bugs out).</p>
-  </div></content></entry><entry><title>More Maven experiments</title><link href="https://blog.saxonica.com/norm/2020/10/29-maven.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2020/10/29-maven.html</id><published>2020-10-29T12:12:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2020/10/29-maven.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>I haven’t actually looked at the server logs to see if anyone else
-tried using our experimental Maven repository after
-<a href="02-maven.html">I posted</a> about it earlier this month. But
-I have, and it’s worked for me!
-</p>
-
-<p>I think we’d have to agree that it’s still experimental. After I
-put up a raw set of files in a directory structure, a couple of folks
-said I should be running a server to do this. I might do that, but I
-haven’t had time to try it out yet.</p>
-
-<p>Behind the scenes, I’m also working on build automation.
-Ultimately, I want these artifacts to be published automatically.</p>
-
-<p>In the meantime, I’ve added the 9.9.1-8 and 10.3 releases of HE (also
-<a href="https://search.maven.org/artifact/net.sf.saxon/Saxon-HE">available</a>
-on Maven Central), PE, and EE to our Maven repository.</p>
-
-<p>The experimental Maven repository is at
-<a href="https://dev.saxonica.com/maven/">https://dev.saxonica.com/maven/</a>.</p>
-
-<p>If you can try it out and let me know if you have trouble (or if you don’t!),
-I’d appreciate it.</p>
-
-</div></content></entry></feed>
+  </div></content></entry></feed>
