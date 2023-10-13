@@ -1,4 +1,42 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-10-06T12:07:25.285752Z</updated><entry><title>SaxonJS 2.5 ** NO LONGER SUPPORTED **</title><link href="https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html</id><published>2023-10-06T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-10-13T15:09:28.153084Z</updated><entry><title>Announcing SaxonJS 2.6!</title><link href="https://blog.saxonica.com/announcements/2023/10/saxonjs-2.6.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/10/saxonjs-2.6.html</id><published>2023-10-13T15:45:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/10/saxonjs-2.6.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing SaxonJS 2.6!</h1>
+
+<p>The SaxonJS 2.6 maintenance release has been published. This is a
+maintenance release for NodeJS and the browser. It fixes more than a
+dozen bugs (including <a href="/norm/2023/10/06-no-longer-supported.html">that one</a>
+about the spurious warning message). Highlights include:</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5597">#5597</a>: ixsl:schedule-action fails without xsl:call-template</li>
+<li><a href="https://saxonica.plan.io/issues/5714">#5714</a>: Update documentation to mention the backtick escaping mechanism</li>
+<li><a href="https://saxonica.plan.io/issues/5739">#5739</a>: Space in string in text template not output as element content</li>
+<li><a href="https://saxonica.plan.io/issues/5761">#5761</a>: fn:transform called from XPath with simplified stylesheet gives an error</li>
+<li><a href="https://saxonica.plan.io/issues/5855">#5855</a>: map:merge with duplicates=combine gives wrong answer</li>
+<li><a href="https://saxonica.plan.io/issues/5925">#5925</a>: Dynamic function lookup runs very slowly</li>
+<li><a href="https://saxonica.plan.io/issues/5974">#5974</a>: SaxonJS documentation does not address namespaces</li>
+<li><a href="https://saxonica.plan.io/issues/6037">#6037</a>: ixsl:schedule-action return objects</li>
+<li><a href="https://saxonica.plan.io/issues/6107">#6107</a>: Can't use namespaced attributes on the root element of the body of a SaxonJS http-request</li>
+<li><a href="https://saxonica.plan.io/issues/6134">#6134</a>: Partial function application call to function in ixsl namespace fails</li>
+<li><a href="https://saxonica.plan.io/issues/6216">#6216</a>: base-uri() value empty for documents async-loaded with ixsl:schedule-action/@http-request</li>
+<li><a href="https://saxonica.plan.io/issues/6219">#6219</a>: base-uri(ixsl:page()) returns empty value</li>
+</ul>
+
+<p>For a complete list of the issues resolved in this release, please visit the
+<a href="https://saxonica.plan.io/projects/saxon-js/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_10&amp;op%5Bcf_10%5D=%3D&amp;v%5Bcf_10%5D%5B%5D=94&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">issue tracker</a>
+on the Saxonica support site.</p>
+
+<p>SaxonJS 2.6 was released on 13 October 2023. This release has been
+uploaded to the usual locations on the Saxonica website and the NPM
+repository.
+For more details, please consult
+<a href="https://www.saxonica.com/saxon-js/documentation2/index.html">the documentation</a>.
+</p>
+
+<p>If you encounter any issues with SaxonJS 2.6, please
+<a href="https://saxonica.plan.io/projects/saxon-js/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>SaxonJS 2.5 ** NO LONGER SUPPORTED **</title><link href="https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html</id><published>2023-10-06T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p><a href="https://en.wikipedia.org/wiki/TL;DR">TL;DR</a>, you can
@@ -2501,81 +2539,4 @@ think the TL;DR is pretty straightforward.</p>
     </p>
     <p><i>Good point.</i></p>
     
-  </div></content></entry><entry><title>XSLT Update – Some Ideas</title><link href="https://blog.saxonica.com/mike/2020/10/29-xslt_update_some_ideas.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2020/10/29-xslt_update_some_ideas.html</id><published>2020-10-29T16:19:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2020/10/29-xslt_update_some_ideas.html"><div xmlns="http://www.w3.org/1999/xhtml">
-    <h1>XSLT Update – Some Ideas</h1>
-    <p>I can't help feeling that many simple transformations on XML documents could be expressed more simply (an idea I explored with the interactive Gizmo tool available in Saxon 10).</p>
-    <p>I also think that if we had simpler syntax for simple operations, it might become easier to optimise. In particular, I'd like to be able to do simple operations like adding an attribute to the outermost element of a tree without doing a physical copy of the entire tree.
-      (I wrote about that in an <a href="https://www.saxonica.com/papers/xmlprague-2018mhk.pdf">XML Prague paper</a>, but I had to abandon the idea because the code became too complicated. As often happens, the bugbear was namespaces. For example, if you add a namespaced attribute to the outermost element, then the new namespace declaration has to propagate all the way down the tree.)</p>
-    <p>I'd also like to see transformations on JSON structures (maps and arrays) become much easier.</p>
-    <p>I've prototyped these ideas in the <a href="https://www.saxonica.com/documentation/index.html#!extensions/instructions/deep-update">saxon:deep-update</a>
-      and <a href="https://www.saxonica.com/documentation/index.html#!extensions/instructions/update">saxon:update</a> extensions,
-      but I don't think these are the last word on the subject. (Please try them and give feedback.)</p>
-    <p>A simpler update syntax might also be very useful for updating the HTML page in Saxon-JS.</p>
-    <p>I think we can pick up ideas from XQuery Update, but without the complications of pending update lists and in-situ modification.</p>
-    <p>Let's start with:</p>
-    <pre><code>&lt;xsl:update&gt;
-   &lt;xsl:delete match="note"/&gt;
-&lt;/xsl:update&gt;
-</code></pre>
-    <p>The idea is that <code>xsl:update</code> is an instruction that returns a deep copy of the context item (or other selected item if there's a select attribute), applying changes defined by the contained rules. In this case there is one rule, to delete elements that match the pattern note.</p>
-    <p>So it's rather like the <code>copy-modify</code> instruction in XQuery; it makes a copy of a supplied tree, with
-    defined changes.</p>
-    <p>Other rules that might appear within <code>&lt;xsl:update&gt;</code> (for updating XML) might include:</p>
-    <pre><code>&lt;xsl:rename match="note" name="comment"/&gt;
-&lt;xsl:rename match="a:*" name="{local-name()}"/&gt;
-&lt;xsl:replace-value match="@status" value="accepted"/&gt;
-&lt;xsl:add-attribute match="proposal(not(@status))" name="status" value="accepted"/&gt;
-&lt;xsl:replace-content match="cite[@ref]" select="//bib[@id=current()/@ref]"/&gt;
-&lt;xsl:insert match="section(not(head))" position="first"&gt;
-   &lt;head&gt;{@title}&lt;/head&gt;
-&lt;/xsl:insert&gt;   
-</code></pre>
-    <p>Hopefully the intent is reasonably intuitive. The idea is to base the primitives on those available in XQuery Update.
-    However, I'm not proposing to allow flow-of-control structures such as conditionals and function calls: each invocation
-    of <code>xsl:update</code> will simply process the selected tree recursively, applying matching rules to nodes as they
-    are found, based on pattern matching.</p>
-    <h2>Defining the semantics</h2>
-    <p>We can define the semantics of <code>&lt;xsl:update&gt;</code> as being equivalent to <code>&lt;xsl:apply-templates&gt;</code> using a mode that contains a number of implicit template rules, with a default action of <code>shallow-copy</code> (but extended to handle maps and arrays, see below).</p>
-    <p>For example, the implicit template rule for the <code>&lt;xsl:rename&gt;</code> rule might be (roughly):</p>
-    <pre><code>&lt;xsl:template match="note"&gt;
-  &lt;xsl:element name="comment"&gt;
-    &lt;xsl:apply-templates select="@*, node()"/&gt;
-  &lt;/xsl:element&gt;
-&lt;/xsl:template&gt;
-</code></pre>
-    <p>Now, what if there's a rule to rename an element and another rule to add an attribute to the same element?</p>
-    <p>The way XQuery Update handles that is to process the rules in a number of phases: for example <code>rename</code> operations are handled in phase 1, <code>delete</code> operations in phase 5.</p>
-    <p>It's a bit hard to replicate that behaviour using template rules (in fact, this is something users often ask for). We could run a multiphase transformation using multiple modes, but it's not quite the same thing, because the match patterns would apply to the output of the previous phase, not to the original node in the input. And <code>xsl:next-match</code> doesn't do the job either, because we want the effect of the rules to be cumulative.</p>
-    <p>We could try another approach, which is to have the template rules return functions, so the <code>&lt;xsl:rename&gt;</code> rule becomes:</p>
-    <pre><code>&lt;xsl:template match="note" priority="1"&gt;
-  &lt;xsl:sequence select="function($x) {upd:rename($x, 'comment')}"/&gt;
-  &lt;xsl:next-match/&gt;  
-&lt;/xsl:template&gt;
-</code></pre>
-    <p>so the effect of <code>apply-templates</code> is to return a sequence of functions (in the order determined by the <code>priority</code> attributes) which are then applied to the node in turn.</p>
-    <p>This still doesn't exactly mirror what XQuery Update does, because after processing a node, it's then going to apply the rules to the new content of the node, not to the old content. But perhaps that actually makes more sense?</p>
-    <h2>Implementation</h2>
-    <p>Part of the aim is not just to have simpler syntax for the user, but also to make the implementation more efficient than the standard transformation approach which always involves physical copying of a tree, no matter how small the changes.</p>
-    <p>What I want to achieve is to have a data structure, rather like the HashTrie that we use for representing XDM maps, in which changing one entry doesn't involve copying the whole tree, but at the same time leaves the original value intact. The first essential for such a structure is that it doesn't contain parent pointers: instead upwards navigation is achieved by remembering, when we get to a node, how we got there: this means the same node can be reached by multiple routes, allowing subtrees to be shared between different trees.</p>
-    <p>Suppose we are changing the value of a single attribute. It ought to be possible to achieve this by the following steps:</p>
-    <ul>
-      <li>Find the element we are modifying, remembering the ancestor path of that element.</li>
-      <li>Create a "virtual copy" of this element (we already have this capability in Saxon)</li>
-      <li>Modify the virtual copy to add the attribute. Only one element is affected; the descendant tree of the virtual copy is shared with the original tree.</li>
-      <li>Work back through the ancestors; for each one, create a copy in which the affected child is replaced with the modified child, and all other children are virtual copies of the original.</li>
-      <li>Return the copied root node.</li>
-    </ul>
-    <p>I'm hoping that it will be a lot easier to achieve this with the new syntax than it is with the current processing model, where we have to deal with all kinds of messiness like namespace inheritance. For example, we can define the new syntax so that it's equivalent to <code>inherit-namespaces="no"</code>.</p>
-    <h2>What about JSON?</h2>
-    <p>I would like this mechanism to work just as well with JSON trees (that is, structures of maps and arrays) as with XML trees.</p>
-    <p>We're starting with some advantages: these structures don't have so much baggage. There's no node identity to worry about, no parent navigation, no namespaces. Also, the implementation data structures that we use for maps and arrays already allow efficient constant-time update.</p>
-    <p>I've experimented with mechanisms for deep update of a JSON structure with extension functions such as <code>[saxon:pedigree()](https://www.saxonica.com/documentation/index.html#!functions/saxon/with-pedigree)</code>. and <code>saxon:with-pedigree()</code>. That's not exactly usable. But it might be the right primitive to implement something more usable.</p>
-    <p>I've also proposed better pattern syntax for maps and arrays. For example, <code>match="tuple(first, last, *)"</code> matches any map that has entries with keys "first" and "last".</p>
-    <p>One problem with using the XSLT recursive-descent approach for maps and arrays is that map entries (and indeed array members) aren't actually items. You can match a map as a whole, but it's hard to match one of its entries on its own. Again, I've experimented with various approaches to this. I think the introduction of tuples may help with this: we can define the recursive-descent operation on maps to process (match) each entry in the map in turn, where the entry is presented and matched as a tuple containing key and value. And then we allow syntax such as <code>match="tuple(key: keyPattern, value: valuePattern)"</code> to match these entries.</p>
-    <p>But perhaps we don't need to expose this. Perhaps we can define a good enough set of primitive actions that match at the level of the map itself, for example:</p>
-    <pre><code>&lt;xsl:remove-entry match="tuple(first, last, *)" key="'salary"/&gt;
-&lt;xsl:replace-entry match="tuple(product-code, *) key="'price'" value="?price * 1.05"/&gt;
-&lt;xsl:add-entry match="tuple(x, y, *)" key="'area'" value="?x * ?y"/&gt;
-</code></pre>
-    <p>I think this could fly: but there's a lot of detail to be worked out. Shame we don't have a WG any more to bounce ideas off (and get the bugs out).</p>
   </div></content></entry></feed>
