@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Announcing Saxon 12.4</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2023-11-29T18:30:00" />
+</head>
+<body>
+<h1>Announcing Saxon 12.4!</h1>
+
+<p>The Saxon 12.4 maintenance release has been published. This is a
+maintenance release for Java, C#, C/C++, PHP, and Python that fixes a
+number of issues reported since the Saxon 12.3 release.</p>
+
+<p>Saxon 12.4 was released on 29 November 2023.
+This release has been
+uploaded to the usual locations on the Saxonica website, GitHub, and
+Maven, PyPi, and NuGet. SaxonCS 12.4 is built with .NET 6. This
+release includes SaxonC and Python releases for the ARM 64
+architecture as well as X86-64 architecture.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=95&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D="
+>SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.4&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.4">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Partial list of issues resolved</h2>
+
+<p>This section is a subset of the complete list of resolved issues.
+It’s curated to bring attention to the bugs that seem most likely to
+impact customers. 
+</p>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<p>For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=95&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D="
+>the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5792">5792</a>
+    ICU spellout numbering</li>
+<li><a href="https://saxonica.plan.io/issues/5896">5896</a>
+    Intermittent failure in multi-threading with XSLT</li>
+<li><a href="https://saxonica.plan.io/issues/5914">5914</a>
+    Performance regression in SaxonJ 12, searching for context properties</li>
+<li><a href="https://saxonica.plan.io/issues/5949">5949</a>
+    A resource loaded via the resolver vs one loaded "directly" is a different source with different options</li>
+<li><a href="https://saxonica.plan.io/issues/6049">6049</a>
+    Does XQueryEvaluator for SaxonCS lack the API to set an ErrorReporter?</li>
+<li><a href="https://saxonica.plan.io/issues/6082">6082</a>
+    Saxon 12 XQuery: Issue with compile-time error checking</li>
+<li><a href="https://saxonica.plan.io/issues/6090">6090</a>
+    Performance regression SaxonCS 12</li>
+<li><a href="https://saxonica.plan.io/issues/6094">6094</a>
+    saxon:eval and saxon:expression no longer available with Saxon 12</li>
+<li><a href="https://saxonica.plan.io/issues/6116">6116</a>
+    UncheckedXPathException and missing error codes in output with Saxon-HE 12J</li>
+<li><a href="https://saxonica.plan.io/issues/6117">6117</a>
+    Transformation using memo functions fails if the source is an XdmDocument.asSource()</li>
+<li><a href="https://saxonica.plan.io/issues/6128">6128</a>
+    Unwanted diagnostic output when validating notations</li>
+<li><a href="https://saxonica.plan.io/issues/6130">6130</a>
+    No error is reported for <code>schema-element(*:foo)</code></li>
+<li><a href="https://saxonica.plan.io/issues/6131">6131</a>
+    Unexpected function call triggers cardinality check and error</li>
+<li><a href="https://saxonica.plan.io/issues/6146">6146</a>
+    Relative URI resolution in XQuery vs XSLT</li>
+<li><a href="https://saxonica.plan.io/issues/6147">6147</a>
+    Incorrect fingerprint for XML_SPACE_TYPE</li>
+<li><a href="https://saxonica.plan.io/issues/6148">6148</a>
+    xsi:type and xsi:schemaLocation on same element</li>
+<li><a href="https://saxonica.plan.io/issues/6149">6149</a>
+    $connection?close() throws NullPointerException</li>
+<li><a href="https://saxonica.plan.io/issues/6153">6153</a>
+    XSD blockDefault effect on complex types</li>
+<li><a href="https://saxonica.plan.io/issues/6157">6157</a>
+    xsl:array instruction does not perform fallback processing</li>
+<li><a href="https://saxonica.plan.io/issues/6158">6158</a>
+    Errors in xsl:fallback not detected</li>
+<li><a href="https://saxonica.plan.io/issues/6159">6159</a>
+    sql:query() throws NullPointerException when retrieving a column with null value</li>
+<li><a href="https://saxonica.plan.io/issues/6160">6160</a>
+    Key type in a MapTest cannot be a union type</li>
+<li><a href="https://saxonica.plan.io/issues/6161">6161</a>
+    ReportingSingletonIterator.next throws NullPointerException - race condition</li>
+<li><a href="https://saxonica.plan.io/issues/6165">6165</a>
+    Spurious template rule ambiguity reported</li>
+<li><a href="https://saxonica.plan.io/issues/6166">6166</a>
+    Public fields in a Java instance object cannot be accessed from XSLT</li>
+<li><a href="https://saxonica.plan.io/issues/6167">6167</a>
+    Enclosing modes do not work with JIT enabled</li>
+<li><a href="https://saxonica.plan.io/issues/6168">6168</a>
+    mode="#all" failures with JIT enabled</li>
+<li><a href="https://saxonica.plan.io/issues/6176">6176</a>
+    Failure to test for UncheckedXPathException</li>
+<li><a href="https://saxonica.plan.io/issues/6186">6186</a>
+    IndexOutOfBounds exception during stylesheet compilation when package is overridden</li>
+<li><a href="https://saxonica.plan.io/issues/6196">6196</a>
+    Functions of wrong arity: arguments → parameters</li>
+<li><a href="https://saxonica.plan.io/issues/6198">6198</a>
+    SCM export fails for a schema containing namespace prefixes in an XPath expression</li>
+<li><a href="https://saxonica.plan.io/issues/6199">6199</a>
+    SCM export/import sometimes fails for an <code>xs:alternative</code></li>
+<li><a href="https://saxonica.plan.io/issues/6201">6201</a>
+    configuration file: option for unparsed text URI Resolver</li>
+<li><a href="https://saxonica.plan.io/issues/6202">6202</a>
+    Invalid attribute names in configuration files are ignored</li>
+<li><a href="https://saxonica.plan.io/issues/6207">6207</a>
+    Filter expression not working properly</li>
+<li><a href="https://saxonica.plan.io/issues/6210">6210</a>
+    Format of numbers generated by fn:json-to-xml</li>
+<li><a href="https://saxonica.plan.io/issues/6211">6211</a>
+    Saxon return wrong error position in XPath expression</li>
+<li><a href="https://saxonica.plan.io/issues/6212">6212</a>
+    Serializer tries to guess doctype from content and fails at it.</li>
+<li><a href="https://saxonica.plan.io/issues/6215">6215</a>
+    SQL extension: returning the results of a join query</li>
+<li><a href="https://saxonica.plan.io/issues/6217">6217</a>
+    Sliding windows: finished windows not output if windows that started earlier are unfinished</li>
+<li><a href="https://saxonica.plan.io/issues/6221">6221</a>
+    Static error in XPath expression supplied to xsl:evaluate</li>
+<li><a href="https://saxonica.plan.io/issues/6225">6225</a>
+    Significant performance problem for case insensitive regex matching under high concurrency</li>
+<li><a href="https://saxonica.plan.io/issues/6226">6226</a>
+    Race condition initialising UnicodeBlocks class</li>
+<li><a href="https://saxonica.plan.io/issues/6230">6230</a>
+    fn:transform doesn't use the resource resolver from the XPathContext</li>
+<li><a href="https://saxonica.plan.io/issues/6231">6231</a>
+    Saxon does not recognise function annotations written using Q{uri}local syntax</li>
+<li><a href="https://saxonica.plan.io/issues/6232">6232</a>
+    Error message: "An empty sequence is not allowed as the result of a call to map"</li>
+<li><a href="https://saxonica.plan.io/issues/6236">6236</a>
+    Expected XPathException but got AssertionError 'No current component'</li>
+<li><a href="https://saxonica.plan.io/issues/6237">6237</a>
+    HTTP redirection expects an absolute URI in the location field</li>
+<li><a href="https://saxonica.plan.io/issues/6238">6238</a>
+    XPath error information is lost in XSLT</li>
+<li><a href="https://saxonica.plan.io/issues/6239">6239</a>
+    Function conversion rules: xs:anyURI to xs:string conversion</li>
+<li><a href="https://saxonica.plan.io/issues/6249">6249</a>
+    <code>xsl:evaluate/@context-item</code> expression is present, but evaluates to empty sequence</li>
+<li><a href="https://saxonica.plan.io/issues/6253">6253</a>
+    Atomized item type for an array (test CastableAs667)</li>
+<li><a href="https://saxonica.plan.io/issues/6256">6256</a>
+    function-name returns an empty sequence for node-name#0, string#0 and more?</li>
+<li><a href="https://saxonica.plan.io/issues/6257">6257</a>
+    Gizmo quits after certain errors</li>
+<li><a href="https://saxonica.plan.io/issues/6258">6258</a>
+    Repeated failures from unparsed-text() / unparsed-text-available()</li>
+<li><a href="https://saxonica.plan.io/issues/6260">6260</a>
+    Operator || and fn:concat are not exactly equivalent</li>
+<li><a href="https://saxonica.plan.io/issues/6265">6265</a>
+    NPE in net.sf.saxon.functions.Contains</li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+<p>For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.4&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D="
+>the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6241">6241</a>:
+    Python 3.12 wheels</li>
+<li><a href="https://saxonica.plan.io/issues/6195">6195</a>:
+    Sources node objects not deleted in the C++ Schema validation samples</li>
+<li><a href="https://saxonica.plan.io/issues/6174">6174</a>:
+    ICU localization is currently not supported</li>
+<li><a href="https://saxonica.plan.io/issues/6162">6162</a>:
+    SaxonC does not accept multiple catalog files</li>
+<li><a href="https://saxonica.plan.io/issues/6144">6144</a>:
+    PyXPathProcessor object has no attribute <code>thisxqptr</code></li>
+<li><a href="https://saxonica.plan.io/issues/6143">6143</a>:
+    White space in file path causing an error</li>
+<li><a href="https://saxonica.plan.io/issues/6118">6118</a>:
+    parseJson API current not supported in SaxonC</li>
+<li><a href="https://saxonica.plan.io/issues/6109">6109</a>:
+    Give SaxonC XPath API a counterpart to SaxonJ setUnprefixedElementMatchingPolicy</li>
+<li><a href="https://saxonica.plan.io/issues/6099">6099</a>:
+    Import xslt package currently not available</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.4, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</body>
+</html>
+
