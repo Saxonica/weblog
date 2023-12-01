@@ -1,11 +1,52 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-11-30T09:33:44.823543Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 12.4!</title><link href="https://blog.saxonica.com/announcements/2023/11/saxon-12.4.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/11/saxon-12.4.html</id><published>2023-11-29T18:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/11/saxon-12.4.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-12-01T15:49:32.347162Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing SaxonC 12.4.1!</title><link href="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html</id><published>2023-12-01T14:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing SaxonC 12.4.1!</h1>
+
+<p>A SaxonC 12.4.1 maintenance release has been published. This
+release fixes <a href="https://saxonica.plan.io/issues/6268">a build
+error</a> on the Windows platform and includes one additional
+patch.</p>
+
+<p>I’m an ardent believer in build automation and reproducibility
+through scripting. We’ve made a lot of progress in this area, but
+Windows is still a bit “hands on.” Problem is, it was my hands and I
+messed up.</p>
+
+<p>A while back, we considered upgrading to a newer version of
+GraalVM. In the course of testing that, I upgraded the version on the
+Windows build machine. But ultimately, we decided not to make that
+upgrade.</p>
+
+<p>Despite having an explicit note in my release checklist:</p>
+
+<ul>
+<li>☑ Check the version of GraalVM</li>
+</ul>
+
+<p>I missed it on the Windows box. A lot of good detective work went
+into trying to figure out what was going on, but in the end, just
+building with the “right” version of GraalVM fixed it. Apologies to
+the team and everyone else for that.</p>
+
+<p>The 12.4.1 release also includes a
+<a href="https://saxonica.plan.io/issues/6182">partial fix</a> for
+issues relating to UTF-8 string-based C API functions. Unfortunately,
+a more complete fix was deemed too risky for what was otherwise an
+“emergency” release. That fix will have to wait for next time.</p>
+
+<p>For a more complete list of what’s new in 12.4, please see the original
+<a href="../11/saxon-12.4.html">release announcement</a>.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 12.4!</title><link href="https://blog.saxonica.com/announcements/2023/11/saxon-12.4.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/11/saxon-12.4.html</id><published>2023-11-29T18:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/11/saxon-12.4.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.4!</h1>
 
 <p>The Saxon 12.4 maintenance release has been published. This is a
 maintenance release for Java, C#, C/C++, PHP, and Python that fixes a
-number of issues reported since the Saxon 12.3 release.</p>
+number of issues reported since the Saxon 12.3 release.
+(Note: A <em>12.4.1</em> maintenance release of SaxonC
+<a href="../12/saxonc-12.4.1.html">was published</a> on 1 December 2023.)
+</p>
 
-<p>Saxon 12.4 was released on 29 November 2023.
+<p>Saxon 12.4 was released on 29 November 2023.
 This release has been
 uploaded to the usual locations on the Saxonica website, GitHub, and
 Maven, PyPi, and NuGet. SaxonCS 12.4 is built with .NET 6. This
