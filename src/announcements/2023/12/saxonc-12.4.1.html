@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Announcing Saxon 12.4.1</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2023-12-01T14:50:00" />
+</head>
+<body>
+<h1>Announcing SaxonC 12.4.1!</h1>
+
+<p>A SaxonC 12.4.1 maintenance release has been published. This
+release fixes <a href="https://saxonica.plan.io/issues/6268">a build
+error</a> on the Windows platform and includes one additional
+patch.</p>
+
+<p>I’m an ardent believer in build automation and reproducibility
+through scripting. We’ve made a lot of progress in this area, but
+Windows is still a bit “hands on.” Problem is, it was my hands and I
+messed up.</p>
+
+<p>A while back, we considered upgrading to a newer version of
+GraalVM. In the course of testing that, I upgraded the version on the
+Windows build machine. But ultimately, we decided not to make that
+upgrade.</p>
+
+<p>Despite having an explicit note in my release checklist:</p>
+
+<ul>
+<li>☑ Check the version of GraalVM</li>
+</ul>
+
+<p>I missed it on the Windows box. A lot of good detective work went
+into trying to figure out what was going on, but in the end, just
+building with the “right” version of GraalVM fixed it. Apologies to
+the team and everyone else for that.</p>
+
+<p>The 12.4.1 release also includes a
+<a href="https://saxonica.plan.io/issues/6182">partial fix</a> for
+issues relating to UTF-8 string-based C API functions. Unfortunately,
+a more complete fix was deemed too risky for what was otherwise an
+“emergency” release. That fix will have to wait for next time.</p>
+
+<p>For a more complete list of what’s new in 12.4, please see the original
+<a href="../11/saxon-12.4.html">release announcement</a>.</p>
+
+</body>
+</html>
+
