@@ -1,4 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2023-12-01T15:49:32.347162Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing SaxonC 12.4.1!</title><link href="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html</id><published>2023-12-01T14:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2024-01-26T11:52:00.871678Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing SaxonC 12.4.2!</title><link href="https://blog.saxonica.com/announcements/2024/01/saxonc-12.4.2.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2024/01/saxonc-12.4.2.html</id><published>2024-01-26T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2024/01/saxonc-12.4.2.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing SaxonC 12.4.2!</h1>
+
+<p>A SaxonC 12.4.2 maintenance release has been published. This
+release fixes several issues:</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6197">6197</a> A segmentation fault in the PHP extension</li>
+<li><a href="https://saxonica.plan.io/issues/6273">6273</a> A change in the way whitespace is handled in filenames</li>
+<li><a href="https://saxonica.plan.io/issues/6274">6274</a> An problem with the “encoding” keyword in the python saxon processor</li>
+<li><a href="https://saxonica.plan.io/issues/6277">6277</a> A build configuration issue for the SaxonC HE Python processor</li>
+<li><a href="https://saxonica.plan.io/issues/6288">6288</a> A build issue for the SaxonC PHP extension</li>
+<li><a href="https://saxonica.plan.io/issues/6294">6294</a> A segmentation fault parsing JSON</li>
+<li><a href="https://saxonica.plan.io/issues/6301">6301</a> A compile error related to memory allocation with some C++ compilers</li>
+<!--
+<li><a href="https://saxonica.plan.io/issues/6304">6304</a> An issue when using multiple threads from the Python processor</li>
+-->
+<li><a href="https://saxonica.plan.io/issues/6306">6306</a> Unreleased memory in the Python processor</li>
+<li><a href="https://saxonica.plan.io/issues/6324">6324</a>  A segmentation fault in the Python extension</li>
+</ul>
+
+<p>Some efforts have also been made to improve the way dynamic
+libraries are referenced when using the C/C++ APIs directly. These
+changes are reflected in the builds and in the scripts that compile
+the “command” and “samples” applications.</p>
+
+<p>In brief: on macOS, the dynamic library can be accessed through
+<code>@rpath</code> and on Linux, the dynamic library can be placed in a standard
+location or accessed with the <code>LD_LIBRARY_PATH</code> environment variable.
+On Windows, apparently the standard practice is to place the DLL in the same
+directory as the executable.</p>
+
+<p>For a more complete list of what’s new in 12.4, please see the original
+<a href="../../2023/11/saxon-12.4.html">release announcement</a> and the
+<a href="https://www.saxonica.com/saxon-c/release-notes.xml">SaxonC release notes</a>
+on the main website.</p>
+
+</div></content></entry><entry><title>Announcing SaxonC 12.4.1!</title><link href="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html</id><published>2023-12-01T14:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing SaxonC 12.4.1!</h1>
 
 <p>A SaxonC 12.4.1 maintenance release has been published. This

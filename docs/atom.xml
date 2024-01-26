@@ -1,4 +1,41 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2023-12-01T15:49:32.475455Z</updated><entry><title>Announcing SaxonC 12.4.1!</title><link href="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html</id><published>2023-12-01T14:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2024-01-26T11:52:01.005529Z</updated><entry><title>Announcing SaxonC 12.4.2!</title><link href="https://blog.saxonica.com/announcements/2024/01/saxonc-12.4.2.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2024/01/saxonc-12.4.2.html</id><published>2024-01-26T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2024/01/saxonc-12.4.2.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing SaxonC 12.4.2!</h1>
+
+<p>A SaxonC 12.4.2 maintenance release has been published. This
+release fixes several issues:</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6197">6197</a> A segmentation fault in the PHP extension</li>
+<li><a href="https://saxonica.plan.io/issues/6273">6273</a> A change in the way whitespace is handled in filenames</li>
+<li><a href="https://saxonica.plan.io/issues/6274">6274</a> An problem with the “encoding” keyword in the python saxon processor</li>
+<li><a href="https://saxonica.plan.io/issues/6277">6277</a> A build configuration issue for the SaxonC HE Python processor</li>
+<li><a href="https://saxonica.plan.io/issues/6288">6288</a> A build issue for the SaxonC PHP extension</li>
+<li><a href="https://saxonica.plan.io/issues/6294">6294</a> A segmentation fault parsing JSON</li>
+<li><a href="https://saxonica.plan.io/issues/6301">6301</a> A compile error related to memory allocation with some C++ compilers</li>
+<!--
+<li><a href="https://saxonica.plan.io/issues/6304">6304</a> An issue when using multiple threads from the Python processor</li>
+-->
+<li><a href="https://saxonica.plan.io/issues/6306">6306</a> Unreleased memory in the Python processor</li>
+<li><a href="https://saxonica.plan.io/issues/6324">6324</a>  A segmentation fault in the Python extension</li>
+</ul>
+
+<p>Some efforts have also been made to improve the way dynamic
+libraries are referenced when using the C/C++ APIs directly. These
+changes are reflected in the builds and in the scripts that compile
+the “command” and “samples” applications.</p>
+
+<p>In brief: on macOS, the dynamic library can be accessed through
+<code>@rpath</code> and on Linux, the dynamic library can be placed in a standard
+location or accessed with the <code>LD_LIBRARY_PATH</code> environment variable.
+On Windows, apparently the standard practice is to place the DLL in the same
+directory as the executable.</p>
+
+<p>For a more complete list of what’s new in 12.4, please see the original
+<a href="../../2023/11/saxon-12.4.html">release announcement</a> and the
+<a href="https://www.saxonica.com/saxon-c/release-notes.xml">SaxonC release notes</a>
+on the main website.</p>
+
+</div></content></entry><entry><title>Announcing SaxonC 12.4.1!</title><link href="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html</id><published>2023-12-01T14:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing SaxonC 12.4.1!</h1>
 
 <p>A SaxonC 12.4.1 maintenance release has been published. This
@@ -2479,76 +2516,4 @@ Saxon-JS. When Saxon-JS is running in the browser, it uses the
 browser’s APIs, so this update should have no consequences for the
 browser version at all.</p>
 
-</div></content></entry><entry><title>Arrow Expressions</title><link href="https://blog.saxonica.com/mike/2020/11/19-arrow-expressions.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2020/11/19-arrow-expressions.html</id><published>2020-11-19T10:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2020/11/19-arrow-expressions.html"><div xmlns="http://www.w3.org/1999/xhtml">
-    <h2>Arrow Expressions</h2>
-    <p>When I proposed the arrow operator to the XQuery/XSLT working groups, I thought of it as minor syntactic sugar.
-    It's just a convenience: instead of <code>substring-before(substring-after(X, '['), ']')</code> you can write
-    <code>X =&gt; substring-after('[') =&gt; substring-before(']')</code> which helps you to avoid going cross-eyed.
-    If you're the kind of person who can play the piano with your hands crossed over, you probably don't need it,
-    but for the rest of us, it makes life just a tiny bit easier.</p>
-    <p>So I was a bit surprised at XML Prague 2020 that Juri Leino managed to construct an entire
-            presentation around the arrow operator 
-            (<a href="https://speakerdeck.com/minuso/shooting-arrows-fast-and-accurately">Shooting Arrows Fast and Accurately</a>).
-          Not only that, he also developed a whole library of functions, called XBow, to increase their power.</p>
-    <p>Now, XBow actually reveals a bit of a weakness in the construct: you can construct a pipeline of functions,
-          but you can't include arbitrary expressions in the pipeline unless each of the expressions is made available
-          via a function. Moreover,
-          the value output by one step in the pipeline can only be used as the first argument in the next function: you
-          can do <code>X =&gt; concat('$')</code> to add a "$" at the end of a string, but there's no simple way of adding
-          a "$" at the front, except by defining a new <code>prepend</code> function that does this for you (or hoping
-            that XBow will have anticipated your requirement).</p>
-    <p>Now, of course you can do <code>X ! concat('$', .)</code>. But that doesn't always fit the bill. Firstly,
-          it only works when you're processing single items (or mapping a sequence to multiple items). Secondly,
-          (to use the current jargon) the optics are wrong: it breaks the pipeline visually.</p>
-    <p>So my first suggestion is that we allow inline expressions to appear in a pipeline. Something like this:
-          <code>X =&gt; {~ + 1}</code>, or <code>X =&gt; {concat('$', ~)}</code>. 
-            I'm using '~' here as a variable to refer to the
-          implicit argument, that is, the value passed down the pipeline. I would have used '_', as Scala does, but unfortunately
-          '_' is a legal element name so it already has a meaning. And '~' seems to work quite nicely.</p>
-    <p>The next thing that's been requested is implicit mapping, so you can use something like arrow notation
-          to do <code>X ! substring-after(., '$') ! number(.) =&gt; sum()</code>. (Actually, the main obstacle in getting
-          the arrow operator accepted by the XQuery Working Group was that some people wanted it to have this meaning.)</p>
-    <p>For that I propose we use a "thin arrow": <code>X -&gt; substring-after('$') -&gt; number() =&gt; sum()</code>.
-          The effect of the thin arrow is that instead of passing the value of the LHS to the function on the RHS
-          <i>en bloc</i>, we pass it one item at a time. Of course, if the value on the LHS is a single item, then
-          it doesn't matter which kind of arrow we use, both have the same effect.</p>
-    <p>If you're a fan of map-reduce terminology, then you'll recognize this instantly as a map-reduce
-          pipeline. The <code>-&gt;</code> operations are doing a mapping, and the final <code>=&gt;</code> does a reduce.
-            If you're more into functional thinking, you probably think of it more in terms of function composition.</p>
-    <p>Of course thin arrows can also be used with arbitrary expressions, just like thick arrows:
-          <code>(0 to 3) -&gt; {~ + 1} -&gt; format-integer('a') =&gt; string-join('.')</code> returns 
-            <code>"a.b.c.d"</code>.</p>
-    <p>And now I'd like to pull one more rabbit out of the hat. What if I want a function that applies the
-            above pipeline to any input sequence. I could write <code>function($x){$x -&gt; {~ + 1} -&gt; 
-              format-integer('a') =&gt; string-join('.')}</code> but that seems clunky. I'm looking for a nice way
-          to supply functions as arguments to higher-order functions like sort, where other languages have
-          shown that a concise notation for anonymous functions (like <code>a -&gt; a+1</code> in Javascript) can
-          make code a lot simpler, less verbose, more readable.</p>
-    <p>So my proposal is this: just remove the left-hand expression, so you have something starting with
-          <code>-&gt;</code> or <code>=&gt;</code>, and use this as an anonymous arity-1 function.</p>
-    <p>So you can now do: <code>//employee =&gt; sort((), -&gt;{~/@salary})</code> to sort employees
-            by salary, or <code>//employee =&gt; sort((), -&gt;{~/@salary}-&gt;substring-after('$')-&gt;number())</code> 
-          if you need to do a bit more processing.</p>
-    <p>As another little refinement, in the case of <code>-&gt;</code>, the implicit argument is
-          always a single item, so we can bind it to the context item. So <code>-&gt;{~/@salary}</code>
-          can be simplified to <code>-&gt;{@salary}</code>. Basically, within curly braces on the RHS of <code>-&gt;</code>,
-          <code>.</code> and <code>~</code> mean the same thing.</p>
-    <p>I believe that all these constructs can be added to the grammar without introducing ambiguity
-          or backwards incompatibility, but I haven't proved it conclusively yet.</p>
-    <h3>Postscript</h3>
-    <p>The <code>~</code> construct seems to be the missing ingredient to enabling pipelines in XSLT.
-          Consider:</p>
-    <p><pre>
-&lt;xsl:pipeline&gt;
-  &lt;xsl:apply-templates select="/" mode="m1"/&gt;
-  &lt;xsl:apply-templates select="~" mode="m2"/&gt;
-  &lt;xsl:for-each select="~"&gt;
-    &lt;e&gt;&lt;xsl:copy-of select="."/&gt;&lt;e&gt;
-  &lt;/xsl:for-each&gt;
-&lt;/xsl:pipeline&gt;             
-            </pre></p>
-    <p>Here "~" is acting as an implicit variable to pass the result of one instruction to be the input for
-          the next: basically eliminating the clunky <code>xsl:variable</code> declarations needed to do this today.
-          The instructions that form the children of the <code>xsl:pipeline</code> element are effectively
-          connected to each other with an implicit <code>=&gt;</code> operator.</p>
-  </div></content></entry></feed>
+</div></content></entry></feed>
