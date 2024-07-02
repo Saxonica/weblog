@@ -1,0 +1,181 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>Announcing Saxon 12.5</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2024-07-02T11:30:00">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/announcements.css"><meta content="Saxonica announcements" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="The latest news from Saxonica." property="og:description"><meta content="https://blog.saxonica.com/announcements/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Announcing Saxon 12.5" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/announcements/">Saxonica announcements</a></h1><div class="tagline">The latest news from Saxonica</div></div><h2>Announcing Saxon 12.5!</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2024-07"><span class="date" time="2024-07-02T11:30:00">July&nbsp;02, 2024 at 11:30a.m.</span></a></div></header><main>
+
+
+<p>The Saxon 12.5 maintenance release has been published. This is a
+maintenance release for Java, C#, C/C++, PHP, and Python that fixes a
+number of issues reported since previous Saxon 12.4 releases.
+</p>
+
+<p>Saxon 12.5 was released on 1&nbsp;July&nbsp;2024.
+This release has been
+uploaded to the usual locations on the Saxonica website, GitHub, and
+Maven, PyPi, and NuGet. SaxonCS 12.5 is built with .NET 6. This
+release includes SaxonC and Python releases for the ARM 64
+architecture as well as X86-64 architecture.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=96&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.5&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.5">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Partial list of issues resolved</h2>
+
+<p>This section is a subset of the complete list of resolved issues.
+It’s curated to bring attention to the bugs that seem most likely to
+impact customers. 
+</p>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<p>For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=96&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
+
+<ul>
+
+<li><a href="https://saxonica.plan.io/issues/6450">6450</a>
+    CollectionFinder parsesd ALLOWED_PROTOCOLS incorrectly</li>
+<li><a href="https://saxonica.plan.io/issues/6449">6449</a>
+    SaxonCS failure when using collection function to pull a collection catalog file over HTTP(S)</li>
+<li><a href="https://saxonica.plan.io/issues/6448">6448</a>
+    Saxon-HE 12.4J has wrong column number in trace, unlike Saxon-EE</li>
+<li><a href="https://saxonica.plan.io/issues/6446">6446</a>
+    Improved performance of XQuery group by some circumstances</li>
+<li><a href="https://saxonica.plan.io/issues/6435">6435</a>
+    Resolve concurrency issue in the use of accumulators behind the scenes in xsl:for-each</li>
+<li><a href="https://saxonica.plan.io/issues/6428">6428</a>
+    Output of xsl:on-non-empty changes when using TraceListener</li>
+<li><a href="https://saxonica.plan.io/issues/6426">6426</a>
+    fn:matches surprisingly returns false for fn:matches("AB", "^(.*)+B")</li>
+<li><a href="https://saxonica.plan.io/issues/6420">6420</a>
+    -Tout filename not used when set on command line</li>
+<li><a href="https://saxonica.plan.io/issues/6419">6419</a>
+    Union of nodes in a Template Match produces wrong output in Trace</li>
+<li><a href="https://saxonica.plan.io/issues/6415">6415</a>
+    Improved results for trace of an unreferenced XSLT variables</li>
+<li><a href="https://saxonica.plan.io/issues/6407">6407</a>
+    Tree Model option -tree seems to be ignored for initial source documents</li>
+<li><a href="https://saxonica.plan.io/issues/6406">6406</a>
+    A collection cannot contain the same document more than once</li>
+<li><a href="https://saxonica.plan.io/issues/6405">6405</a>
+    Improve saxon:column-number() for text nodes not inside xsl:text</li>
+<li><a href="https://saxonica.plan.io/issues/6394">6394</a>
+    Resolve "Duplicate definition of global variable" exception when using compileLibrary on modules which import a common module</li>
+<li><a href="https://saxonica.plan.io/issues/6386">6386</a>
+    Resolve inadvertant backwards incompatibility in some uses of Configuration#setFeature</li>
+<li><a href="https://saxonica.plan.io/issues/6381">6381</a>
+    set_unprefixed_element_matching_policy(1) doesn't seem to work</li>
+<li><a href="https://saxonica.plan.io/issues/6380">6380</a>
+    Internal error when match pattern invoked by xsl:next-match refers to global variable</li>
+<li><a href="https://saxonica.plan.io/issues/6378">6378</a>
+    Resolved problem with tracing a variable declared abstract</li>
+<li><a href="https://saxonica.plan.io/issues/6377">6377</a>
+    Resolved exception that could be thrown by format-time in some circumstances</li>
+<li><a href="https://saxonica.plan.io/issues/6370">6370</a>
+    XSD based validation finds a validation throws NullPointerException when trying to generate a validation report</li>
+<li><a href="https://saxonica.plan.io/issues/6365">6365</a>
+    Fixed bug where Gizmo could fail if no license was provided</li>
+<li><a href="https://saxonica.plan.io/issues/6363">6363</a>
+    Incorrect result comparing untypedAtomic value to NaN</li>
+<li><a href="https://saxonica.plan.io/issues/6348">6348</a>
+    Fixed multi-threading bug related to xsl:result-document operating asynchronously </li>
+<li><a href="https://saxonica.plan.io/issues/6340">6340</a>
+    Fixed exception that sometimes arose when using saxon:capture="yes" in an accumlator rule</li>
+<li><a href="https://saxonica.plan.io/issues/6339">6339</a>
+    Describe fix and workaround for ArrayIndexOutOfBoundsException in saxon:transform() </li>
+<li><a href="https://saxonica.plan.io/issues/6313">6313</a>
+    Static type error from fn:remove()</li>
+<li><a href="https://saxonica.plan.io/issues/6302">6302</a>
+    Improved trace output when the transform function is used</li>
+<li><a href="https://saxonica.plan.io/issues/6286">6286</a>
+    Resolved problem where $connection?close() could throw an error</li>
+<li><a href="https://saxonica.plan.io/issues/6279">6279</a>
+    Incorrect optimization of generate-id() comparisons</li>
+<li><a href="https://saxonica.plan.io/issues/6256">6256</a>
+    function-name returns an empty sequence for node-name#0, string#0 and more?</li>
+<li><a href="https://saxonica.plan.io/issues/6183">6183</a>
+    Improved documentation for debugging errors when using "fallback=no" on UCA collation</li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+<p>Memory management in SaxonC, PHP, and Python has been greatly improved. This resolved
+a number of issues (<a href="https://saxonica.plan.io/issues/6338">6338</a>,
+<a href="https://saxonica.plan.io/issues/6349">6349</a>,
+<a href="https://saxonica.plan.io/issues/6357">6357</a>,
+<a href="https://saxonica.plan.io/issues/6396">6396</a>, and
+<a href="https://saxonica.plan.io/issues/6397">6397</a>). In addition, the following
+issues were resolved. (For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.5&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.)</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6439">6439</a>
+    Fixed bug in Python extension that could cause an AttributeError on PyXdmFunctionItem</li>
+<li><a href="https://saxonica.plan.io/issues/6402">6402</a>
+    Added <code>clearXslMessages</code> to clear accumulated xsl:message messages</li>
+<li><a href="https://saxonica.plan.io/issues/6401">6401</a>
+    Resolved bug when setting a filename on an executable in Python</li>
+<li><a href="https://saxonica.plan.io/issues/6372">6372</a>
+    Updated build to include all character sets (will enable Windows-1252 encoded XML files to be parsed on Linux)</li>
+<li><a href="https://saxonica.plan.io/issues/6360">6360</a>
+    Fixed bug where setOutputFile did not work with transformToFile()</li>
+<li><a href="https://saxonica.plan.io/issues/6356">6356</a>
+    Fixed argument count error in executable in PHP</li>
+<li><a href="https://saxonica.plan.io/issues/6351">6351</a>
+    Added methods for getting the line and column number of a node</li>
+<li><a href="https://saxonica.plan.io/issues/6342">6342</a>
+    Fixed bug where in compileFromAssociatedFile PHP might fail</li>
+<li><a href="https://saxonica.plan.io/issues/6341">6341</a>
+    Support try/catch in PHP for underlying parse errors</li>
+<li><a href="https://saxonica.plan.io/issues/6336">6336</a>
+    Fixed bug when passing array values as parameters in Python</li>
+<li><a href="https://saxonica.plan.io/issues/6327">6327</a>
+    Fixed bug where an empty XdmValue in Python might throw a TypeError</li>
+<li><a href="https://saxonica.plan.io/issues/6297">6297</a>
+    Fixed build issue on CentOS 7</li>
+<li><a href="https://saxonica.plan.io/issues/6276">6276</a>
+    Fixed bug where proc.version did not include the patch version</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.5, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</main><footer><div class="prev-uri"><a href="/announcements/2024/01/saxonc-12.4.2.html">Announcing SaxonC 12.4.2!</a></div></footer></body>
+</html>
