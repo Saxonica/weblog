@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Maps and Records</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="author" content="Michael Kay" />
+        <meta name="pubdate" content="2024-08-10T09:00:00" />
+
+    </head>
+    <body>
+        <h1>Maps and Records</h1>
+        
+        <p>Maps have proved to be one of the most powerful new features in the 3.0/3.1 family of standards,
+        and records, which extend the capability will probably prove one of the most powerful in 4.0. 
+        Under the name <i>tuple types</i>, the feature has been available as a proprietary Saxon extension
+        since Saxon 9.8, which came out on the same day as the XSLT 3.0 Recommendation in June 2017.
+        The feature is now well established, but the details are still being refined.</p>
+        
+        <p>A record type is declared like this:</p>
+        
+        <pre>record(longitude as xs:double, latitude as xs:double)</pre>
+        
+        <p>A record type is simply a new way of constraining maps; the instances of the type
+        are maps (in this case a map with two entries, one with key "longitude" and one with
+        key "latitude"). You can use a record type to declare the types of variables and function
+        arguments, but the actual value of the variable is a map, and all the standard map operations
+        are available, such as the lookup operator: <code>$location?longitude</code>.</p>
+        
+        <p>We're working on an extension that allows named record types to be declared globally:</p>
+        
+        <pre>&lt;xsl:record name="my:location"&gt;
+   &lt;xsl:field name="longitude" as="xs:double"/>
+   &lt;xsl:field name="latitude" as="xs:double"/>
+&lt;/xsl:record></pre>
+        
+        <p>which would also give you a constructor function: <code>my:location($long, $lat)</code>.</p>
+        
+        <p>The main thing I want to talk about in this article is how records can be efficiently
+        implemented.</p>
+        
+        <p>Until recently, a record type simply constrained the contents of a map, and had no
+        bearing on the way the map was implemented.</p>
+        
+        <p>Internally, Saxon represents maps using the interface <code>net.sf.saxon.ma.map.MapItem</code>
+        (actually an abstract class), and there are several implementations of this interface:</p>
+        
+        <ul>
+            <li><code>EmptyMap</code> for an empty map</li>
+            <li><code>SingleEntryMap</code> for a map with one entry, such as the map created by <code>map:entry()</code></li>
+            <li><code>DictionaryMap</code> for a map whose keys are all strings, and that isn't likely to be modified
+            (for example maps derived by parsing JSON, or maps written using literal constructors as option parameter values)</li>
+            <li><code>HashTrieMap</code> as the general implementation that handles everything.</li>
+        </ul>
+        
+        <p>For the next release, Saxon 13, we've written a new implementation called a
+        <i>ShapedMap</i>. There are two parts to this: a <i>Shape</i> is a mapping from field names to
+        integer slot numbers, and a <i>ShapedMap</i> is a reference to a <i>Shape</i>, plus an array of slots.
+        So it's great where you have many maps with exactly the same structure, because you only hold the keys
+        once.</p>
+        
+        <p>So far we're mainly using shaped maps where the structure of the map is defined by the language specification,
+        for example for the key-value pairs returned by <code>map:pairs()</code>, for the results of functions such as
+        <code>parse-csv()</code>, <code>random-number-generator()</code>, and <code>load-xquery-module()</code>,
+        and for the labels attached to values by the new deep-lookup operator (plenty of scope there for future articles).
+        I would love to use them also for the result of <code>parse-json()</code> if we can detect the common case
+        of a JSON file containing thousands of maps (JSON objects) with exactly the same structure. And of course, once
+        we have record constructor functions as described above, they are an obvious candidate for the result
+        of such a function.</p>
+        
+        <p>Shaped maps immediately give a space saving because the keys and their hash index are shared between instances.
+        The next challenge after that is to make lookup on shaped maps more efficient. Given a lookup expression
+        such as <code>$location?longitude</code>, we <i>ought</i> to be able to extract the corresponding value directly
+        from slot 0 of the <code>ShapedMap</code> object, without the overhead of doing a run-time hash lookup of the string
+        <code>"longitude"</code> in the corresponding <code>Shape</code> in order to establish that this field is always
+        in slot 0.</p>
+        
+        <p>The obvious, classic way of doing that is through static type inference: if we know the static type of the
+        <code>$location</code> variable, then we can know at compile time what the mapping of field names to slots will be,
+        and can generate an execution plan accordingly.</p>
+        
+        <p>But I'm becoming a bit disillusioned with relying on static type analysis. Users, in general, are lazy: they
+        want good performance without doing extra work, like declaring the types of all their variables. That's particularly
+        true when you start writing code that relies heavily on higher-order functions, which we want to encourage.
+        So I'm looking increasingly at options that decide the execution plan at run-time, modifying it in the light
+        of actual experience. Given an expression like <code>$location?longitude</code> that is executed repeatedly,
+        the chances are that if <code>$location</code> is a shaped map with <code>longitude</code> in slot 0 on one occasion,
+        then the same will be true next time you execute the same expression.</p>
+        
+        <p>We've quietly introduced this kind of approach in recent releases, and it's working well. For example, with
+        lazy evaluation of variables and function results we now use a learning approach: we start with lazy evaluation,
+        but if on the first 20 executions the value is immediately read to completion, we switch to eager evaluation.
+        That's because lazy evaluation has a significant set-up overhead to retain the parts of the context on which the
+        expression depends, and there is no benefit in doing this if the caller is going to immediately materialise
+        the value anyway.</p>
+        
+        <p>The concrete design for shaped record access goes something like this. We augment the 
+            <code>MapItem</code> interface with a method
+        <code>map.lookup(key, plan)</code>. This method returns the requested value from the map, but also updates the
+        value of <code>plan</code> with information that will be retained the next time the same expression is evaluated.
+        If the map is a shaped map, the returned plan can include the <code>Shape</code> and the slot number; if an incoming
+        request comes with a plan that identifies the same <code>Shape</code> (which it usually will), 
+        then we can access the relevant slot number directly,
+        ignoring the value of the key. That only works, of course, for a lookup expression where the key is a literal
+        constant; but that's the normal case when working with records.</p>
+        
+        <p>If we can make this work (and it seems straightforward), then the same approach might have other applications.
+        For example, can we make path expressions go faster if we optimize for the tree model in use? Or could we get rid
+        of statically-allocated fingerprints (with the inconvenience they cause by not allowing documents and stylesheets
+        to be shared across configurations), and instead have the expression discover the fingerprint and NamePool at 
+        execution time?</p>
+        
+        <p>Saxon is now 25 years old. It seems there are still plenty of exciting ways to make it better.</p>
+        
+        
+        
+ 
+ 
+   
+    </body>
+</html>
