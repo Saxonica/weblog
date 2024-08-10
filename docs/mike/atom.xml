@@ -1,4 +1,113 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2024-07-02T10:30:40.711636Z</updated><author><name>Michael Kay</name></author><entry><title>All Change at Saxonica</title><link href="https://blog.saxonica.com/mike/2023/10/eot.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/10/eot.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/10/eot.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2024-08-10T10:20:43.477637Z</updated><author><name>Michael Kay</name></author><entry><title>Maps and Records</title><link href="https://blog.saxonica.com/mike/2024/08/maps-and-records.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2024/08/maps-and-records.html</id><published>2024-08-10T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2024/08/maps-and-records.html"><div xmlns="http://www.w3.org/1999/xhtml">
+        
+        
+        <p>Maps have proved to be one of the most powerful new features in the 3.0/3.1 family of standards,
+        and records, which extend the capability will probably prove one of the most powerful in 4.0. 
+        Under the name <i>tuple types</i>, the feature has been available as a proprietary Saxon extension
+        since Saxon 9.8, which came out on the same day as the XSLT 3.0 Recommendation in June 2017.
+        The feature is now well established, but the details are still being refined.</p>
+        
+        <p>A record type is declared like this:</p>
+        
+        <pre>record(longitude as xs:double, latitude as xs:double)</pre>
+        
+        <p>A record type is simply a new way of constraining maps; the instances of the type
+        are maps (in this case a map with two entries, one with key "longitude" and one with
+        key "latitude"). You can use a record type to declare the types of variables and function
+        arguments, but the actual value of the variable is a map, and all the standard map operations
+        are available, such as the lookup operator: <code>$location?longitude</code>.</p>
+        
+        <p>We're working on an extension that allows named record types to be declared globally:</p>
+        
+        <pre>&lt;xsl:record name="my:location"&gt;
+   &lt;xsl:field name="longitude" as="xs:double"/&gt;
+   &lt;xsl:field name="latitude" as="xs:double"/&gt;
+&lt;/xsl:record&gt;</pre>
+        
+        <p>which would also give you a constructor function: <code>my:location($long, $lat)</code>.</p>
+        
+        <p>The main thing I want to talk about in this article is how records can be efficiently
+        implemented.</p>
+        
+        <p>Until recently, a record type simply constrained the contents of a map, and had no
+        bearing on the way the map was implemented.</p>
+        
+        <p>Internally, Saxon represents maps using the interface <code>net.sf.saxon.ma.map.MapItem</code>
+        (actually an abstract class), and there are several implementations of this interface:</p>
+        
+        <ul>
+            <li><code>EmptyMap</code> for an empty map</li>
+            <li><code>SingleEntryMap</code> for a map with one entry, such as the map created by <code>map:entry()</code></li>
+            <li><code>DictionaryMap</code> for a map whose keys are all strings, and that isn't likely to be modified
+            (for example maps derived by parsing JSON, or maps written using literal constructors as option parameter values)</li>
+            <li><code>HashTrieMap</code> as the general implementation that handles everything.</li>
+        </ul>
+        
+        <p>For the next release, Saxon 13, we've written a new implementation called a
+        <i>ShapedMap</i>. There are two parts to this: a <i>Shape</i> is a mapping from field names to
+        integer slot numbers, and a <i>ShapedMap</i> is a reference to a <i>Shape</i>, plus an array of slots.
+        So it's great where you have many maps with exactly the same structure, because you only hold the keys
+        once.</p>
+        
+        <p>So far we're mainly using shaped maps where the structure of the map is defined by the language specification,
+        for example for the key-value pairs returned by <code>map:pairs()</code>, for the results of functions such as
+        <code>parse-csv()</code>, <code>random-number-generator()</code>, and <code>load-xquery-module()</code>,
+        and for the labels attached to values by the new deep-lookup operator (plenty of scope there for future articles).
+        I would love to use them also for the result of <code>parse-json()</code> if we can detect the common case
+        of a JSON file containing thousands of maps (JSON objects) with exactly the same structure. And of course, once
+        we have record constructor functions as described above, they are an obvious candidate for the result
+        of such a function.</p>
+        
+        <p>Shaped maps immediately give a space saving because the keys and their hash index are shared between instances.
+        The next challenge after that is to make lookup on shaped maps more efficient. Given a lookup expression
+        such as <code>$location?longitude</code>, we <i>ought</i> to be able to extract the corresponding value directly
+        from slot 0 of the <code>ShapedMap</code> object, without the overhead of doing a run-time hash lookup of the string
+        <code>"longitude"</code> in the corresponding <code>Shape</code> in order to establish that this field is always
+        in slot 0.</p>
+        
+        <p>The obvious, classic way of doing that is through static type inference: if we know the static type of the
+        <code>$location</code> variable, then we can know at compile time what the mapping of field names to slots will be,
+        and can generate an execution plan accordingly.</p>
+        
+        <p>But I'm becoming a bit disillusioned with relying on static type analysis. Users, in general, are lazy: they
+        want good performance without doing extra work, like declaring the types of all their variables. That's particularly
+        true when you start writing code that relies heavily on higher-order functions, which we want to encourage.
+        So I'm looking increasingly at options that decide the execution plan at run-time, modifying it in the light
+        of actual experience. Given an expression like <code>$location?longitude</code> that is executed repeatedly,
+        the chances are that if <code>$location</code> is a shaped map with <code>longitude</code> in slot 0 on one occasion,
+        then the same will be true next time you execute the same expression.</p>
+        
+        <p>We've quietly introduced this kind of approach in recent releases, and it's working well. For example, with
+        lazy evaluation of variables and function results we now use a learning approach: we start with lazy evaluation,
+        but if on the first 20 executions the value is immediately read to completion, we switch to eager evaluation.
+        That's because lazy evaluation has a significant set-up overhead to retain the parts of the context on which the
+        expression depends, and there is no benefit in doing this if the caller is going to immediately materialise
+        the value anyway.</p>
+        
+        <p>The concrete design for shaped record access goes something like this. We augment the 
+            <code>MapItem</code> interface with a method
+        <code>map.lookup(key, plan)</code>. This method returns the requested value from the map, but also updates the
+        value of <code>plan</code> with information that will be retained the next time the same expression is evaluated.
+        If the map is a shaped map, the returned plan can include the <code>Shape</code> and the slot number; if an incoming
+        request comes with a plan that identifies the same <code>Shape</code> (which it usually will), 
+        then we can access the relevant slot number directly,
+        ignoring the value of the key. That only works, of course, for a lookup expression where the key is a literal
+        constant; but that's the normal case when working with records.</p>
+        
+        <p>If we can make this work (and it seems straightforward), then the same approach might have other applications.
+        For example, can we make path expressions go faster if we optimize for the tree model in use? Or could we get rid
+        of statically-allocated fingerprints (with the inconvenience they cause by not allowing documents and stylesheets
+        to be shared across configurations), and instead have the expression discover the fingerprint and NamePool at 
+        execution time?</p>
+        
+        <p>Saxon is now 25 years old. It seems there are still plenty of exciting ways to make it better.</p>
+        
+        
+        
+ 
+ 
+   
+    </div></content></entry><entry><title>All Change at Saxonica</title><link href="https://blog.saxonica.com/mike/2023/10/eot.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/10/eot.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/10/eot.html"><div xmlns="http://www.w3.org/1999/xhtml">
         
         
         
@@ -4537,359 +4646,6 @@ expand-text="yes"
             <p>
                So although the journey has had a few bumps, I'm reasonably confident that we will
                see long-term benefits.</p>
-            </li>
-      </ul>
-   </div></content></entry><entry><title>Lazy Evaluation</title><link href="https://blog.saxonica.com/mike/2015/06/lazy-evaluation.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2015/06/lazy-evaluation.html</id><published>2015-06-28T23:15:13Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2015/06/lazy-evaluation.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>We've seen some VM dumps recently that
-         showed evidence of contention problems when multiple threads
-         (created, for example, using &lt;xsl:for-each&gt;
-         with the saxon:threads
-         attribute) were attempting lazy evaluation of the same local
-         variable. So I've been looking at the lazy evaluation code in Saxon
-         to try and understand all the permutations of how it works. A blog
-         posting is a good way to try and capture that understanding before I
-         forget it all again. But I won't go into the extra complexities of
-         parallel execution just yet: I'll come back to that at the end.</p>
-      <p>Lazy evaluation applies when a variable
-         binding, for example "let
-         $v := //x[@y=3]" isn't evaluated immediately when the
-         variable declaration is encountered, but only when the variable is
-         actually referenced. This is possible in functional languages because
-         evaluating an expression has no side-effects, so it doesn't matter
-         when (or how often) it is done. In some functional languages such as
-         Scheme, lazy evaluation happens only if you explicitly request it. In
-         others, such as Haskell, lazy evaluation is mandated by the language
-         specification (which means that a variable can hold an infinite
-         sequence, so long as you don't try to process its entire value). In
-         XSLT and XQuery, lazy evaluation is entirely at the discretion of the
-         compiler, and in this post I shall try to summarize how Saxon makes
-         use of this freedom.</p>
-      <p>Internally, when a local variable is
-         evaluated lazily, Saxon instead of putting the variable's value in
-         the relevant slot on the stack, will instead put a data structure
-         that contains all the information needed to evaluate the variable:
-         that is, the expression itself, and any part of the evaluation
-         context on which it depends. In Saxon this data structure is called a
-         Closure. The terminology isn't quite right, because it's not quite
-         the same thing as the closure of an inline function, but the concepts
-         are closely related: in some languages, lazy evaluation is
-         implemented by storing, as the value of the variable, not the
-         variable's actual value, but a function which delivers that value
-         when invoked, and the data needed by this function to achieve that
-         task is correctly called a closure. (If higher-order functions had
-         been available in Saxon a few years earlier, we might well have
-         implemented lazy evaluation this way.)
-         </p>
-      <p>We can distinguish two levels of lazy
-         evaluation. We might use the term "deferred evaluation" to
-         indicate that a variable is not evaluated until it is first
-         referenced, and "incremental evaluation" to indicate that
-         when it is referenced, it is only evaluated to the extent necessary.
-         For example, if the first reference is the function call head($v),
-         only the first item in the sequence $v will be evaluated; remaining
-         items will only be evaluated if a subsequent reference to the
-         variable requires them.</p>
-      <p>Lazy evaluation can apply to global
-         variables, local variables, parameters of templates and functions,
-         and return values from templates and functions. Saxon handles each
-         case slightly differently.</p>
-      <p>We should mention some static
-         optimizations which are not directly related to lazy evaluation, but
-         are often confused with it. First, a variable that is never
-         referenced is eliminated at compile-time, so its initializing
-         expression is never evaluated at all. Secondly, a variable that is
-         only referenced once, and where the reference is not in any kind of
-         loop, is inlined: that is, the variable reference is replaced by the
-         expression used to initialize the variable, and the variable itself
-         is then eliminated. So when someone writes "let
-         $x := /a/b/c return $x[d=3]",  Saxon turns this into the
-         expression "(/a/b/c)[d=3]".
-         (Achieving this of course requires careful attention to the static
-         and dynamic context, but we won't go into the details here.)</p>
-      <p>Another static optimization that
-         interacts with variable evaluation is loop-lifting. If an expression
-         within a looping construct (for example the content of xsl:for-each,
-         or of a predicate, or the right-hand-side of the "/"
-         operator) will have the same value for every iteration of the loop,
-         then a new local variable bound to this expression is created outside
-         the loop, and the original expression is replaced by a reference to
-         the variable. In this situation we need to take care that the
-         expression is not evaluated unless the loop is executed at least once
-         (both to avoid wasted evaluation cost, and to give the right
-         behaviour in the event that evaluating the expression fails with a
-         dynamic error.) So lazy evaluation of such a variable becomes
-         mandatory.</p>
-      <p>The combined effect of these static
-         optimizations, together with lazy evaluation, is that the order of
-         evaluation of expressions can be quite unintuitive. To enable users
-         to understand what is going on when debugging, it is therefore normal
-         for some of these rewrites to be suppressed if debugging or tracing
-         are enabled.</p>
-      <p>For global variables, Saxon uses
-         deferred evaluation but not incremental evaluation. A global variable
-         is not evaluated until it is first referenced, but at that point it
-         is completely evaluated, and the sequence representing its value is
-         held in memory in its entirety.</p>
-      <p>For local variables, evaluation is
-         generally both deferred and incremental. However, the rules are quite
-         complex.</p>
-      <ul>
-         <li>
-            
-            
-            <p>If the static type shows that the
-               value will be a singleton, then it will be evaluated eagerly. [It's
-               not at all clear that this rule makes sense. Certainly, incremental
-               evaluation makes no sense for singletons. But deferred evaluation
-               could still be very useful, for example if the evaluation is
-               expensive and the variable is only referenced within a branch of a
-               conditional, so the value is not always needed.]</p>
-            </li>
-         <li>
-            
-            
-            <p>Eager evaluation is used when the
-               binding expression is very simple: in particular when it is a
-               literal or a reference to another variable.</p>
-            </li>
-         <li>
-            
-            
-            <p>Eager evaluation is used for
-               binding expressions that depend on position()
-               or last(), to
-               avoid the complexities of saving these values in the Closure.</p>
-            </li>
-         <li>
-            
-            
-            <p>There are some optimizations which
-               take precedence over lazy evaluation. For example if there are
-               variable references using predicates, such as $v[@x=3],
-               then the variable will not only be evaluated eagerly, but will also
-               be indexed on the value of the attribute @x.
-               Another example: if a variable is initialized to an expression such
-               as ($v, x) -
-               that is, a sequence that appends an item to another variable -
-               then we use a "shared append expression" which is a data
-               structure that allows a sequence to be constructed by appending to
-               an existing sequence without copying the entire sequence, which is a
-               common pattern in algorithms using head-tail recursion.</p>
-            </li>
-         <li>
-            
-            
-            <p>Lazy evaluation (and inlining)
-               need special care if the variable is declared outside a try/catch
-               block, but is referenced within it. In such a case a dynamic error
-               that occurs while evaluating the initialization expression must not
-               be caught by the try/catch; it is logically outside its scope.
-               (Writing this has made me realise that this is not yet implemented
-               in Saxon; I have written a test case and it currently fails.)</p>
-            </li>
-      </ul>
-      <p>If none of these special circumstances
-         apply, lazy evaluation is chosen. There is one more choice to be
-         made: between a Closure
-         and a MemoClosure.
-         The common case is a MemoClosure,
-         and in this case, as the variable is incrementally evaluated, the
-         value is saved for use when evaluating subsequent variable
-         references. A (non-memo) closure is used when it is known that the
-         value will only be needed once. Because most such cases have been
-         handled by variable inlining, the main case where a non-memo closure
-         is used is for the return value of a function. Functions, like
-         variables, are lazily evaluated, so that the value returned to the
-         caller is not actually a sequence in memory, but a closure containing
-         all the information needed to materialize the sequence. (Like most
-         rules in this story, there is an important exception: tail-call
-         optimization, where the last thing a function does is to call itself,
-         takes precedence over lazy evaluation).</p>
-      <p>So let's look more closely at the
-         MemoClosure. A
-         MemoClosure is a
-         data structure that holds the following information:</p>
-      <ul>
-         <li>
-            
-            
-            <p>The Expression itself (a pointer
-               to a node in the expression tree). The Expression object also holds
-               any information from the static context that is needed during
-               evaluation, for example namespace bindings.</p>
-            </li>
-         <li>
-            
-            
-            <p>A copy of the dynamic context at
-               the point where the variable is bound. This includes the context
-               item, and values of any local variables referenced by the
-               expression.</p>
-            </li>
-         <li>
-            
-            
-            <p>The current evaluation state: one
-               of UNREAD (no access to the variable has yet been made), MAYBE_MORE
-               (some items in the value of the variable are available, but there
-               may be more to come), ALL_READ (the value of the variable is fully
-               available), BUSY (the variable is being evaluated), or EMPTY
-               (special case of ALL_READ in which the value is known to be an empty
-               sequence).</p>
-            </li>
-         <li>
-            
-            
-            <p>An InputIterator:
-               an iterator over the results of the expression, relevant when
-               evaluation has started but has not finished</p>
-            </li>
-         <li>
-            
-            
-            <p>A reservoir: a list containing the
-               items delivered by the InputIterator so far.</p>
-            </li>
-      </ul>
-      <p>Many variable references, for example
-         <code>count($v)</code>, or
-         <code>index-of($v, 'z')</code>
-         result in the variable being evaluated in full. If this is the first
-         reference to the variable, that is if the state is UNREAD, the logic
-         is essentially</p>
-      <pre>inputIterator = expression.iterate(savedContext);
-
-for item in inputIterator {
-  reservoir.add(item);
-}
-state = ALL_READ;
-return new SequenceExtent(reservoir);</pre>
-      <p>(However, Saxon doesn't optimize this
-         case, and it occurs to me on writing this that it could.)</p>
-      <p>Other variable references, such as
-         head($v), or
-         $v[1], or
-         subsequence($v, 1, 5),
-         require only partial evaluation of the expression. In such cases
-         Saxon creates and returns a ProgressiveIterator,
-         and the requesting expression reads as many items from the
-         ProgressiveIterator
-         as it needs. Requests to get items from the ProgressiveIterator
-         fetch items from the reservoir to the extent they are available; on
-         exhaustion of the reservoir, they then attempt to fetch items from
-         the InputIterator until either enough items are available, or the
-         InputIterator is exhausted. Items delivered from the InputIterator
-         are copied to the reservoir as they are found.</p>
-      <p>So far so good. This has all been in
-         place for years, and works well. We have no evidence that it is in
-         any way optimal, but it has been carefully tweaked over the years to
-         deal with particular cases where it was performing badly. What has
-         changed recently is that local variables can be referenced from
-         multiple threads. There are two particular cases where this happens
-         today: when xsl:result-document
-         is used in Saxon-EE, it executes by default asynchronously in a new
-         thread; and when the extension attribute saxon:threads
-         is used on xsl:for-each,
-         the items selected by the xsl:for-each
-         are processed in parallel rather than sequentially.</p>
-      <p>The effect of this is that the
-         MemoClosure object needs to be thread-safe: multiple requests to
-         access the variable can come simultaneously from different threads.
-         To achieve this a number of methods are synchronized. One of these is
-         the next() method
-         of the ProgressiveIterator:
-         if two threads reference the variable at the same time, each gets its
-         own ProgressiveIterator,
-         and the next()
-         method on one of these iterators is forced to wait until the other
-         has finished.</p>
-      <p>This works, but it is risky. Brian
-         Goetz in his excellent book <i>Java Concurrency in Practice</i>
-         recommends that a method should not be synchronized unless (a) its
-         execution time is short, and (b) as the author of the method, you
-         know exactly what code will execute while it is active. In this case
-         neither condition is satisfied. The next()
-         method of ProgressiveIterator
-         calls the next()
-         method of the InputIterator,
-         and this may perform expensive computation, for example retrieving
-         and parsing a document using the doc()
-         function. Further, we have no way of analyzing exactly what code is
-         executed: in the worst case, it may include user-written code (for
-         example, an extension function or a URIResolver).
-         The mechanism can't deadlock with itself (because there cannot be a
-         cycle of variable references) but it is practically impossible to
-         prove that it can't deadlock with other subsystems that use
-         synchronization, and in the face of maliciously-written used code,
-         it's probably safe to assume that deadlock <b>can</b> occur. We
-         haven't seen deadlock happen in practice, but it's unsatisfactory
-         that we can't prove its impossibility.</p>
-      <p>So what should we do about it?</p>
-      <p>I think the answer is, add yet another
-         exception to the list of cases where lazy evaluation is used:
-         specifically, don't use it for a variable that can be referenced from
-         a different thread. I'm pretty sure it's possible to detect such
-         cases statically, and they won't be very common. In such cases, use
-         eager evaluation instead.</p>
-      <p>We must be careful not to do this in
-         the case of a loop-lifted variable, where the correct error semantics
-         depend on lazy evaluation. So another tweak to the rules is, don't
-         loop-lift code out of a multithreaded execution block.</p>
-      <p>This investigation also suggests a few
-         other refinements we might make.</p>
-      <ul>
-         <li>
-            
-            
-            <p>It seems worth optimizing for the
-               case where the entire value of a variable is needed, since this case
-               is so common. The problem is, it's not easy to detect this case: a
-               calling expression such as count($v)
-               will ask for an iterator over the variable value, without giving any
-               indication that it intends to read the iterator to completion.</p>
-            </li>
-         <li>
-            
-            
-            <p>We need to reassess the rule that
-               singleton local variables are evaluated eagerly.</p>
-            </li>
-         <li>
-            
-            
-            <p>We currently avoid using lazy
-               evaluation for expressions with certain dependencies on the dynamic
-               context (for example, position()
-               and last()). But
-               in the course of implementing higher-order functions, we have
-               acquired the capability to hold such values in a saved copy of the
-               dynamic context.</p>
-            </li>
-         <li>
-            
-            
-            <p>We could look at a complete
-               redesign that takes advantage of higher-order functions and their
-               closures. This might be much simpler than the current design; but it
-               would discard the benefits of years of fine-tuning of the current
-               design.</p>
-            </li>
-         <li>
-            
-            
-            <p>I'm not convinced that it makes
-               sense for a MemoClosure
-               to defer creation of the InputIterator
-               until the first request for the variable value. It would be a lot
-               simpler to call inputIterator
-               = Expression.iterate(context) at the point of variable
-               declaration; in most cases the implementation will defer evaluation
-               to the extent that this makes sense, and this approach saves the
-               cost of the elaborate code to save the necessary parts of the
-               dynamic context. It's worth trying the other approach and making
-               some performance measurements.
-               </p>
             </li>
       </ul>
    </div></content></entry></feed>

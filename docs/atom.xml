@@ -1,4 +1,113 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2024-07-02T10:30:40.955117Z</updated><entry><title>Announcing Saxon 12.5!</title><link href="https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html</id><published>2024-07-02T11:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2024-08-10T10:20:43.705332Z</updated><entry><title>Maps and Records</title><link href="https://blog.saxonica.com/mike/2024/08/maps-and-records.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2024/08/maps-and-records.html</id><published>2024-08-10T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2024/08/maps-and-records.html"><div xmlns="http://www.w3.org/1999/xhtml">
+        
+        
+        <p>Maps have proved to be one of the most powerful new features in the 3.0/3.1 family of standards,
+        and records, which extend the capability will probably prove one of the most powerful in 4.0. 
+        Under the name <i>tuple types</i>, the feature has been available as a proprietary Saxon extension
+        since Saxon 9.8, which came out on the same day as the XSLT 3.0 Recommendation in June 2017.
+        The feature is now well established, but the details are still being refined.</p>
+        
+        <p>A record type is declared like this:</p>
+        
+        <pre>record(longitude as xs:double, latitude as xs:double)</pre>
+        
+        <p>A record type is simply a new way of constraining maps; the instances of the type
+        are maps (in this case a map with two entries, one with key "longitude" and one with
+        key "latitude"). You can use a record type to declare the types of variables and function
+        arguments, but the actual value of the variable is a map, and all the standard map operations
+        are available, such as the lookup operator: <code>$location?longitude</code>.</p>
+        
+        <p>We're working on an extension that allows named record types to be declared globally:</p>
+        
+        <pre>&lt;xsl:record name="my:location"&gt;
+   &lt;xsl:field name="longitude" as="xs:double"/&gt;
+   &lt;xsl:field name="latitude" as="xs:double"/&gt;
+&lt;/xsl:record&gt;</pre>
+        
+        <p>which would also give you a constructor function: <code>my:location($long, $lat)</code>.</p>
+        
+        <p>The main thing I want to talk about in this article is how records can be efficiently
+        implemented.</p>
+        
+        <p>Until recently, a record type simply constrained the contents of a map, and had no
+        bearing on the way the map was implemented.</p>
+        
+        <p>Internally, Saxon represents maps using the interface <code>net.sf.saxon.ma.map.MapItem</code>
+        (actually an abstract class), and there are several implementations of this interface:</p>
+        
+        <ul>
+            <li><code>EmptyMap</code> for an empty map</li>
+            <li><code>SingleEntryMap</code> for a map with one entry, such as the map created by <code>map:entry()</code></li>
+            <li><code>DictionaryMap</code> for a map whose keys are all strings, and that isn't likely to be modified
+            (for example maps derived by parsing JSON, or maps written using literal constructors as option parameter values)</li>
+            <li><code>HashTrieMap</code> as the general implementation that handles everything.</li>
+        </ul>
+        
+        <p>For the next release, Saxon 13, we've written a new implementation called a
+        <i>ShapedMap</i>. There are two parts to this: a <i>Shape</i> is a mapping from field names to
+        integer slot numbers, and a <i>ShapedMap</i> is a reference to a <i>Shape</i>, plus an array of slots.
+        So it's great where you have many maps with exactly the same structure, because you only hold the keys
+        once.</p>
+        
+        <p>So far we're mainly using shaped maps where the structure of the map is defined by the language specification,
+        for example for the key-value pairs returned by <code>map:pairs()</code>, for the results of functions such as
+        <code>parse-csv()</code>, <code>random-number-generator()</code>, and <code>load-xquery-module()</code>,
+        and for the labels attached to values by the new deep-lookup operator (plenty of scope there for future articles).
+        I would love to use them also for the result of <code>parse-json()</code> if we can detect the common case
+        of a JSON file containing thousands of maps (JSON objects) with exactly the same structure. And of course, once
+        we have record constructor functions as described above, they are an obvious candidate for the result
+        of such a function.</p>
+        
+        <p>Shaped maps immediately give a space saving because the keys and their hash index are shared between instances.
+        The next challenge after that is to make lookup on shaped maps more efficient. Given a lookup expression
+        such as <code>$location?longitude</code>, we <i>ought</i> to be able to extract the corresponding value directly
+        from slot 0 of the <code>ShapedMap</code> object, without the overhead of doing a run-time hash lookup of the string
+        <code>"longitude"</code> in the corresponding <code>Shape</code> in order to establish that this field is always
+        in slot 0.</p>
+        
+        <p>The obvious, classic way of doing that is through static type inference: if we know the static type of the
+        <code>$location</code> variable, then we can know at compile time what the mapping of field names to slots will be,
+        and can generate an execution plan accordingly.</p>
+        
+        <p>But I'm becoming a bit disillusioned with relying on static type analysis. Users, in general, are lazy: they
+        want good performance without doing extra work, like declaring the types of all their variables. That's particularly
+        true when you start writing code that relies heavily on higher-order functions, which we want to encourage.
+        So I'm looking increasingly at options that decide the execution plan at run-time, modifying it in the light
+        of actual experience. Given an expression like <code>$location?longitude</code> that is executed repeatedly,
+        the chances are that if <code>$location</code> is a shaped map with <code>longitude</code> in slot 0 on one occasion,
+        then the same will be true next time you execute the same expression.</p>
+        
+        <p>We've quietly introduced this kind of approach in recent releases, and it's working well. For example, with
+        lazy evaluation of variables and function results we now use a learning approach: we start with lazy evaluation,
+        but if on the first 20 executions the value is immediately read to completion, we switch to eager evaluation.
+        That's because lazy evaluation has a significant set-up overhead to retain the parts of the context on which the
+        expression depends, and there is no benefit in doing this if the caller is going to immediately materialise
+        the value anyway.</p>
+        
+        <p>The concrete design for shaped record access goes something like this. We augment the 
+            <code>MapItem</code> interface with a method
+        <code>map.lookup(key, plan)</code>. This method returns the requested value from the map, but also updates the
+        value of <code>plan</code> with information that will be retained the next time the same expression is evaluated.
+        If the map is a shaped map, the returned plan can include the <code>Shape</code> and the slot number; if an incoming
+        request comes with a plan that identifies the same <code>Shape</code> (which it usually will), 
+        then we can access the relevant slot number directly,
+        ignoring the value of the key. That only works, of course, for a lookup expression where the key is a literal
+        constant; but that's the normal case when working with records.</p>
+        
+        <p>If we can make this work (and it seems straightforward), then the same approach might have other applications.
+        For example, can we make path expressions go faster if we optimize for the tree model in use? Or could we get rid
+        of statically-allocated fingerprints (with the inconvenience they cause by not allowing documents and stylesheets
+        to be shared across configurations), and instead have the expression discover the fingerprint and NamePool at 
+        execution time?</p>
+        
+        <p>Saxon is now 25 years old. It seems there are still plenty of exciting ways to make it better.</p>
+        
+        
+        
+ 
+ 
+   
+    </div></content></entry><entry><title>Announcing Saxon 12.5!</title><link href="https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html</id><published>2024-07-02T11:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.5!</h1>
 
 <p>The Saxon 12.5 maintenance release has been published. This is a
@@ -2551,117 +2660,4 @@ Thanks to everyone who took the time to report them!
         <p>So, Hello World to Saxon-CS. There's still a lot of work to do, but we've reached a significant
         milestone.</p>
         
-    </div></content></entry><entry><title>The Zeno Chain: a new data structure for XDM sequences</title><link href="https://blog.saxonica.com/mike/2021/03/zeno_chains.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2021/03/zeno_chains.html</id><published>2021-03-18T15:34:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2021/03/zeno_chains.html"><div xmlns="http://www.w3.org/1999/xhtml">
-        <p>This article presents the Zeno Chain, a new data structure used
-        to underpin the implementation of XDM sequences in Saxon. It is also
-        designed to be capable of supporting XDM arrays, and might also have
-        potential for holding long character strings.</p>
-        <p>The current implementation of the Zeno Chain is a mutable list,
-        but the design lends itself easily to creating an immutable variant.
-        It also makes it easy to construct an immutable list from a mutable
-        one, making it efficient to construct a sequence with in-situ
-        modification, and then "freeze" it once construction is complete.</p>
-        <p>Saxon currently uses a variety of structures for holding sequences
-        and arrays. This variety is a problem in itself. Choosing the right
-        structure for a particular scenario involves somewhat hit-or-miss 
-        decision making; it would be better to have a single "all-rounder"
-        structure that performs well in a variety of situations.</p>
-        <p>There are of course vast numbers of data structures for sequences
-        available in the computer science literature. One promising one,
-        for example, is the "finger tree" which supports a wide range of
-        access patterns efficiently. But it also has drawbacks: any tree
-        structure that requires a node for each item in a list is going
-        to have a large memory overhead when storing a long sequence, and
-        the use of a fine-grained structure like this tends to mean that
-        there is little locality of reference for memory addressing, leading
-        to poor CPU caching performance.</p>
-        <p>The Zeno chain stores a sequence as a list of lists of items:
-        that is, it is a tree with a constant depth of 2. In the Java
-        implementation, both levels of list are instances of 
-        <code>java.util.ArrayList</code>. The key to the performance of the
-            structure is managing the number and size of the second-level
-            lists, which I call <i>segments</i>.</p>
-        <p>In a list that is constructed by appending individual items
-            on the end (a common scenario), the length of a segment
-            increases the closer it is to the start. For a list of 20,000
-            items, there are ten segments whose sizes are (8192, 4096, 4096, 
-            2048, 1024, 256, 128, 64, 64, 32). (Now you know why I called
-            it a Zeno chain.) The exact numbers don't matter
-            here: what is important is that the total number of segments
-            increases only logarithmically with the length of the sequence,
-            and that the segments on the right are short, which makes further
-            append operations efficient.</p>
-        <p>In a list constructed by prepending individual items, the
-            distribution of lengths will be the other way round: shortest
-            segments near the front. In the rare case where both append and
-            prepend operations occur, both ends will have short segments,
-            while longer segments will cluster around the middle.</p>
-        <p>Here's a summary of the major operations performed on the sequence:</p>
-        <ul>
-            <li><b>Append an item:</b> if the list is empty, construct a single
-            segment of length 1. Otherwise, if the last segment has length &lt; 32,
-            append to it. If the last segment is already full, coalesce the last segment with the previous
-            segment if the previous segment has sufficient room; if not, work
-            up the list to the start to find adjacent segments that can be merged.
-            A segment is considered to have sufficient room for such expansion if its resulting size
-            would not exceed 2^(N+5) where N is the distance of the segment
-            from the right-hand end of the sequence; it's this formula that ensures
-            that longer segments accumulate at the start of the sequence. If all
-            segments in the sequence are full — that is, if the
-            segment sizes are decreasing powers of two — then add a new segment. 
-            Append operations essentially take constant time; 97% of them only
-            affect the final segment.</li>
-            <li><b>Prepend an item:</b> simply append in reverse.</li>
-            <li><b>Get the Nth item:</b> search the master list of segments examining
-            the sizes of the segments until
-            the right segment is found, then get the item by addressing into the
-            Java <code>ArrayList</code>. This takes logarithmic time. The average
-            access time will be slightly higher in a list built by prepending items,
-            because the chance of finding the required item in the first couple of
-            segments is much lower.</li>
-            <li><b>Subsequence:</b> make a new Zeno chain containing whole or part copies
-            of the segments from the original chain that are in the required range.</li>
-            <li><b>Iteration:</b> Keep two index positions, the index position in the master
-            list, and the index position in the current segment, and use these indexes
-            to retrieve the next item by calling <code>ArrayList.get()</code> twice.</li>
-            <li><b>Sequence concatenation: </b> This is quite a common operation in
-            XSLT and XPath, as it's the basis of the "flattening" operations such as
-            <code>xsl:for-each</code>, <code>xsl:apply-templates</code>, and
-            FLWOR expressions. The most direct approach is simply to concatenate the two
-            master lists, leaving the segments unchanged. This however can lead to 
-            fragmentation of the sequence, so we perform a reorganization to
-            reduce the number of short segments. Specifically, working from the
-            right hand end, if any segment is found to be shorter than both its
-            immediate neighbours, we combine it with the left-hand neighbour
-            and reduce the number of segments by one. This has the effect of reducing
-            the incidence of short segments in the middle of the chain.</li>
-            <li><b>Insertion, removal, and replacement: </b> these operations
-            are comparatively rare. With the immutable version of the structure,
-            an alteration affecting one of the larger segments will require copying
-            of everything else in that segment. This isn't ideal: but it's better
-            than copying the entire sequence, which is what often happens today.
-            And the use of the Java <code>ArrayList</code> at least means that the
-            copying is very fast.</li>
-        </ul>
-        <p>It's important to note that most operations on sequences don't actually
-            result in a new sequence being constructed. Calling <code>tail()</code>,
-            for example, doesn't copy any data: it delivers an iterator over a portion
-            of the original sequence. The sequence only gets materialized if, for example
-            the result is stored in a variable (and even then, not always).</p>
-        <p>Saxon's default implementation for a sequence is simply a Java List.
-            Appending an item to a list generally copies the whole list. Where Saxon
-            can detect that this is going to be inefficient, it instead uses a structure
-            called a Chain: this is effectively a tree of segments. But there's little
-            serious attempt to manage the depth of the tree or the size of the segments,
-            and the results in some cases can be rather poor.The Zeno chain offers
-            a signficant improvement; it also looks as if it can be used for arrays
-            as well as sequences.</p>
-        <p>For managing long strings, I invented a similar structure, which I then
-            discovered already existed in the literature and is known as a Rope:
-            a Rope represents a string as a tree of substrings. The literature on
-            Ropes describes how to keep the tree balanced, but it has nothing to say
-            about how to decide how many substrings to hold, and how long to make them.
-            The Zeno chain might turn out to provide an answer to that question.
-
-        </p>
     </div></content></entry></feed>
