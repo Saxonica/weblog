@@ -1,4 +1,74 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2024-08-10T10:20:43.58179Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 12.5!</title><link href="https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html</id><published>2024-07-02T11:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2024-08-16T14:21:26.391867Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Packaging SaxonJS for the browser</title><link href="https://blog.saxonica.com/norm/2024/08/16-packaging.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2024/08/16-packaging.html</id><published>2024-08-16T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2024/08/16-packaging.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>Over the years, there have been several requests to improve the way that
+SaxonJS is packaged for the browser. In the run up towards SaxonJS 3.0 (real
+soon now, I promise), I’ve spent a few hours trying to see if that’s possible.</p>
+
+<p>For SaxonJS on Node.js, things seem to be working the way users expect. You
+can install SaxonJS, and <em>xslt3.js</em>, the command-line XSLT processor,
+with <code>npm install</code>. Then you can use them as you would other Node.js
+modules and applications.</p>
+
+<p>For the browser, things are a little less clear.</p>
+
+<p>I’ll start out by observing that SaxonJS is a large(ish) collection of mostly
+plain JavaScript files. There are a mixture of techniques used, as you might
+expect from a code base that stretches back seven or eight years (roughly ∞ in
+JavaScript years). This code is compiled by the <a href="https://developers.google.com/closure/compiler">Closure Compiler</a> to
+produce the release artifacts.</p>
+
+<div class="aside">
+<p><em>Aside:</em> Producing TypeScript instead of JavaScript is almost certainly
+impractical. And
+the answer to the question, “can you make it an ESM module?” appears to be “no”. But
+maybe I’m wrong?</p>
+</div>
+
+<p>Almost anything is <em>possible</em> in software,
+but there some things are probably <em>impractical</em> because of how SaxonJS
+is built.
+</p>
+
+<p>What I’ve come to realize after several hours is that I
+don’t actually understand what problem I’m trying to solve. That usually makes
+problems harder.</p>
+
+<p>For example, it would be easy to package the browser versions of the SaxonJS
+libraries into the <code>saxon-js</code> <em>npm</em> package. That would allow
+you to use <code>npm install</code> to install it. Once installed, you could
+refer to it in HTML like this:</p>
+
+<pre><code>&lt;script src="node_modules/saxon-js/SaxonJS3.rt.js"&gt;&lt;/script&gt;</code></pre>
+
+<p>That’s a non-zero usability improvement over downloading the browser release
+yourself and adding it to your project, but it’s an <em>awfully small</em>
+improvement. So small, that I conjecture that the request to “put it in the npm
+package” means more than that. But I don’t know what more.</p>
+
+<p>Another request that’s come up a couple of times is whether we should provide
+a version that’s been packaged up with <em>webpack</em>. Well. Okay. I spent
+a bit of time on that and eventually I managed to get</p>
+
+<pre><code>npx webpack --config webpack.config.js</code></pre>
+
+<p>to take <code>src/SaxonJS3.js</code>, chew on it for a while, and produce
+<code>dist/SaxonJS3.js</code>. That was a little, uh, underwhelming. I started
+with a JavaScript library that I could load in the browser and ended with…a
+different one, I guess?</p>
+
+<p>Then there are suggestions that instead of <em>webpack</em> I should be
+trying <em>vite</em> or <em>bun</em> or something else and do I also need
+<em>browserify</em>? I don’t know.
+I’m about to give up, at least in the short term, but before I do, I thought
+I’d see if anyone out there can tell me what I’m missing.</p>
+
+<p>If you would like to see SaxonJS for the browser packaged up in some
+different way, can you tell me how? And why? A small test case would be ideal:
+something that isn’t too complicated, that doesn’t work with SaxonJS as it’s
+distributed today, that would work if we packaged it in some other way.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 12.5!</title><link href="https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html</id><published>2024-07-02T11:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.5!</h1>
 
 <p>The Saxon 12.5 maintenance release has been published. This is a
