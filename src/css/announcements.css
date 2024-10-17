@@ -38,6 +38,15 @@ header .banner {
     font-style: italic;
 }
 
+.note {
+    border: 1px solid black;
+    border-radius: 0.5em;
+    margin-left: 4em;
+    margin-right: 4em;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
 /* ============================================================ */
 
 @media screen and (max-width: 890px) {
