@@ -1,4 +1,72 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2024-08-16T14:21:26.391867Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Packaging SaxonJS for the browser</title><link href="https://blog.saxonica.com/norm/2024/08/16-packaging.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2024/08/16-packaging.html</id><published>2024-08-16T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2024/08/16-packaging.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2024-10-17T14:22:02.635844Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Oops, we did it again</title><link href="https://blog.saxonica.com/norm/2024/10/17-oops.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2024/10/17-oops.html</id><published>2024-10-17T15:01:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2024/10/17-oops.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>As some of you have noticed, the SaxonJS
+“<a href="../../2023/10/06-no-longer-supported.html">no longer supported</a>” bug
+returned a few days ago. I’d have sworn that I removed that warning when we shipped
+SaxonJS 2.6. But I’d also have sworn we would get 3.0 out before now. Maybe I’m
+not very good at swearing.</p>
+
+<p>That warning <em>has been</em> removed from
+<a href="../../../announcements/2024/10/saxonjs-2.7.html">SaxonJS 2.7</a>, so
+this issue won’t surface again next October.</p>
+
+<p>Apologies for not getting a maintenance release out sooner. We really should
+have. Focus has been on SaxonJS 3.0, which is still coming along nicely, but
+there were a number of bug fixes in SaxonJS 2.x that we could have shipped
+months ago.</p>
+
+<p>My expectation is that we’ll ship some sort of beta test version of SaxonJS
+3.0 “real soon now” and Saxon 12.6 to fix
+<a href="https://saxonica.plan.io/issues/6487">the SEF bug</a> in 12.5 shortly
+before or after that.
+</p>
+
+</div></content></entry><entry><title>Announcing SaxonJS 2.7!</title><link href="https://blog.saxonica.com/announcements/2024/10/saxonjs-2.7.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2024/10/saxonjs-2.7.html</id><published>2024-10-17T15:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2024/10/saxonjs-2.7.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing SaxonJS 2.7!</h1>
+
+<p>The SaxonJS 2.7 maintenance release has been published. This is a
+maintenance release for NodeJS and the browser. It fixes a number of bugs.
+(Including <a href="/norm/2023/10/06-no-longer-supported.html">that one</a>
+about the spurious warning message. Again.)</p>
+
+<p>Highlights include:</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/4991">#4991</a>: Support JSON indentation in xml-to-json</li>
+<li><a href="https://saxonica.plan.io/issues/5540">#5540</a>: Namespace context is reset before each XSLT transformation</li>
+<li><a href="https://saxonica.plan.io/issues/5743">#5743</a>: Text nodes are no longer lost in xsl:catch instruction</li>
+<li><a href="https://saxonica.plan.io/issues/6234">#6234</a>: Corrected the behavior of a map called as a function</li>
+<li><a href="https://saxonica.plan.io/issues/6318">#6318</a>: Fixed an error in parsing regular expressions</li>
+<li><a href="https://saxonica.plan.io/issues/6352">#6352</a>: Resolved a performance issue introduced in SaxonJS 2.6</li>
+<li><a href="https://saxonica.plan.io/issues/6393">#6393</a>: Fixed a string/number comparison bug</li>
+<li><a href="https://saxonica.plan.io/issues/6418">#6418</a>: Improve behavior when attempting to use IXSL extensions on Node.js</li>
+<li><a href="https://saxonica.plan.io/issues/6516">#6516</a>: Fixed some XPath parsing errors related to uncommon expressions (like <code>/[x]</code>)</li>
+</ul>
+
+<p>For a complete list of the issues resolved in this release, please visit the
+<a href="https://saxonica.plan.io/projects/saxon-js/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_10&amp;op%5Bcf_10%5D=%3D&amp;v%5Bcf_10%5D%5B%5D=97&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">issue tracker</a>
+on the Saxonica support site.</p>
+
+<p>SaxonJS 2.7 was released on 17 October 2024. This release has been
+uploaded to the usual locations on the Saxonica website and the NPM
+repository.
+For more details, please consult
+<a href="https://www.saxonica.com/saxon-js/documentation2/index.html">the documentation</a>.
+</p>
+
+<div class="note">
+<p>Note: Saxon 12.5 won’t create SEF files that can be used with SaxonJS 2.x.
+This is a <a href="https://saxonica.plan.io/issues/6487">known bug</a> that will
+be fixed in Saxon 12.6. Saxon 12.4 and earlier versions will make SEF files that
+SaxonJS 2.x can use.</p>
+</div>
+
+<p>If you encounter any issues with SaxonJS 2.7, please
+<a href="https://saxonica.plan.io/projects/saxon-js/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>Packaging SaxonJS for the browser</title><link href="https://blog.saxonica.com/norm/2024/08/16-packaging.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2024/08/16-packaging.html</id><published>2024-08-16T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2024/08/16-packaging.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>Over the years, there have been several requests to improve the way that
@@ -1750,57 +1818,4 @@ putting them back where (I think) they were:</p>
 
 <p>(The irony that this update won’t turn up in your feed reader is not lost on me.)</p>
 
-</div></content></entry><entry><title>Experimenting with Maven</title><link href="https://blog.saxonica.com/norm/2020/10/02-maven.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2020/10/02-maven.html</id><published>2020-10-02T12:27:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2020/10/02-maven.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>Do you have
-<a href="https://www.saxonica.com/license/license.xml">a license</a>
-for Saxon PE or EE? Do you use
-<a href="https://en.wikipedia.org/wiki/Apache_Maven">Maven</a>?
-Would a Maven repository for Saxon PE or EE
-be useful to you? (Saxon HE is already released into
-<a href="https://search.maven.org/artifact/net.sf.saxon/Saxon-HE">Maven Central</a>.)</p>
-
-<p>I’ve sometimes thought it would be useful, and I fielded a customer
-request for it, so I’ve tried to set it up. It’s a bit experimental at
-the moment because I’m not entirely certain that I understand all of
-the metadata files that are expected in a Maven repository.</p>
-
-<p>I’ve only packaged up the Java release of Saxon 10.2 for the
-moment, but if I can get it usefully configured, I’m happy to try to
-make it part of the normal release process. We’re thinking of putting
-some of the older releases up as well to simplify regression
-testing.</p>
-
-<p>The experimental Maven repository is at
-<a href="https://dev.saxonica.com/maven/">https://dev.saxonica.com/maven/</a>.</p>
-
-<p>If you can try it out and let me know if you have trouble (or if you don’t!),
-I’d appreciate it.</p>
-
-</div></content></entry><entry><title>Hello, world!</title><link href="https://blog.saxonica.com/norm/2020/10/01-hello.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2020/10/01-hello.html</id><published>2020-10-01T11:10:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2020/10/01-hello.html"><div xmlns="http://www.w3.org/1999/xhtml">
-<h1>Hello, world!</h1>
-
-<p>A month to the day since I started working at Saxonica, I’m writing
-my first weblog posting. I’ll be perfectly honest, it’s mostly to test
-that the (new) weblog infrastructure is working. (I’m the new guy, so
-I’m doing a few infrastructure-y things. But I’ve also fixed a couple
-of bugs! And I have bigger plans!)</p>
-
-<p>We’ve upgraded some of the servers (By “we” I mean mostly O’Neil.
-Thank you O’Neil!) and I’ve moved the weblog out of Movable Type. It’s
-now a flat collection of XML files that get published with Saxon. It
-may be a little rough around the edges at the moment, but I don’t
-think I accidentally lost anything. (We have decided not to republish
-the comments from the old weblog.) If you find any broken links or
-things that don’t look right, please let me know. The sort of markup you
-get out of weblog tools is, uh, interesting.</p>
-
-<p>Behind the scenes, I’m moving our CI/CD infrastructure forward and
-I hope to publish an experimental Maven repository for the Saxon EE
-product “real soon now.”</p>
-
-<p>I’m not exactly sure how I’ll divide up my writings between this
-weblog and <a href="https://so.nwalsh.com/">my personal weblog</a>.
-I’ll try to cross-link where it’s appropriate.</p>
 </div></content></entry></feed>
