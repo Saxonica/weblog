@@ -1,4 +1,153 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2024-10-17T14:22:02.781454Z</updated><entry><title>Oops, we did it again</title><link href="https://blog.saxonica.com/norm/2024/10/17-oops.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2024/10/17-oops.html</id><published>2024-10-17T15:01:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2024/10/17-oops.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2024-12-18T17:17:25.726751Z</updated><entry><title>Announcing SaxonJS-HE 3.0.0-beta1!</title><link href="https://blog.saxonica.com/announcements/2024/12/saxonjs-he-3.0.0-beta1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2024/12/saxonjs-he-3.0.0-beta1.html</id><published>2024-12-18T16:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2024/12/saxonjs-he-3.0.0-beta1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing SaxonJS-HE 3.0.0-beta1!</h1>
+
+<p>SaxonJS 3.0 is a major update to the SaxonJS product. In December 2024, it is
+being published as a preview release, version 3.0.0-beta1. This is a preview
+release of the SaxonJS 3.0 HE (Home Edition) product. An EE (Enterprise Edition)
+product is in the works.
+</p>
+
+<div>
+<h2>New features in the beta1 release</h2>
+
+<p>This release includes a number of new features, with several more planned
+before the final 3.0 release.
+</p>
+
+<div>
+<h3>Promises</h3>
+
+<p>SaxonJS 3 introduces new mechanisms for enabling asynchronous processing
+using promises. A new instruction <code>ixsl:promise</code> is introduced which
+can be used as a replacement for the existing <code>ixsl:schedule-action</code>
+instruction.
+</p>
+
+<ul>
+<li>The new instruction can now call any asychronous function to fetch any kind of
+resource. Adding new kinds of resource is just a question of implementing new
+functions (which can be user-written functions as well as system-supplied
+functions). So if you want to fetch data from a SQL database, for example, you
+can easily write a function to do that.</li>
+<li>The machinery for handling asynchronous requests is now closely aligned with
+JavaScript promises, both in terms of the conceptual design, and the
+implementation. This makes it much easier to understand for users familiar
+with the JavaScript processing model.</li>
+<li>The mechanism takes advantage of XDM higher-order functions. (Note, however,
+that it still “bends” the pure declarative approach of XPath by introducing
+mutability. A promise, for example, is a mutable object, so you need to
+exercise care for example if you bind it to a variable.)</li>
+</ul>
+
+<p>Note that for Node.js, run time use of ixsl:promise is an EE feature. So XSLT
+stylesheets using <code>ixsl:promise</code> can be compiled to SEF with the XX
+compiler in SaxonJS without a JS-EE license, and then run in the browser; but to
+run such a stylesheet on Node.js requires SaxonJS-EE and a valid JS-EE license.
+</p>
+</div>
+
+<div>
+<h3>JavaScript extension functions</h3>
+
+<p>JavaScript developers have easy access to a huge variety of tools and
+libraries distributed as JavaScript packages through <code>npm</code> and other
+mechanisms. We want to make those libraries easily accessible for SaxonJS
+developers too.
+</p>
+
+<p>In SaxonJS 3, you can define extension functions in JavaScript and call them
+directly from XPath, both from <code>SaxonJS.XPath.evaluate</code> and from
+within XSLT stylesheets running on SaxonJS in the browser or on Node.js.
+</p>
+
+<p>This opens up whole new horizons for SaxonJS developers.
+</p>
+</div>
+
+<div>
+<h3>Smaller changes and improvements</h3>
+
+<p>While a lot of our focus has been on larger improvements, a few less dramatic
+features are also debuting in beta1.
+</p>
+
+<ul>
+<li>Support XPath expressions (other than “.”) after ? in <code>xsl:result-document</code></li>
+<li>New methods on <code>xsl:result-document</code>: <code>ixsl:replace-element</code>, <code>ixsl:insert-before</code>, and
+<code>ixsl:insert-after</code></li>
+<li>Improved support for following HTTP redirects</li>
+<li>Improved support for accessing JavaScript objects with <code>ixsl:set-property</code>, <code>ixsl:json-parse</code>,
+<code>ixsl:new</code>, <code>ixsl:apply</code>, <code>ixsl:call</code>, <code>ixsl:eval</code>, and <code>ixsl:get</code></li>
+<li>Support the <code>escape-solidus</code> option when generating JSON.</li>
+</ul>
+</div>
+</div>
+
+<div>
+<h2>New features coming soon</h2>
+
+<p>Eager to publish a release, at this stage, we’ve opted only to publish the HE
+version of SaxonJS 3.0 as beta1. More work is planned before the general
+release, including SaxonJS 3.0 EE.
+</p>
+
+<div>
+<h3>SaxonJS-EE</h3>
+
+<p>SaxonJS-HE will remain a free product, but in 2025 we will also be introducing a
+licensed version of SaxonJS, SaxonJS-EE. The licensed version will provide additional
+features on Node.js (such as built-in EXPath and Saxon extension functions).
+</p>
+
+<p>The promises API run time will be a licensed feature on Node.js.
+</p>
+</div>
+
+<div>
+<h3>Calling XSLT functions from JavaScript</h3>
+
+<p>Many transformations, on XML and JSON, are easier to define in XSLT than in
+JavaScript. XSLT has a rich vocabulary of instructions for describing, constructing,
+and transforming data in a clear, descriptive, and functional way.
+</p>
+
+<p>We anticipate making those features more accessible to JavaScript developers by
+allowing JavaScript to call functions defined in XSLT.
+</p>
+</div>
+
+<div>
+<h3>Adding a SaxonJS.compile API</h3>
+
+<p>The ability to construct an XSLT stylesheet and then compile it directly for
+use in the current transformation is a powerful feature. A new API for doing this,
+<code>SaxonJS.compile</code>, will be added in the general release.
+</p>
+</div>
+
+<div>
+<h2>Getting started</h2>
+</div>
+
+<p>You can try out SaxonJS-HE 3.0 today, the packages have been uploaded to
+<a href="https://www.npmjs.com/">npmjs.com</a>: 
+<a href="https://www.npmjs.com/package/saxonjs-he">saxonjs-he</a>
+and 
+<a href="https://www.npmjs.com/package/xslt3-he">xslt3-he</a>. You can also
+download them <a href="https://downloads.saxonica.com/SaxonJS/3/index.html">our website</a>.</p>
+
+<p>Our <a href="https://www.saxonica.com/saxonjs/documentation3/index.html">documentation
+pages</a> have been updated and a repository of short examples has been
+published: <a href="https://github.com/Saxonica/SaxonJS3-demo">SaxonJS3
+demo</a>.</p>
+
+<p>We hope you’re as excited as we are and we look forward to your feedback. Please
+report any issues that you encounter on
+<a href="https://saxonica.plan.io/projects/saxon-js/issues">our issue tracker</a>.
+</p>
+
+</div>
+</div></content></entry><entry><title>Oops, we did it again</title><link href="https://blog.saxonica.com/norm/2024/10/17-oops.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2024/10/17-oops.html</id><published>2024-10-17T15:01:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2024/10/17-oops.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>As some of you have noticed, the SaxonJS
@@ -2474,37 +2623,4 @@ return &lt;increase first="{$b?bidders?*[1]?increase}"
         Notably, searching for descendants in the tree is difficult; operations based on ordering of items within arrays are
         also tricky.</p>
             
-    </div></content></entry><entry><title>SaxonJS with web components</title><link href="https://blog.saxonica.com/norm/2022/04/19-shoelace.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2022/04/19-shoelace.html</id><published>2022-04-19T18:43:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2022/04/19-shoelace.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>I haven’t worked with
-<a href="https://en.wikipedia.org/wiki/Web_Components">web components</a> very much,
-though they’ve been on my “must explore more” list for a while. A couple of days ago,
-I stumbled across <a href="https://shoelace.style/">Shoelace</a>, “a forward-thinking
-library of web components.”</p>
-
-<p>“That’d just work in SaxonJS, right?”, I asked myself.</p>
-
-<p>Yep. I updated the
-<a href="https://github.com/Saxonica/helloWorldJS">helloWorldJS</a> repository
-that I created a while back to demonstrate it.</p>
-
-<p>The new work is in the <code>shoelace</code> branch.</p>
-
-<p>There’s not much different, really.</p>
-
-<ol>
-<li>The HTML file includes the
-Shoelace scripts and styling from its CDN. (A more robust application
-would want local copies, but this is just a toy.)</li>
-<li>Instead of using a <code>button</code> element, we use the Shoelace
-web-component: <code>&lt;sl-button&gt;Click me&lt;/sl-button&gt;</code>.
-</li>
-<li>The match pattern for the onclick handler changes to
-<code>match="sl-button"</code>.</li>
-</ol>
-
-<p>That’s pretty much all there is to it. Neat. I must try out some more web
-components when I have a chance. In principle, the seem like a really good idea.</p>
-
-</div></content></entry></feed>
+    </div></content></entry></feed>
