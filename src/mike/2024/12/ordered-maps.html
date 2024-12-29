@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Ordered Maps</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="author" content="Michael Kay" />
+        <meta name="pubdate" content="2024-12-29T09:00:00" />
+
+    </head>
+    <body>
+        <h1>Ordered Maps</h1>
+        
+        <p>There's been a lot of discussion recently in the QT4 community group about introducing
+        ordered maps: that is, maps in which there is a defined and predictable ordering of entries,
+        typically "last-in, last-out" where the most recently added entry always appears at the end.
+        The main motivation for this is that JSON is designed (like XML) to be human-readable, but
+        JSON content in which the entries appear in random order is anything but: if a phone bill
+        contains a name, address, account number, a summary of charges, and an itemized list of calls,
+        then you don't want the phone number appearing in the middle, sandwiched between the
+        list of calls and the list of charges. Currently when data is serialized as JSON, we provide
+        an option to indent it for readability, but indentation isn't going to make the data readable if
+        it's in random order.</p>
+        
+        <p>Retaining order is particularly useful for visual inspection of changes: if you write code that
+        modifies one entry in a JSON document, you want to satisfy yourself that the transformation
+        did exactly what you expected, and the best way to convince yourself is by placing the
+        input and output side-by-side and comparing them visually.</p>
+        
+        <p>There seems to be consensus that support for ordered maps, at least in some circumstances,
+        is desirable. There is debate about whether all maps should be ordered, and about whether
+        ordering should be the default, and about whether ordering should be supported if a map
+        is built incrementally using <code>map:put</code> operations. The answer to those questions
+        depends at least in part on understanding how great the overhead is in retaining order
+        in maps: if the overhead is negligible, then we might as well make all maps ordered.</p>
+        
+        <p>Normally I'm the first to argue that the language specification should not be driven
+        by performance concerns: we should design a clean language and leave implementors to
+        worry about how to implement it efficiently. But in this case, if we're making a change
+        to the language semantics that affects users whether they want the feature or not, I think
+        we need to understand clearly whether we are asking users to pay a performance price.</p>
+        
+        <p>Both JavaScript (from ES2015) and Python (from 3.7) have moved 
+        in the direction of making all maps (objects/dictionaries) ordered, so we wouldn't 
+        be on our own in doing this. However, JavaScript objects and Python dictionaries
+        are mutable, whereas XDM maps are functionally persistent (adding an entry
+        creates a new map, leaving the original unchanged), so the performance
+        constraints are somewhat different.</p>
+        
+        <p>So let's look now at how Saxon implements maps.</p>
+        
+        <p>In SaxonJ 12.x there are two main implementations (ignoring special cases such as empty
+        maps and singleton maps). The default implementation is in the class 
+        <code>net.sf.saxon.ma.map.HashTrieMap</code>, and this is built using an open source
+        implementation of immutable hash tries written by Michael Froh; it has been in the
+        product since 9.6. In SaxonCS 12.x we replace this with the functionally equivalent Microsoft 
+        class <code>System.Collections.Immutable.ImmutableDictionary</code>. Both these library
+        implementations are unordered.</p>
+        
+        <p>There is a minor tweak that complicates the implementation. In an ideal world,
+        we would create an underlying map of type <code>Map&lt;AtomicValue, GroundedValue></code>,
+        where <code>AtomicValue</code> is the Saxon class used to hold all atomic values,
+        and <code>GroundedValue</code> is the Saxon class used to hold all sequences other than
+        those that are lazily-evaluated. However, <code>AtomicValue.equals()</code> does
+        not implement the equality semantics defined by XDM for comparing map keys. This
+        is because XPath has different rules for equality comparisons in different circumstances.
+        The Microsoft <code>ImmutableDictionary</code> can take a custom <code>KeyComparer</code>
+        parameter, which would solve this problem, but there is no equivalent in the Froh
+        library that we use in SaxonJ. So instead we implement an underlying map of type
+        <code>Map&lt;AtomicMatchKey, Tuple&lt;AtomicValue, GroundedValue>></code>, where
+        <code>AtomicMatchKey</code> is a value derived from the <code>AtomicValue</code>
+        that has the correct equality semantics. We need to hold the <code>AtomicValue</code>
+        because in general two atomic values can have the same <code>AtomicMatchKey</code>
+        (for example this is the case when the keys are a mix of different numeric types):
+        and the XPath functionality for maps requires the original key value (including
+        its type annotation) to be retained.</p>
+        
+        <p>The second implementation of maps found in SaxonJ and SaxonCS is the class
+        <code>net.sf.saxon.ma.map.DictionaryMap</code>. This is implemented over a standard
+        mutable <code>java.util.HashMap&lt;String, GroundedValue>></code> on Java, or
+        <code>System.Collections.Generic.Dictionary&lt;string, GroundedValue></code>
+        on .NET. It is suitable only where the keys are all instances of <code>xs:string</code>
+        (which means we don't need to retain the type annotation), and where no in-situ
+        modification takes place. As soon as an operation such as <code>map:put</code>
+        or <code>map:remove</code> is applied to the map, we make a copy using the
+        more general <code>HashTrieMap</code> implementation. But for many maps,
+        especially those derived from JSON parsing, incremental modification is rare,
+        and the lower-overhead <code>DictionaryMap</code> is perfectly satisfactory.</p>
+        
+        <p>In Saxon 13 (not yet released), a third map implementation has been introduced:
+        the <code>ShapedMap</code>. This is described in the article 
+        <a href="https://blog.saxonica.com/mike/2024/08/maps-and-records.html">Maps and Records</a>,
+        and it is particularly useful in cases where many maps have exactly the same structure.
+        This often happens when parsing CSV or JSON files. A <code>ShapedMap</code> is in two
+        parts: a <code>Shape</code> object which holds a mapping from keys to integer slot numbers,
+        and a simple array of slots holding the values of the fields. The <code>Shape</code>
+        object can be shared between all map instances having a common structure. As with the
+        <code>DictionaryMap</code>, if a <code>ShapedMap</code> is subjected to <code>map:put</code>
+        or <code>map:remove</code> operations, it is immediately copied to a <code>HashTrieMap</code>.</p>
+        
+        <p>How are these map implementations affected by the requirement to maintain order
+        of entries?</p>
+        
+        <p>For the <code>ShapedMap</code>, order is already maintained, so it isn't a problem.
+        The only impact is that two maps can only share the same <code>Shape</code> object
+        if their keys are in the same order. There isn't going to be any observable performance
+        regression.</p>
+        
+        <p>For the <code>DictionaryMap</code>, on the Java platform we can replace the
+        underlying <code>HashMap&lt;String, GroundedValue></code> by a 
+        <code>LinkedHashMap&lt;String, GroundedValue></code>. That's easily done,
+        because it supports the same interface. I don't yet know how much overhead
+        it imposes (in space or time); that requires some measurements.</p>
+        
+        <p>On .NET, unfortunately, there is no equivalent to Java's <code>LinkedHashMap</code>.
+        I have therefore implemented my own: this comprises a <code>Dictionary&lt;string, int></code>
+        that maps string-valued keys to integer positions in the sequence, and two lists:
+        a list of <code>AtomicValue</code> for the keys and a list of <code>GroundedValue</code>
+        for the values.</p>
+        
+        <p>For the <code>HashTrieMap</code> on Java, my plan is to scrap the immutable map implemented
+        by Michael Froh, and substitute it with the <code>io.vavr.collection.LinkedHashMap</code>
+        from the VAVR library, which appears to have the required semantics. Again, there appears
+        to be no direct equivalent on .NET, so a home grown solution is again called for. My
+        current implementation uses the same apprach as for the <code>DictionaryMap</code>:
+        an immutable unordered map from atomic keys to integers, supplemented by ordered 
+        immutable lists of <code>AtomicValue</code> for the keys and <code>GroundedValue</code>
+        for the values.</p>
+        
+        <p>Which brings us to the question, what are the overheads? Answering that question
+        means making some assumptions about the workloads we want to measure. For example,
+        how important are <code>map:put</code> and <code>map:remove</code> operations? 
+        Anecdotal evidence suggests these are rather rare, and that most maps are read-only
+        once built. But they might be important to some use cases.</p>
+        
+        <p>The other complication is that we might be able to mitigate the overheads of making
+        maps ordered by introducing new optimisations. We've already introduced the 
+        <code>ShapedMap</code> idea, where ordering hopefully imposes very little overhead.
+        On .NET we could consider taking advantage of the ability to use a custom 
+        <code>KeyComparer</code> to avoid the overhead of effectively storing the keys twice.</p>
+        
+        <p>We could also get smarter about choosing which implementation of maps to use under
+        which circumstances. One change that I'm making is to introduce a <code>MapBuilder</code>
+        class: during the initial construction of a map (for example during JSON parsing or
+        during processing of <code>map:merge</code> or <code>map:build</code>, or during
+        evaluation of a map constructor) we can add entries to a mutable builder object, and
+        this then gives us the opportunity to choose the final map implementation when we
+        know what all the keys and values are. For example, if all the keys have the same
+        type annotation, then in principle we don't need to save the type annotations with
+        every key value. We also know the size of the map at this stage.</p>
+        
+        <p>We can even go further and avoid indexing the map until the first lookup 
+        (or <code>map:get</code>) operation. It might seem surprising, but there
+        are many maps that are never used for lookup. For example, a JSON document
+        might contain thousands of maps that are simply copied unchanged to the output,
+        or that are discarded because they are irrelevant to the particular query.
+        Perhaps the map builder should simply maintain a list of keys and values,
+        and do nothing else until the first <code>map:get</code>? The only complication
+        here is the need to detect duplicate keys, but that could be done cheaply
+        using a Bloom filter.</p>
+        
+        <p>So we need to do some measurements. But there's a good chance that if
+        it does turn out that ordered maps impose an overhead, we can find compensating
+        optimisations that mean there's no regression on the bottom line.</p>
+        
+        <p>My first experiments looking at the cost of parsing and re-serializing
+        JSON actually suggest that most of the cost is in the parsing and serializing,
+        and that the choice of data structure for the XDM maps has very little impact 
+        on the bottom line. But that's provisional and subject to confirmation.</p>
+        
+        
+        
+  
+ 
+   
+    </body>
+</html>
