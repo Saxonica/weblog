@@ -1,4 +1,169 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2024-12-18T17:17:25.466851Z</updated><author><name>Michael Kay</name></author><entry><title>Maps and Records</title><link href="https://blog.saxonica.com/mike/2024/08/maps-and-records.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2024/08/maps-and-records.html</id><published>2024-08-10T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2024/08/maps-and-records.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2024-12-29T15:00:13.616671Z</updated><author><name>Michael Kay</name></author><entry><title>Ordered Maps</title><link href="https://blog.saxonica.com/mike/2024/12/ordered-maps.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2024/12/ordered-maps.html</id><published>2024-12-29T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2024/12/ordered-maps.html"><div xmlns="http://www.w3.org/1999/xhtml">
+        
+        
+        <p>There's been a lot of discussion recently in the QT4 community group about introducing
+        ordered maps: that is, maps in which there is a defined and predictable ordering of entries,
+        typically "last-in, last-out" where the most recently added entry always appears at the end.
+        The main motivation for this is that JSON is designed (like XML) to be human-readable, but
+        JSON content in which the entries appear in random order is anything but: if a phone bill
+        contains a name, address, account number, a summary of charges, and an itemized list of calls,
+        then you don't want the phone number appearing in the middle, sandwiched between the
+        list of calls and the list of charges. Currently when data is serialized as JSON, we provide
+        an option to indent it for readability, but indentation isn't going to make the data readable if
+        it's in random order.</p>
+        
+        <p>Retaining order is particularly useful for visual inspection of changes: if you write code that
+        modifies one entry in a JSON document, you want to satisfy yourself that the transformation
+        did exactly what you expected, and the best way to convince yourself is by placing the
+        input and output side-by-side and comparing them visually.</p>
+        
+        <p>There seems to be consensus that support for ordered maps, at least in some circumstances,
+        is desirable. There is debate about whether all maps should be ordered, and about whether
+        ordering should be the default, and about whether ordering should be supported if a map
+        is built incrementally using <code>map:put</code> operations. The answer to those questions
+        depends at least in part on understanding how great the overhead is in retaining order
+        in maps: if the overhead is negligible, then we might as well make all maps ordered.</p>
+        
+        <p>Normally I'm the first to argue that the language specification should not be driven
+        by performance concerns: we should design a clean language and leave implementors to
+        worry about how to implement it efficiently. But in this case, if we're making a change
+        to the language semantics that affects users whether they want the feature or not, I think
+        we need to understand clearly whether we are asking users to pay a performance price.</p>
+        
+        <p>Both JavaScript (from ES2015) and Python (from 3.7) have moved 
+        in the direction of making all maps (objects/dictionaries) ordered, so we wouldn't 
+        be on our own in doing this. However, JavaScript objects and Python dictionaries
+        are mutable, whereas XDM maps are functionally persistent (adding an entry
+        creates a new map, leaving the original unchanged), so the performance
+        constraints are somewhat different.</p>
+        
+        <p>So let's look now at how Saxon implements maps.</p>
+        
+        <p>In SaxonJ 12.x there are two main implementations (ignoring special cases such as empty
+        maps and singleton maps). The default implementation is in the class 
+        <code>net.sf.saxon.ma.map.HashTrieMap</code>, and this is built using an open source
+        implementation of immutable hash tries written by Michael Froh; it has been in the
+        product since 9.6. In SaxonCS 12.x we replace this with the functionally equivalent Microsoft 
+        class <code>System.Collections.Immutable.ImmutableDictionary</code>. Both these library
+        implementations are unordered.</p>
+        
+        <p>There is a minor tweak that complicates the implementation. In an ideal world,
+        we would create an underlying map of type <code>Map&lt;AtomicValue, GroundedValue&gt;</code>,
+        where <code>AtomicValue</code> is the Saxon class used to hold all atomic values,
+        and <code>GroundedValue</code> is the Saxon class used to hold all sequences other than
+        those that are lazily-evaluated. However, <code>AtomicValue.equals()</code> does
+        not implement the equality semantics defined by XDM for comparing map keys. This
+        is because XPath has different rules for equality comparisons in different circumstances.
+        The Microsoft <code>ImmutableDictionary</code> can take a custom <code>KeyComparer</code>
+        parameter, which would solve this problem, but there is no equivalent in the Froh
+        library that we use in SaxonJ. So instead we implement an underlying map of type
+        <code>Map&lt;AtomicMatchKey, Tuple&lt;AtomicValue, GroundedValue&gt;&gt;</code>, where
+        <code>AtomicMatchKey</code> is a value derived from the <code>AtomicValue</code>
+        that has the correct equality semantics. We need to hold the <code>AtomicValue</code>
+        because in general two atomic values can have the same <code>AtomicMatchKey</code>
+        (for example this is the case when the keys are a mix of different numeric types):
+        and the XPath functionality for maps requires the original key value (including
+        its type annotation) to be retained.</p>
+        
+        <p>The second implementation of maps found in SaxonJ and SaxonCS is the class
+        <code>net.sf.saxon.ma.map.DictionaryMap</code>. This is implemented over a standard
+        mutable <code>java.util.HashMap&lt;String, GroundedValue&gt;&gt;</code> on Java, or
+        <code>System.Collections.Generic.Dictionary&lt;string, GroundedValue&gt;</code>
+        on .NET. It is suitable only where the keys are all instances of <code>xs:string</code>
+        (which means we don't need to retain the type annotation), and where no in-situ
+        modification takes place. As soon as an operation such as <code>map:put</code>
+        or <code>map:remove</code> is applied to the map, we make a copy using the
+        more general <code>HashTrieMap</code> implementation. But for many maps,
+        especially those derived from JSON parsing, incremental modification is rare,
+        and the lower-overhead <code>DictionaryMap</code> is perfectly satisfactory.</p>
+        
+        <p>In Saxon 13 (not yet released), a third map implementation has been introduced:
+        the <code>ShapedMap</code>. This is described in the article 
+        <a href="https://blog.saxonica.com/mike/2024/08/maps-and-records.html">Maps and Records</a>,
+        and it is particularly useful in cases where many maps have exactly the same structure.
+        This often happens when parsing CSV or JSON files. A <code>ShapedMap</code> is in two
+        parts: a <code>Shape</code> object which holds a mapping from keys to integer slot numbers,
+        and a simple array of slots holding the values of the fields. The <code>Shape</code>
+        object can be shared between all map instances having a common structure. As with the
+        <code>DictionaryMap</code>, if a <code>ShapedMap</code> is subjected to <code>map:put</code>
+        or <code>map:remove</code> operations, it is immediately copied to a <code>HashTrieMap</code>.</p>
+        
+        <p>How are these map implementations affected by the requirement to maintain order
+        of entries?</p>
+        
+        <p>For the <code>ShapedMap</code>, order is already maintained, so it isn't a problem.
+        The only impact is that two maps can only share the same <code>Shape</code> object
+        if their keys are in the same order. There isn't going to be any observable performance
+        regression.</p>
+        
+        <p>For the <code>DictionaryMap</code>, on the Java platform we can replace the
+        underlying <code>HashMap&lt;String, GroundedValue&gt;</code> by a 
+        <code>LinkedHashMap&lt;String, GroundedValue&gt;</code>. That's easily done,
+        because it supports the same interface. I don't yet know how much overhead
+        it imposes (in space or time); that requires some measurements.</p>
+        
+        <p>On .NET, unfortunately, there is no equivalent to Java's <code>LinkedHashMap</code>.
+        I have therefore implemented my own: this comprises a <code>Dictionary&lt;string, int&gt;</code>
+        that maps string-valued keys to integer positions in the sequence, and two lists:
+        a list of <code>AtomicValue</code> for the keys and a list of <code>GroundedValue</code>
+        for the values.</p>
+        
+        <p>For the <code>HashTrieMap</code> on Java, my plan is to scrap the immutable map implemented
+        by Michael Froh, and substitute it with the <code>io.vavr.collection.LinkedHashMap</code>
+        from the VAVR library, which appears to have the required semantics. Again, there appears
+        to be no direct equivalent on .NET, so a home grown solution is again called for. My
+        current implementation uses the same apprach as for the <code>DictionaryMap</code>:
+        an immutable unordered map from atomic keys to integers, supplemented by ordered 
+        immutable lists of <code>AtomicValue</code> for the keys and <code>GroundedValue</code>
+        for the values.</p>
+        
+        <p>Which brings us to the question, what are the overheads? Answering that question
+        means making some assumptions about the workloads we want to measure. For example,
+        how important are <code>map:put</code> and <code>map:remove</code> operations? 
+        Anecdotal evidence suggests these are rather rare, and that most maps are read-only
+        once built. But they might be important to some use cases.</p>
+        
+        <p>The other complication is that we might be able to mitigate the overheads of making
+        maps ordered by introducing new optimisations. We've already introduced the 
+        <code>ShapedMap</code> idea, where ordering hopefully imposes very little overhead.
+        On .NET we could consider taking advantage of the ability to use a custom 
+        <code>KeyComparer</code> to avoid the overhead of effectively storing the keys twice.</p>
+        
+        <p>We could also get smarter about choosing which implementation of maps to use under
+        which circumstances. One change that I'm making is to introduce a <code>MapBuilder</code>
+        class: during the initial construction of a map (for example during JSON parsing or
+        during processing of <code>map:merge</code> or <code>map:build</code>, or during
+        evaluation of a map constructor) we can add entries to a mutable builder object, and
+        this then gives us the opportunity to choose the final map implementation when we
+        know what all the keys and values are. For example, if all the keys have the same
+        type annotation, then in principle we don't need to save the type annotations with
+        every key value. We also know the size of the map at this stage.</p>
+        
+        <p>We can even go further and avoid indexing the map until the first lookup 
+        (or <code>map:get</code>) operation. It might seem surprising, but there
+        are many maps that are never used for lookup. For example, a JSON document
+        might contain thousands of maps that are simply copied unchanged to the output,
+        or that are discarded because they are irrelevant to the particular query.
+        Perhaps the map builder should simply maintain a list of keys and values,
+        and do nothing else until the first <code>map:get</code>? The only complication
+        here is the need to detect duplicate keys, but that could be done cheaply
+        using a Bloom filter.</p>
+        
+        <p>So we need to do some measurements. But there's a good chance that if
+        it does turn out that ordered maps impose an overhead, we can find compensating
+        optimisations that mean there's no regression on the bottom line.</p>
+        
+        <p>My first experiments looking at the cost of parsing and re-serializing
+        JSON actually suggest that most of the cost is in the parsing and serializing,
+        and that the choice of data structure for the XDM maps has very little impact 
+        on the bottom line. But that's provisional and subject to confirmation.</p>
+        
+        
+        
+  
+ 
+   
+    </div></content></entry><entry><title>Maps and Records</title><link href="https://blog.saxonica.com/mike/2024/08/maps-and-records.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2024/08/maps-and-records.html</id><published>2024-08-10T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2024/08/maps-and-records.html"><div xmlns="http://www.w3.org/1999/xhtml">
         
         
         <p>Maps have proved to be one of the most powerful new features in the 3.0/3.1 family of standards,
@@ -4526,126 +4691,4 @@ expand-text="yes"
       <p>All feedback is welcome: especially on
          opportunities for exploiting the technology in ways that we might not
          have thought of.</p>
-   </div></content></entry><entry><title>Parent pointers in the Saxon expression tree</title><link href="https://blog.saxonica.com/mike/2015/09/parent-pointers-in-the-saxon-expression-tree.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2015/09/parent-pointers-in-the-saxon-expression-tree.html</id><published>2015-09-11T19:38:54Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2015/09/parent-pointers-in-the-saxon-expression-tree.html"><div xmlns="http://www.w3.org/1999/xhtml">
-      
-      <p>A while ago (<a href="/mike/2014/11/redesigning-the-saxon-expression-tree.html">https://blog.saxonica.com/mike/2014/11/redesigning-the-saxon-expression-tree.html</a>) I wrote about my plans for the Saxon expression tree. This note is an update.
-         </p>
-      <p>
-         We've made a number of changes to the expression tree for 9.7.
-         </p>
-      <ul>
-         <li>
-            
-            <p>Every node in the tree (every expression) now references a
-               Location object, providing location information for diagnostics
-               (line number, column number, etc). Previously the expression node
-               implemented the SourceLocator interface, which meant it provided
-               this information directly. The benefit is that we can now have
-               different kinds of Location object. In XQuery we will typically hold
-               the line and column and module URI. In XSLT, for a subexpression
-               within an XPath expression, we can now hold both the offset within
-               the XPath expression, and the path to the containing node within the
-               XSLT stylesheet. Hopefully debuggers and editing tools such as
-               oXygen and Stylus Studio will be able to take advantage of the
-               improved location information to lead users straight to the error
-               location in the editor. Where an expression has the same location
-               information as its parent or sibling expressions, the Location
-               object is shared.</p>
-            
-            
-            <p>Another reason for changing the way we hold location information
-               is connected with the move to separately-compiled packages in XSLT
-               3.0. This means that the system we previously used, of
-               globally-unique integer "location identifiers" which are translated
-               into real location information by reference to a central "location
-               provider" service, is no longer viable.</p>
-            </li>
-         <li>
-            
-            <p>Every node in the tree now points to a RetainedStaticContext
-               object which holds that part of the static context which can vary from
-               one expression to another, and which can be required at run-time.
-               Previously we only attempted to retain the parts of the static context
-               that each kind of expression actually used. The parts of the static
-               context that this covers include the static base URI, in-scope
-               namespaces, the default collation, and the XPath 1.0 compatibility
-               flag. Retaining the whole static context might seem extravagent. But
-               in fact, it very rarely changes, so a child expression will nearly
-               always point to the same RetainedStaticContext object as its parent
-               and sibling expressions.</p>
-            </li>
-         <li>
-            
-            <p>Every node in the tree now points to its parent node. This choice has proved tricky.
-               It gives many advantages: it means that the code for every expression can easily find
-               details of the containing package, the configuration options, and a host of details
-               about the query or stylesheet as a whole. The fact that we have a parent node eliminates
-               the need for the "container" object (typically the containing function or template)
-               which we held in previous releases. It also reduces the need to pass additional information
-               to methods on the Expression class, for example methods to determine the item type
-               and cardinality of the expression. There is a significant downside to holding this
-               information, which is the need to keep it consistent. Some of the tree rewrite operations
-               performed by the optimizer are complex enough without having to worry about keeping
-               all the parent pointers correct. And it turns out to be quite difficult to enforce
-               consistency through the normal "private data, public methods" encapsulation techniques:
-               those work when you have to keep the data in a single object consistent, but they
-               aren't much use for maintaining mutual consistency between two different objects.
-               In any case it seems to be unavoidable that to achieve the kind of tree rewrites we
-               want to perform, the tree has to be temporarily inconsistent at various stages.</p>
-            
-            
-            <p>Using parent pointers means that you can't share subtrees. It means that when you
-               perform operations like inlining a function, you can't just reference the subtree
-               that formed the body of the function, you have to copy it. This might seem a great
-               nuisance. But actually, this is not a new constraint. It never was safe to share subtrees,
-               because the optimiser would happily make changes to a subtree without knowing that
-               there were
-               other interested parties. The bugs this caused have been an irritation for years.
-               The introduction of parent pointers makes the constraint more explicit, and makes
-               it possible to perform integrity checking on the tree to discover when we have inadvertently
-               violated the constraints.
-               </p>
-            
-            
-            <p>
-               During development we've had diagnostic code switched on that checks the integrity
-               of the tree and outputs warnings if problems are found. We've gradually been examining
-               these and eliminating them. The problems can be very hard to diagnose, because the
-               detection of a problem in the data may indicate an error that occurred in a much earlier
-               phase of processing. We've developed some diagnostic tools for tracing the changes
-               made to a particular part of the tree and correlating these with the problems detected
-               later. Most of the problems, as one might expect, are connected with optimization
-               rewrites. A particular class of problem occurs with rewrites that are started but
-               then not completed, (because problems are found) or with "temporary" rewrites that
-               are designed to create an equivalent expression suitable for analysis (say for streamability
-               analysis or for schema-aware static type-checking) but which are not actually intended
-               to affect the run-time interpreted tree. The discipline in all such cases is to copy
-               the part of the tree you want to work on, rather than making changes in-situ.
-               </p>
-            
-            
-            <p>
-               For some non-local rewrites, such as loop-lifting optimizations, the best strategy
-               seems to be to ignore the parent pointers until the rewrite is finished, and then
-               restore them during a top-down tree-walk.
-               </p>
-            
-            
-            <p>
-               The fact that we now have parent pointers makes context-dependent optimizations much
-               easier. Checking, for example, whether  a variable reference occurs within a loop
-               (a "higher-order expression" as the XSLT 3.0 spec calls it) is now much easier: it
-               can be done by searching upwards from the variable reference rather than retaining
-               context information in an expression visitor as you walk downwards. Similarly, if
-               there is a need to replace one expression by another (a variable reference by a literal
-               constant, say), the fact that the variable reference knows its own parent makes the
-               substitution much easier.
-               </p>
-            
-            
-            <p>
-               So although the journey has had a few bumps, I'm reasonably confident that we will
-               see long-term benefits.</p>
-            </li>
-      </ul>
    </div></content></entry></feed>
