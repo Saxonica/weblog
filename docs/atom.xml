@@ -1,4 +1,26 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2024-12-29T15:00:13.846289Z</updated><entry><title>Ordered Maps</title><link href="https://blog.saxonica.com/mike/2024/12/ordered-maps.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2024/12/ordered-maps.html</id><published>2024-12-29T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2024/12/ordered-maps.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-02-06T13:30:09.021120863Z</updated><entry><title>21st Anniversary Flash Sale!</title><link href="https://blog.saxonica.com/norm/2025/02/06-flash.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/02/06-flash.html</id><published>2025-02-06T14:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/02/06-flash.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>21<sup>st</sup> Anniversary Flash Sale!</h1>
+
+<img class="sale" src="/img/saxon21.jpg" alt="Saxon at 21 Flash Sale banner"/>
+<p>Saxonica was incorporated twenty-one years ago, in February 2004. To
+celebrate, we’re having a flash sale. For one weekend only, a Saxon license
+is just <span title="Base 2 is just like base 10… if you're missing 8 fingers">£101.01</span>!<sup><a class="tandclink" href="#tandc">*</a></sup></p>
+
+<p>A lot has changed since Michael Kay founded Saxonica. Our flagship Java
+product has been joined by C, C++, C#, JavaScript, PHP, and Python products.
+We’re now delivering applications and tools for three platforms across five
+architectures. Our team has grown, and our business has evolved. But what hasn’t
+changed is our dedication to being an industry-leading provider of XML
+technologies.</p>
+
+<p>The sale runs Friday evening (8 February 2025) through Monday morning, UK
+time. With a savings of almost 75% off our regular price, this is your perfect
+opportunity to hop aboard and join us for the next 21 years!</p>
+
+<p id="tandc" class="fineprint"><sup>*</sup> Terms and conditions apply 😁:
+limited to one single-user EE license purchased through our online shop.</p>
+
+</div></content></entry><entry><title>Ordered Maps</title><link href="https://blog.saxonica.com/mike/2024/12/ordered-maps.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2024/12/ordered-maps.html</id><published>2024-12-29T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2024/12/ordered-maps.html"><div xmlns="http://www.w3.org/1999/xhtml">
         
         
         <p>There's been a lot of discussion recently in the QT4 community group about introducing
@@ -2343,76 +2365,4 @@ I expect we’ll do at least one more maintenance release of 2.x before we get t
 </p>
 
 <p>But we have to start somewhere. Feedback welcome.</p>
-</div></content></entry><entry><title>The pattern match="para except appendix//para"
-      </title><link href="https://blog.saxonica.com/mike/2022/05/except-patterns.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2022/05/except-patterns.html</id><published>2022-05-26T15:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2022/05/except-patterns.html"><div xmlns="http://www.w3.org/1999/xhtml">
-        <h1>The pattern <code>match="para except appendix//para"</code></h1>
-        
-        <p>If you saw this pattern in an XSLT stylesheet, I can guess your reaction: <i>I haven't
-        seen a pattern like that before. Cool, a neat way of matching paragraphs that aren't in
-        an appendix. Must remember that and use it myself.</i></p>
-        
-        <p>Sadly, it doesn't do what you think. Consider this input document:</p>
-        
-        <pre><code>
-&lt;appendix id="A"&gt;
-    &lt;section id="A.1"&gt;
-        &lt;para&gt;Ipsum lorem.&lt;/para&gt;
-    &lt;/section&gt;
-&lt;/appendix&gt;                   
-        </code></pre>
-        
-        <p>You'd probably be as surprised as I was to see that the <i>Ipsum lorem</i> paragraph in this
-            example matches the pattern <code>para except appendix//para</code>.</p>
-        
-        <p>To see why this is true, go to the spec, section 5.5.3: </p>
-        
-        <p>An item <i>N</i> matches a pattern <i>P</i> if the following applies, where <i>EE</i> is the equivalent expression to <i>P</i>: 
-            <i>N</i> is a node, and the result of evaluating the expression <code>root(.)//(EE)</code> with a singleton 
-            focus based on <i>N</i> is a sequence that includes the node <i>N</i>.</p>
-        
-        <p>So, this is saying that a node matches the pattern if it is selected by the expression <code>root(.)//(para except appendix/para)</code>.
-        Assuming that we're in a tree rooted at a document node, that means it must be selected by the expression 
-        <code>/descendant-or-self::node()/(para except appendix//para)</code>.</p>
-        
-        <p>Now, in our example document, one of the nodes selected by <code>/descendant-or-self::node()</code> is the <code>section</code> element;
-            and when we evaluate <code>(para except appendix//para)</code> starting at the <code>section</code> element, the first operand
-            (<code>para</code>) selects our paragraph, and the second operand (<code>appendix//para</code>) doesn't select it, so
-        the expression as a whole selects it, and therefore it matches the pattern.</p>
-        
-        <p>That's totally counter-intuitive, and it's certainly not what the Working Group intended. It's a nasty bug. So the question is,
-        what can we do about it, given that this is a published spec and there are implementations out there, and user applications that
-        depend on it?</p>
-        
-        <h2>Is there anything we can do about it?</h2>
-        
-        <p>Perhaps we should start by asking: what would we like the spec to say, if we had the opportunity to change it?</p>
-        
-        <p>Given that we already have a special rule for patterns with a top-level <code>union</code> operator (see §6.5 rule 2),
-        we could add a special rule for patterns with a top-level <code>intersect</code> or <code>except</code>
-            operator: a pattern of the form <code>A except B</code> matches an item if pattern <i>A</i> matches the item and 
-            pattern <i>B</i> does not. (And analagously for <code>intersect</code>.)</p>
-        
-        <p>If that's what we think we need to do, that leaves two challenges:</p>
-        
-        <ul>
-            <li>Changing the spec (given there is no longer a Working Group to maintain it).</li>
-            <li>Changing the Saxon implementation.</li>
-        </ul>
-        
-        <p>Starting with the second point, there are several possibilities:</p>
-        
-        <ul>
-            <li>Just do it, and hope we don't break any existing applications.</li>
-            <li>Support both the old and new semantics concurrently, with some mechanism for selecting which to use. (Which should
-            be the default? We want new users not to fall into the elephant trap, but we also don't want to break working applications.)</li>
-            <li>Deprecate the syntax, and provide new syntax for the new semantics (e.g. operators spelled <code>and-also</code> or
-            <code>but-not</code>). Note however, that it's likely most applications currently using <code>except</code> in a pattern
-            are using unproblematic patterns like <code>@* except @code</code>.</li>
-        </ul>
-        
-        <p>The third option seems the most satisfactory. And that suggest a route forward for the spec: in XSLT 4.0, if and when we
-        manage to get it defined, deprecate the <code>except</code> and <code>intersect</code> operators at the top level of a pattern,
-        and replace them with new operators that have the expected intuitive semantics.</p>
-        
-    
-    </div></content></entry></feed>
+</div></content></entry></feed>
