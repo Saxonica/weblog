@@ -1,4 +1,208 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-02-06T14:27:24.493365836Z</updated><entry><title>21st Anniversary Flash Sale!</title><link href="https://blog.saxonica.com/norm/2025/02/06-flash.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/02/06-flash.html</id><published>2025-02-06T14:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/02/06-flash.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-05-02T14:05:46.500925561Z</updated><entry><title>Announcing Saxon 12.6!</title><link href="https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html</id><published>2025-05-02T15:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 12.6!</h1>
+
+<p>The Saxon 12.6 maintenance release has been published. This is a maintenance
+release for Java, C#, C/C++, PHP, and Python that addresses well over 100 issues
+and feature requests reported since the Saxon 12.5 release.
+</p>
+
+<p>Saxon 12.6 was released on 2 May 2025. This release has been uploaded to the
+usual locations on the Saxonica website, GitHub, and Maven, PyPi, and NuGet.
+SaxonCS 12.6 is built with .NET 8.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=98&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=99&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.6">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Partial list of issues resolved</h2>
+
+<p>This section is a subset of the complete list of resolved issues.
+It’s curated to bring attention to the bugs that seem most likely to
+impact customers. 
+</p>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<p>In addition to the individual issues listed below, this release fixes
+several issues related to streaming transformations and several issues
+related to tracing.</p>
+
+<p>For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=98&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6748">6748</a>
+    Updated xsl:array to track the evolving QT4CG specifications</li>
+<li><a href="https://saxonica.plan.io/issues/6746">6746</a>
+    Resolved errors related to version ranges in xsl:use-package/@package-version</li>
+<li><a href="https://saxonica.plan.io/issues/6724">6724</a>
+    Clarified limitations on importing schemas for reserved namespaces (such as fn:)</li>
+<li><a href="https://saxonica.plan.io/issues/6711">6711</a>
+    Clarified how setting allowedProtocols to restrict parse-xml is handled</li>
+<li><a href="https://saxonica.plan.io/issues/6696">6696</a>
+    Resolved a concurrency issue during lazy evaluation</li>
+<li><a href="https://saxonica.plan.io/issues/6688">6688</a>
+    Fixed a bug where the coverage report from XSpec creates XML that is not well formed</li>
+<li><a href="https://saxonica.plan.io/issues/6682">6682</a>
+    Resolved an issue in XSD uniqueness constraints vs. key constraints</li>
+<li><a href="https://saxonica.plan.io/issues/6679">6679</a>
+    Fixed a bug where an incorrect variable was accessed when using xsl:iterate within xsl:accumulator</li>
+<li><a href="https://saxonica.plan.io/issues/6671">6671</a>
+    Resolved an issue during schema load with multiple imports</li>
+<li><a href="https://saxonica.plan.io/issues/6652">6652</a>
+    parse-xml no longer fails if the string it’s parsing begins with a BOM</li>
+<li><a href="https://saxonica.plan.io/issues/6621">6621</a>
+    Clarified how reflexive extension functions and varargs work</li>
+<li><a href="https://saxonica.plan.io/issues/6597">6597</a>
+    Fixed a bug where calling getBaseUri() in the Axiom tree model triggers infinite recursion</li>
+<li><a href="https://saxonica.plan.io/issues/6577">6577</a>
+    Resolved an issue related to xsl:where-populated and namespace fixup</li>
+<li><a href="https://saxonica.plan.io/issues/6565">6565</a>
+    Fixed a performance regression in DocumentFn with Java 12 or higher</li>
+<li><a href="https://saxonica.plan.io/issues/6544">6544</a>
+    Fixed a bug where ID/IDREF attributes were not recognized when using the StAX parser</li>
+<li><a href="https://saxonica.plan.io/issues/6543">6543</a>
+    Fixed a bug where whitespace text nodes were reported incorrectly when using a pull parser</li>
+<li><a href="https://saxonica.plan.io/issues/6537">6537</a>
+    Fixed incorrect rounding of negative xs:double values</li>
+<li><a href="https://saxonica.plan.io/issues/6504">6504</a>
+    Clarified how collection() and uri-collection() handle invalid URIs</li>
+<li><a href="https://saxonica.plan.io/issues/6502">6502</a>
+    Fixed a bug where several invalid patterns were accepted</li>
+<li><a href="https://saxonica.plan.io/issues/6494">6494</a>
+    Fixed a bug where whitespace text output disappeared when indenting</li>
+<li><a href="https://saxonica.plan.io/issues/6489">6489</a>
+    Fixed Gizmo issue with prefix, precede, suffix, and follow commands</li>
+<li><a href="https://saxonica.plan.io/issues/6480">6480</a>
+    Cardinality of sequences returned by extension functions are now validated</li>
+<li><a href="https://saxonica.plan.io/issues/6472">6472</a>
+    Fixed a bug related to sort order in xsl:for-each-group in named templates</li>
+<li><a href="https://saxonica.plan.io/issues/6471">6471</a>
+    Corrected the operator precedence of validate expressions</li>
+<li><a href="https://saxonica.plan.io/issues/6452">6452</a>
+    Fixed round#2 and round-half-to-even#2 to give correct results on large negative integers</li>
+</ul>
+
+
+
+
+<h3>Issues in SaxonC</h3>
+
+<p>In the SaxonC 12.6 release, we have included a compiled C++ API library
+(.dll, .so, .dylib as appropriate) along with accompanying CMake files to
+simplify integration into C++ applications. This is provided in addition to the
+core SaxonC library, which continues to be cross-compiled using GraalVM.</p>
+
+<p>To use SaxonC in a C++ project, users now only need the two compiled library
+files and the header files—greatly reducing setup complexity. Integrating with a
+project already using CMake is as simple as using FindPackage(SaxonCHE 12.6.0)
+(Or SaxonCEE, or SaxonCPE, if using the EE or PE editions). A sample CMake
+project is provided with the samples in the download ZIP.</p>
+
+<p>This change applies only to the C++ API. It does not affect the PHP or Python extensions:</p>
+<dl>
+<dt>PHP</dt>
+<dd>Installation instructions are included in the README file in the download
+ZIP and also available in the online documentation.</dd>
+<dt>Python</dt>
+<dd>The extension is distributed as pre-built wheels via PyPI, making
+installation straightforward using pip.</dd>
+</dl>
+
+<p>In addition to the individual issues listed below, this release fixes a
+number of multithreading issues, encoding problems, and memory leaks. API
+support has been added for getcwd, getProperty/getProperties, and
+getJustInTimeCompilation on several objects. There have also been a number
+of documentation improvements.</p>
+
+<p>For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=99&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6731">6731</a>
+    Support adding properties to the Processor in the Saxon C API</li>
+<li><a href="https://saxonica.plan.io/issues/6695">6695</a>
+    Fixed an issue related to creating maps of strings in Python</li>
+<li><a href="https://saxonica.plan.io/issues/6677">6677</a>
+    Improve error messages associated with Xslt30Processor::compileFromString</li>
+<li><a href="https://saxonica.plan.io/issues/6676">6676</a>
+    Support initial template invocation with a combination of tunnel and non-tunnel parameters</li>
+<li><a href="https://saxonica.plan.io/issues/6668">6668</a>
+    Support setOutputFile() on SchemaValidator</li>
+<li><a href="https://saxonica.plan.io/issues/6657">6657</a>
+    Fixed line and column numbers in PySaxonApiError message</li>
+<li><a href="https://saxonica.plan.io/issues/6656">6656</a>
+    Fixed a bug where multiple calls to XdmNode.getParent() could leads to an exception</li>
+<li><a href="https://saxonica.plan.io/issues/6649">6649</a>
+    Improved error message associated with an expired license</li>
+<li><a href="https://saxonica.plan.io/issues/6634">6634</a>
+    Added support for getcwd and getProperties</li>
+<li><a href="https://saxonica.plan.io/issues/6628">6628</a>
+    Fixed a bug where the copy constructor for Xdm objects failed</li>
+<li><a href="https://saxonica.plan.io/issues/6620">6620</a>
+    Fixed a double-free bug in clearSettings</li>
+<li><a href="https://saxonica.plan.io/issues/6619">6619</a>
+    Resolved missing calls to super constructors</li>
+<li><a href="https://saxonica.plan.io/issues/6618">6618</a>
+    Fixed a bug where getDoubleValue crashed for text strings in XdmAtomicValue class</li>
+<li><a href="https://saxonica.plan.io/issues/6615">6615</a>
+    Fixed a bug where isEmpty crashed for new empty XdmMap</li>
+<li><a href="https://saxonica.plan.io/issues/6614">6614</a>
+    Fixed a bug where the XdmValue::XdmValue constructor crashed</li>
+<li><a href="https://saxonica.plan.io/issues/6606">6606</a>
+    Fixed a bug related to cwd and static-base-uri() in XPath</li>
+<li><a href="https://saxonica.plan.io/issues/6605">6605</a>
+    Fixed a bug in static-base-uri() when compiling a query from a string</li>
+<li><a href="https://saxonica.plan.io/issues/6575">6575</a>
+    Resolved a bug where som exception messages were empty in the PHP API</li>
+<li><a href="https://saxonica.plan.io/issues/6573">6573</a>
+    Added isMap, isArray and isFunction methods to the PHP API</li>
+<li><a href="https://saxonica.plan.io/issues/6562">6562</a>
+    Fixed issues related to mapSize when casting XdmValue from parseJson to XdmMap</li>
+<li><a href="https://saxonica.plan.io/issues/6556">6556</a>
+    Fixed a bug where the standardErrorOutputFile feature was ignored</li>
+<li><a href="https://saxonica.plan.io/issues/6539">6539</a>
+    Support PyXdmMap and PyXdmArray on PySaxonProcessor.parse_json</li>
+<li><a href="https://saxonica.plan.io/issues/6475">6475</a>
+    Fixed a bug where the PySchemaValidator did not handle an XdmNode input correctly</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.6, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>21st Anniversary Flash Sale!</title><link href="https://blog.saxonica.com/norm/2025/02/06-flash.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/02/06-flash.html</id><published>2025-02-06T14:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/02/06-flash.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>21<sup>st</sup> Anniversary Flash Sale!</h1>
 
 <img class="sale" src="/img/saxon21.jpg" alt="Saxon at 21 Flash Sale banner"/>
@@ -2346,23 +2550,4 @@ architecture independent release as SaxonCS 11.4.1 yesterday.)</p>
 <p>We’ll have to cross this bridge again if we publish another Saxon
 11.x maintenance release. Please let us know what works for you, and what doesn’t.</p>
 
-</div></content></entry><entry><title>Triaging the bug lists…</title><link href="https://blog.saxonica.com/norm/2022/06/15-saxonjs.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2022/06/15-saxonjs.html</id><published>2022-06-15T16:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2022/06/15-saxonjs.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>The very observant among you may have noticed me making a bunch of changes to
-the
-<a href="https://saxonica.plan.io/projects/saxon-js/issues">SaxonJS
-issues list</a> this afternoon. We’ve started planning for SaxonJS 3.0 and we’ve made
-a couple of early passes over the issues list.</p>
-
-<p>Today, I tried to make the actual issues list reflect some of those
-tentative plans. I’ve added “SaxonJS 3.0” as a milestone to a bunch of
-issues and I’ve moved some of the priorities around.</p>
-
-<p>Don’t read <em>too</em> much into that at the moment. For one
-thing, there’s almost certainly too much on the list, for another
-I expect we’ll do at least one more maintenance release of 2.x before we get to 3.0.
-</p>
-
-<p>But we have to start somewhere. Feedback welcome.</p>
 </div></content></entry></feed>
