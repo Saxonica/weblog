@@ -1,4 +1,110 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-05-02T14:05:46.360606332Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 12.6!</title><link href="https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html</id><published>2025-05-02T15:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-05-16T09:27:31.673132041Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 12.7!</title><link href="https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html</id><published>2025-05-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 12.7!</h1>
+
+<p>The Saxon 12.7 maintenance release has been published. This is a maintenance
+release for Java, C#, C/C++, PHP, and Python that addresses a few significant
+shortcomings in the Saxon 12.6 release.
+</p>
+
+<p>Saxon 12.7 was released on 16 May 2025. This release has been uploaded to the
+usual locations on the Saxonica website, GitHub, and Maven, PyPi, and NuGet.
+SaxonCS 12.7 is built with .NET 8.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=%3D&amp;v%5Bstatus_id%5D%5B%5D=3&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=101&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=%3D&amp;v%5Bstatus_id%5D%5B%5D=3&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=100&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.7">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Issues resolved</h2>
+
+<p>The substantial changes in this release are:</p>
+
+<ol>
+<li>We’ve returned to supporting JDK 8 in 12.7. The decision to move to JDK 11
+in 12.6 was intentional, but perhaps too eager. Fair warning: it is very
+unlikely that Saxon 13 will be released with support for JDK 8.</li>
+<li>We worked around a bug that caused the SaxonC products to fail under X86 emulation
+on Windows/ARM. (The bug is that Windows emulation doesn’t support some modern
+instructions that GraalVM was generating. We worked around it by turning down some
+GraalVM optimizations in that environment.)</li>
+</ol>
+
+<h3>Issues in SaxonJ and SaxonCS</h3>
+
+<p>These are just the release highlights, for a full list, see
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=%3D&amp;v%5Bstatus_id%5D%5B%5D=3&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=101&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6547">6547</a>
+    Resolved some schema loading performance regressions</li>
+<li><a href="https://saxonica.plan.io/issues/6771">6771</a>
+    Restored JDK 8 compatibility to the class files</li>
+<li><a href="https://saxonica.plan.io/issues/6776">6776</a>
+    Resolved a null pointer exception</li>
+<li><a href="https://saxonica.plan.io/issues/6778">6778</a>
+    Fixed the class name in the javax.xml.validation.SchemaFactory service</li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+<p>In addition to the X86 emulation problem, we resolved a few more issues in SaxonC.
+For a full list, see
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=%3D&amp;v%5Bstatus_id%5D%5B%5D=3&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=100&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6443">6443</a>
+    Fixed a bug in Python PySaxonProcessor.make_atomic_value</li>
+<li><a href="https://saxonica.plan.io/issues/6522">6522</a>
+    The documentation for Saxon\SchemaValidator is incorrect</li>
+<li><a href="https://saxonica.plan.io/issues/6525">6525</a>
+    Fixed XdmNode::getChildren()</li>
+<li><a href="https://saxonica.plan.io/issues/6526">6526</a>
+    Fixed xdmNode-&gt;axisNodes(3) on PHP</li>
+<li><a href="https://saxonica.plan.io/issues/6536">6536</a>
+    Fixed segmentation fault with Python SaxonCHE 12.5</li>
+<li><a href="https://saxonica.plan.io/issues/6780">6780</a>
+    Accepted suggestion to set sxn_environ values to NULL after allocation</li>
+<li><a href="https://saxonica.plan.io/issues/6781">6781</a>
+    Fixed crash on Windows 11 under x86 emulation on ARM</li>
+<li><a href="https://saxonica.plan.io/issues/6787">6787</a>
+    The setCatalogFiles method was missing from the C API</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.7, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 12.6!</title><link href="https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html</id><published>2025-05-02T15:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.6!</h1>
 
 <p>The Saxon 12.6 maintenance release has been published. This is a maintenance
@@ -2042,42 +2148,5 @@ version of axios.</p>
 Saxon-JS. When Saxon-JS is running in the browser, it uses the
 browser’s APIs, so this update should have no consequences for the
 browser version at all.</p>
-
-</div></content></entry><entry><title>helloWorld.Saxon-JS for Node.js</title><link href="https://blog.saxonica.com/norm/2020/11/15-helloWorldNode.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2020/11/15-helloWorldNode.html</id><published>2020-11-15T17:53:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2020/11/15-helloWorldNode.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>You may already have seen my
-<a href="../10/27-helloWorld.html">helloWorld.Saxon-JS</a> posting. That
-was about getting Saxon-JS working in your browser. This post is about
-getting Saxon-JS working in Node.js.</p>
-
-<p>I’m still tinkering with some personal projects and I’ve decided
-that for one of them, I’m going to experiment with using Node.js. The
-app is going to do its thing and then eventually I’m going to want to
-build a web page to show the results.</p>
-
-<p>I’m sure there are ways to do this in Node.js, but this is pretty
-much the first ever thing I’ve built in node, so I don’t know what
-they are. What I do know is that I’ve got a wodge of JSON and I want
-to turn it into a web page.</p>
-
-<p>XSLT to the rescue. And XSLT on the server side this time.</p>
-
-<p>As before, I was able to follow <a href="https://www.saxonica.com/saxon-js/documentation/">the
-documentation</a> and get it up and running. But once again, it
-involved a lot more head scratching (and re-reading the <a href="https://www.saxonica.com/saxon-js/documentation/index.html#!api/transform">SaxonJS.transform
-API page</a>) than I would care to admit. This time, I think the main
-difficulty was my inexperience with node more than anything else. </p>
-
-<p>What I would have liked <em>this time</em> was a simple Node.js
-project that pulled all the pieces together so that I could build it
-and see it working, and then begin to hack on it.</p>
-
-<p>So I built one:
-<a href="https://github.com/Saxonica/helloWorldNodeJS">https://github.com/Saxonica/helloWorldNodeJS</a>.
-</p>
-
-<p>There’s really nothing to show, it’s about getting it to run locally, but I
-think the TL;DR is pretty straightforward.</p>
 
 </div></content></entry></feed>
