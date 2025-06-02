@@ -1,0 +1,61 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>Announcing SaxonJS-HE 3.0.0-beta2</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2025-06-02T13:00:00">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/announcements.css"><meta content="Saxonica announcements" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="The latest news from Saxonica." property="og:description"><meta content="https://blog.saxonica.com/announcements/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Announcing SaxonJS-HE 3.0.0-beta2" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/announcements/">Saxonica announcements</a></h1><div class="tagline">The latest news from Saxonica</div></div><h2>Announcing SaxonJS-HE 3.0.0-beta2!</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2025-06"><span class="date" time="2025-06-02T13:00:00">June&nbsp;02, 2025 at 01:00p.m.</span></a></div></header><main>
+
+
+<p>SaxonJS 3.0 is a major update to the SaxonJS product. In June 2025, we are
+publishing a second preview release, version 3.0.0-beta2. This is a preview
+release of the SaxonJS 3.0 HE (Home Edition) product. An EE (Enterprise Edition)
+product is in the works.
+</p>
+
+<div>
+<h2>New features in the beta2 release</h2>
+
+<p>This release includes a few bug fixes from the first beta.
+</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5923">5923</a>
+   Provide a way to control event listener parameters</li>
+<li><a href="https://saxonica.plan.io/issues/6599">6599</a>
+   Sequence interacts badly with try/catch</li>
+<li><a href="https://saxonica.plan.io/issues/6697">6697</a>
+   Checksum checking in SaxonJS 3</li>
+<li><a href="https://saxonica.plan.io/issues/6742">6742</a>
+   Untethered promises with SaxonJS 3.0.0-beta1</li>
+</ul>
+
+<p>Of these, the most consequential is probably 6697. In the course of fixing a
+bug related to SEF files produced for SaxonJS 2, we introduced a bug where
+SaxonJ 12.6 couldn’t produce SEF files for SaxonJS 3.0 beta1! That’s been fixed.
+You can now produce SEF files for SaxonJS 3.0 beta2 with Saxon 12.6 or later.
+(Unfortunately, you can’t produce SEF files for SaxonJS 3.0 beta2 with SaxonJ
+12.5 or earlier!)
+</p>
+
+<div>
+<h2>Getting started</h2>
+</div>
+
+<p>You can try out SaxonJS-HE 3.0 today, the packages have been uploaded to
+<a href="https://www.npmjs.com/">npmjs.com</a>: 
+<a href="https://www.npmjs.com/package/saxonjs-he">saxonjs-he</a>
+and 
+<a href="https://www.npmjs.com/package/xslt3-he">xslt3-he</a>. You can also
+download them <a href="https://downloads.saxonica.com/SaxonJS/3/index.html">our website</a>.</p>
+
+<p>Our <a href="https://www.saxonica.com/saxonjs/documentation3/index.html">documentation
+pages</a> have been updated.</p>
+
+<p>Please report any issues that you encounter on <a href="https://saxonica.plan.io/projects/saxon-js/issues">our issue tracker</a>.
+</p>
+
+</div>
+</main><footer><div class="prev-uri"><a href="/announcements/2025/05/saxon-12.7.html">Announcing Saxon 12.7!</a></div></footer></body>
+</html>

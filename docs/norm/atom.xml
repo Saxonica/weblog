@@ -1,4 +1,56 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-05-16T09:27:31.673132041Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 12.7!</title><link href="https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html</id><published>2025-05-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-06-02T11:42:50.531630161Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing SaxonJS-HE 3.0.0-beta2!</title><link href="https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html</id><published>2025-06-02T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing SaxonJS-HE 3.0.0-beta2!</h1>
+
+<p>SaxonJS 3.0 is a major update to the SaxonJS product. In June 2025, we are
+publishing a second preview release, version 3.0.0-beta2. This is a preview
+release of the SaxonJS 3.0 HE (Home Edition) product. An EE (Enterprise Edition)
+product is in the works.
+</p>
+
+<div>
+<h2>New features in the beta2 release</h2>
+
+<p>This release includes a few bug fixes from the first beta.
+</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/5923">5923</a>
+   Provide a way to control event listener parameters</li>
+<li><a href="https://saxonica.plan.io/issues/6599">6599</a>
+   Sequence interacts badly with try/catch</li>
+<li><a href="https://saxonica.plan.io/issues/6697">6697</a>
+   Checksum checking in SaxonJS 3</li>
+<li><a href="https://saxonica.plan.io/issues/6742">6742</a>
+   Untethered promises with SaxonJS 3.0.0-beta1</li>
+</ul>
+
+<p>Of these, the most consequential is probably 6697. In the course of fixing a
+bug related to SEF files produced for SaxonJS 2, we introduced a bug where
+SaxonJ 12.6 couldn’t produce SEF files for SaxonJS 3.0 beta1! That’s been fixed.
+You can now produce SEF files for SaxonJS 3.0 beta2 with Saxon 12.6 or later.
+(Unfortunately, you can’t produce SEF files for SaxonJS 3.0 beta2 with SaxonJ
+12.5 or earlier!)
+</p>
+
+<div>
+<h2>Getting started</h2>
+</div>
+
+<p>You can try out SaxonJS-HE 3.0 today, the packages have been uploaded to
+<a href="https://www.npmjs.com/">npmjs.com</a>: 
+<a href="https://www.npmjs.com/package/saxonjs-he">saxonjs-he</a>
+and 
+<a href="https://www.npmjs.com/package/xslt3-he">xslt3-he</a>. You can also
+download them <a href="https://downloads.saxonica.com/SaxonJS/3/index.html">our website</a>.</p>
+
+<p>Our <a href="https://www.saxonica.com/saxonjs/documentation3/index.html">documentation
+pages</a> have been updated.</p>
+
+<p>Please report any issues that you encounter on <a href="https://saxonica.plan.io/projects/saxon-js/issues">our issue tracker</a>.
+</p>
+
+</div>
+</div></content></entry><entry><title>Announcing Saxon 12.7!</title><link href="https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html</id><published>2025-05-16T10:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.7!</h1>
 
 <p>The Saxon 12.7 maintenance release has been published. This is a maintenance
@@ -2124,29 +2176,5 @@ console.log(`six = ${six}`)</code></pre>
 <a href="https://www.saxonica.com/saxon-js/documentation/index.html#!changes">change history</a>.
 Thanks to everyone who took the time to report them!
 </p>
-
-</div></content></entry><entry><title>Saxon-JS 2.0.3</title><link href="https://blog.saxonica.com/norm/2021/01/08-saxon-js-203.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2021/01/08-saxon-js-203.html</id><published>2021-01-08T15:41:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2021/01/08-saxon-js-203.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>Happy New Year!</p>
-
-<p>As of a few minutes ago (at time of publication!), Saxon-JS 2.0.3
-has been published to the
-<a href="https://www.npmjs.com/package/saxon-js">npm registry</a>.
-This release contains no changes in functionality (this is not the
-release you’ve been waiting for, we’re still working on that one).</p>
-
-<p>The previous version has a published dependency on
-<a href="https://www.npmjs.com/package/axios">axios</a> version 
-0.19.2 which is, apparently, the subject of a security vulnerability
-(or so <code>npm install</code> asserted this morning).</p>
-
-<p>This tiny release simply updates the dependency to a patched
-version of axios.</p>
-
-<p>Axios is an HTTP library that is only used by the NodeJS version of
-Saxon-JS. When Saxon-JS is running in the browser, it uses the
-browser’s APIs, so this update should have no consequences for the
-browser version at all.</p>
 
 </div></content></entry></feed>
