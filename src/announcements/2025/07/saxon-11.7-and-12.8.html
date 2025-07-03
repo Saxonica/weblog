@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Saxon 11.7 and 12.8</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2025-07-03T17:40:00" />
+</head>
+<body>
+<h1>Saxon 11.7 and 12.8</h1>
+
+<p>The accompanying release announcements for
+<a href="saxon-11.7.html">Saxon 11.7</a> and
+<a href="saxon-12.8.html">Saxon 12.8</a> describe those
+releases in detail. This post summarizes why we decided that we
+needed to release them both this week.</p>
+
+<p>Some applications are known to use Saxon to run untrusted, user-submitted
+stylesheets or queries. Running untrusted code always entails some risk. Saxon
+provides two
+<a href="https://www.saxonica.com/documentation12/index.html#!configuration/config-features">features</a>
+designed to help mitigate this risk: <code>ALLOWED_PROTOCOLS</code> and
+
+<code>ALLOW_EXTERNAL_FUNCTIONS</code>. Setting <code>ALLOWED_PROTOCOLS</code>
+can limit what resources a stylesheet or query can access; it can for example,
+forbid access to file: URIs. The <code>ALLOW_EXTERNAL_FUNCTIONS</code> feature
+can disable access to reflexive Java extension functions, some system
+properties, and some other extension functions. (The remit of the
+<code>ALLOW_EXTERNAL_FUNCTIONS</code> feature is a little wider than you might
+expect.)</p>
+
+<p>Unfortunately, we discovered a function in Saxon 11 and 12 that was not
+adequately controlled by these features. In principle, a stylesheet or query
+running in Saxon-PE or Saxon-EE could access the local filesystem even if the
+<code>ALLOWED_PROTOCOLS</code> feature was set to forbid such access. The risk
+is small: it only applies to untrusted code running in Saxon-PE or Saxon-EE (it
+does not apply to Saxon-HE) on a system where reading from the local filesystem
+would be deemed a risk. (We would encourage anyone running untrusted code to use
+a sandboxed environment where there is no data on the filesystem that needs to
+be protected from read access.)</p>
+
+<p>Although we judge the risk to be small, At Saxonica, we take security
+seriously and we are publishing maintenance releases of Saxon 11 and Saxon 12 to
+close this gap. We urge anyone running untrusted stylesheets or queries under
+Saxon-PE or Saxon-EE to move to version 11.7 or 12.8 immediately.</p>
+
+<p>This bug is present in the Java, C#, C, C++, Python and PHP products. It is
+not present in Saxon 10 (including the Saxon.NET 10) or in earlier releases. It
+is not present in SaxonJS.</p>
+
+</body>
+</html>
+
