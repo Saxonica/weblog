@@ -1,4 +1,183 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-06-02T11:42:50.531630161Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing SaxonJS-HE 3.0.0-beta2!</title><link href="https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html</id><published>2025-06-02T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-07-03T16:42:11.636682174Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Saxon 11.7 and 12.8</title><link href="https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html</id><published>2025-07-03T17:40:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>The accompanying release announcements for
+<a href="saxon-11.7.html">Saxon 11.7</a> and
+<a href="saxon-12.8.html">Saxon 12.8</a> describe those
+releases in detail. This post summarizes why we decided that we
+needed to release them both this week.</p>
+
+<p>Some applications are known to use Saxon to run untrusted, user-submitted
+stylesheets or queries. Running untrusted code always entails some risk. Saxon
+provides two
+<a href="https://www.saxonica.com/documentation12/index.html#!configuration/config-features">features</a>
+designed to help mitigate this risk: <code>ALLOWED_PROTOCOLS</code> and
+
+<code>ALLOW_EXTERNAL_FUNCTIONS</code>. Setting <code>ALLOWED_PROTOCOLS</code>
+can limit what resources a stylesheet or query can access; it can for example,
+forbid access to file: URIs. The <code>ALLOW_EXTERNAL_FUNCTIONS</code> feature
+can disable access to reflexive Java extension functions, some system
+properties, and some other extension functions. (The remit of the
+<code>ALLOW_EXTERNAL_FUNCTIONS</code> feature is a little wider than you might
+expect.)</p>
+
+<p>Unfortunately, we discovered a function in Saxon 11 and 12 that was not
+adequately controlled by these features. In principle, a stylesheet or query
+running in Saxon-PE or Saxon-EE could access the local filesystem even if the
+<code>ALLOWED_PROTOCOLS</code> feature was set to forbid such access. The risk
+is small: it only applies to untrusted code running in Saxon-PE or Saxon-EE (it
+does not apply to Saxon-HE) on a system where reading from the local filesystem
+would be deemed a risk. (We would encourage anyone running untrusted code to use
+a sandboxed environment where there is no data on the filesystem that needs to
+be protected from read access.)</p>
+
+<p>Although we judge the risk to be small, At Saxonica, we take security
+seriously and we are publishing maintenance releases of Saxon 11 and Saxon 12 to
+close this gap. We urge anyone running untrusted stylesheets or queries under
+Saxon-PE or Saxon-EE to move to version 11.7 or 12.8 immediately.</p>
+
+<p>This bug is present in the Java, C#, C, C++, Python and PHP products. It is
+not present in Saxon 10 (including the Saxon.NET 10) or in earlier releases. It
+is not present in SaxonJS.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 12.8!</title><link href="https://blog.saxonica.com/announcements/2025/07/saxon-12.8.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/07/saxon-12.8.html</id><published>2025-07-03T17:35:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/07/saxon-12.8.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 12.8!</h1>
+
+<p>The Saxon 12.8 maintenance release has been published.
+This is a
+maintenance release for Java, C#, C/C++, PHP, and Python that
+<a href="saxon-11.7-and-12.8.html">fixes a security gap</a> and a few
+other issues that have been addressed since 12.7 was released.</p>
+
+<p>Saxon 12.8 was released on 3 July 2025. This release has been uploaded to the
+usual locations on the Saxonica website, GitHub, and Maven, PyPi, and NuGet.
+SaxonCS 12.8 is built with .NET 8.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=%3D&amp;v%5Bstatus_id%5D%5B%5D=3&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=103&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=%3D&amp;v%5Bstatus_id%5D%5B%5D=3&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=104&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.8">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Issues resolved</h2>
+
+<p>In addition to the security issue, only a few other issues have been fixed;
+our focus was on getting the security release out promptly.</p>
+
+<h3>Issues in SaxonJ</h3>
+
+<p>Only one additional issue was fixed in SaxonJ:</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6804">6804</a>
+    String index out-of-bounds in <code>parse-xml()</code></li>
+</ul>
+
+<h3>Issues in SaxonC</h3>
+
+<p>A few small issues were fixed in SaxonC:</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6835">6835</a>
+    SaxonC PHP @@VERSION@@</li>
+<li><a href="https://saxonica.plan.io/issues/6830">6830</a>
+    SaxonC HE 12.7.0 - PHP - XdmNode-&gt;getColumnNumber() returns the line number</li>
+<li><a href="https://saxonica.plan.io/issues/6823">6823</a>
+    DocumentBuilder memory not deleted</li>
+<li><a href="https://saxonica.plan.io/issues/6803">6803</a>
+    Please provide parseJsonFromString example</li>
+<li><a href="https://saxonica.plan.io/issues/6802">6802</a>
+    Remove XdmAtomicValue::getStringValue</li>
+<li><a href="https://saxonica.plan.io/issues/6801">6801</a>
+    PRIMITIVE_TYPE defined, but not used?</li>
+<li><a href="https://saxonica.plan.io/issues/6800">6800</a>
+    Implement operator== for XdmItem or make it private</li>
+<li><a href="https://saxonica.plan.io/issues/6785">6785</a>
+    Instructions in Python README for running pytest are missing the use of a pytest.ini</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.8, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 11.7!</title><link href="https://blog.saxonica.com/announcements/2025/07/saxon-11.7.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/07/saxon-11.7.html</id><published>2025-07-03T17:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/07/saxon-11.7.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 11.7!</h1>
+
+<p>The Saxon 11.7 maintenance release has been published.
+This is a
+maintenance release for Java, C#, C/C++, PHP, and Python that
+<a href="saxon-11.7-and-12.8.html">fixes a security gap</a> and a number of
+other issues that have been addressed since 11.6 was released.</p>
+
+<p>Saxon 11.7 was released on 3 July 2023. This release has been
+uploaded to the usual locations on the Saxonica website, GitHub,
+Maven, and NuGet. SaxonCS 11.7 is built with .NET 8.</p>
+
+<p>For a list of the issues resolved in this release, please visit the
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=%3D&amp;v%5Bstatus_id%5D%5B%5D=3&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=102&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">issue tracker</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/11.7">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
+our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation11">the documentation</a>.
+</p>
+
+<p>If you encounter any issues with Saxon 11.7, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>Announcing SaxonJS-HE 3.0.0-beta2!</title><link href="https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html</id><published>2025-06-02T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing SaxonJS-HE 3.0.0-beta2!</h1>
 
 <p>SaxonJS 3.0 is a major update to the SaxonJS product. In June 2025, we are
@@ -2091,90 +2270,5 @@ architecture independent release as SaxonCS 11.4.1 yesterday.)</p>
 
 <p>We’ll have to cross this bridge again if we publish another Saxon
 11.x maintenance release. Please let us know what works for you, and what doesn’t.</p>
-
-</div></content></entry><entry><title>Triaging the bug lists…</title><link href="https://blog.saxonica.com/norm/2022/06/15-saxonjs.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2022/06/15-saxonjs.html</id><published>2022-06-15T16:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2022/06/15-saxonjs.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>The very observant among you may have noticed me making a bunch of changes to
-the
-<a href="https://saxonica.plan.io/projects/saxon-js/issues">SaxonJS
-issues list</a> this afternoon. We’ve started planning for SaxonJS 3.0 and we’ve made
-a couple of early passes over the issues list.</p>
-
-<p>Today, I tried to make the actual issues list reflect some of those
-tentative plans. I’ve added “SaxonJS 3.0” as a milestone to a bunch of
-issues and I’ve moved some of the priorities around.</p>
-
-<p>Don’t read <em>too</em> much into that at the moment. For one
-thing, there’s almost certainly too much on the list, for another
-I expect we’ll do at least one more maintenance release of 2.x before we get to 3.0.
-</p>
-
-<p>But we have to start somewhere. Feedback welcome.</p>
-</div></content></entry><entry><title>SaxonJS with web components</title><link href="https://blog.saxonica.com/norm/2022/04/19-shoelace.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2022/04/19-shoelace.html</id><published>2022-04-19T18:43:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2022/04/19-shoelace.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>I haven’t worked with
-<a href="https://en.wikipedia.org/wiki/Web_Components">web components</a> very much,
-though they’ve been on my “must explore more” list for a while. A couple of days ago,
-I stumbled across <a href="https://shoelace.style/">Shoelace</a>, “a forward-thinking
-library of web components.”</p>
-
-<p>“That’d just work in SaxonJS, right?”, I asked myself.</p>
-
-<p>Yep. I updated the
-<a href="https://github.com/Saxonica/helloWorldJS">helloWorldJS</a> repository
-that I created a while back to demonstrate it.</p>
-
-<p>The new work is in the <code>shoelace</code> branch.</p>
-
-<p>There’s not much different, really.</p>
-
-<ol>
-<li>The HTML file includes the
-Shoelace scripts and styling from its CDN. (A more robust application
-would want local copies, but this is just a toy.)</li>
-<li>Instead of using a <code>button</code> element, we use the Shoelace
-web-component: <code>&lt;sl-button&gt;Click me&lt;/sl-button&gt;</code>.
-</li>
-<li>The match pattern for the onclick handler changes to
-<code>match="sl-button"</code>.</li>
-</ol>
-
-<p>That’s pretty much all there is to it. Neat. I must try out some more web
-components when I have a chance. In principle, the seem like a really good idea.</p>
-
-</div></content></entry><entry><title>Saxon-JS 2.2</title><link href="https://blog.saxonica.com/norm/2021/05/11-saxon-js-22.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2021/05/11-saxon-js-22.html</id><published>2021-05-11T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2021/05/11-saxon-js-22.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>Saxon-JS 2.2
-has been published on
-<a href="https://saxonica.com/saxon-js/">Saxonica.com</a> and to the
-<a href="https://www.npmjs.com/package/saxon-js">npm registry</a>!</p>
-
-<p>This is a maintenance release that fixes a few bugs. The big one, to my mind, is resolving
-the “global object” bug in Node.js. Previous releases of Saxon-JS always
-created a global object named “<code>SaxonJS</code>”. This isn’t best practice on
-Node.js and interfered with some platforms like
-<a href="https://en.wikipedia.org/wiki/Electron_(software_framework)">Electron</a>
-and <a href="https://en.wikipedia.org/wiki/Webpack">Webpack</a>.</p>
-
-<p>Starting with 2.2, on Node.js, the global object no longer gets created.
-If you’ve consistently used</p>
-
-<pre><code>const SaxonJS = require('saxon-js');</code></pre>
-
-<p>to load Saxon-JS, you’ll be fine. If you’ve used some other name
-for the object, make sure that you refer to Saxon-JS exclusively by
-that name. For example:</p>
-
-<pre><code>const <b>sjs</b> = require('saxon-js');
-const six = <b>sjs</b>.XPath.evaluate("3+3");
-console.log(`six = ${six}`)</code></pre>
-
-<p>We fixed a few other bugs as detailed in the
-<a href="https://www.saxonica.com/saxon-js/documentation/index.html#!changes">change history</a>.
-Thanks to everyone who took the time to report them!
-</p>
 
 </div></content></entry></feed>
