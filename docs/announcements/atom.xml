@@ -1,4 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica announcements</title><link href="https://blog.saxonica.com/announcements/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/announcements/atom.xml" rel="self"/><id>https://blog.saxonica.com/announcements/atom.xml</id><updated>2025-07-04T07:05:01.104082936Z</updated><entry><title>Saxon 11.7 and 12.8</title><link href="https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html</id><published>2025-07-03T17:40:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica announcements</title><link href="https://blog.saxonica.com/announcements/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/announcements/atom.xml" rel="self"/><id>https://blog.saxonica.com/announcements/atom.xml</id><updated>2025-08-14T10:43:17.664531984Z</updated><entry><title>SaxonC Python 12.8 for Python 3.14</title><link href="https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html</id><published>2025-08-14T11:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>With the recent release of Python 3.14.0rc1, the ABI for Python 3.14 is
+final, and any SaxonC Python wheels we build against it will also work with
+the final 3.14 release. The TL;DR is that we’ve done that, and you can
+<code>pip install saxonche</code> (or <code>saxoncee</code> /
+<code>saxoncpe</code>) with the 3.14.0rc1 release right now.</p>
+
+<p>The Python 3.13 release was trickier for us to deal with than it should have
+been – our build processes required a lot more manual intervention for different
+Python versions than we liked, and we had to wait for a new Saxon release to get
+wheels built for Python 3.13, which was frustrating.</p>
+
+<p>We’ve been working on improving our build processes and making  it easier to
+build Python wheels across all the platforms and Python versions we support. Easy
+enough, in fact, that we were able to test Python 3.14 support back at the beta
+stage, and were ready to build SaxonC Python 12.8 against 3.14 as soon as the RC
+dropped and the ABI was stable.</p>
+
+<p>These new wheels were built from the same commit as the all the other SaxonC
+Python 12.8 wheels for Python 3.9-3.13. We’d love for you to install 12.8 for 3.14
+and kick the tires: since Python 3.14 is still RC and not at the final release stage,
+there may be some problems we haven't come across. If you run into any problems,
+please report them on the
+<a href="https://saxonica.plan.io/projects/saxon-c/issues">SaxonC issue tracker</a>.
+</p>
+
+<p>There are wheels for the same platforms as always – macOS x86_64 and arm64,
+Linux x86_64 and aarch64, and Windows x86_64. For macOS x86_64, Python 3.14 now
+requires macOS 11 or later. As a result, Python 3.14 wheels of SaxonC Python 12.8
+require macOS 11 or later on x86_64 too.</p>
+
+</div></content></entry><entry><title>Saxon 11.7 and 12.8</title><link href="https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html</id><published>2025-07-03T17:40:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>The accompanying release announcements for
