@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Implementing Maps to support JNodes</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta name="author" content="Michael Kay" />
+        <meta name="pubdate" content="2025-08-19T09:00:00" />
+
+    </head>
+    <body>
+        <h1>Ordered Maps and JNodes</h1>
+        
+        <p>Since I last wrote about <a href="https://blog.saxonica.com/mike/2024/12/ordered-maps.html">ordered maps</a>,
+        the XPath 4.0 specifications have now introduced the idea of JNodes, which adds a new set of 
+        requirements to the specification.</p>
+        
+        <p>I wrote about JNodes in <a href="https://www.balisage.net/Proceedings/vol30/html/Kay01/BalisageVol30-Kay01.html">my paper at Balisage 2025</a>, 
+        and I won't repeat the introduction here. Suffice it to say that a JNode can wrap a specific entry in an XDM
+        map, and it allows you (among other things) to:</p>
+        
+        <ol>
+            <li>Establish which of two entries in the same map comes first in document order (or equivalently,
+            in map order);</li>
+            <li>Get the preceding or following siblings of a map entry (the entries that precede it or follow it 
+                in map order).</li>
+        </ol>
+        
+        <p>The prototype implementation of JNodes that I demonstrated at Balisage included support for these
+        operations, but the implementation would be hopelessly inefficient in production. The current implementation
+        of ordered maps on the Saxon 13 development branch uses the <code>LinkedHashMap</code> implementation
+            from the VAVR library, and this doesn't have anything that would support either of these operations.</p>
+        
+        <p>I'm therefore proposing to use a home-grown map implementation as described below.</p>
+        
+        <p>First note that <code>map:put</code> and <code>map:remove</code> operations are rare, and it's OK
+        to have a map implementation that allows the map to be constructed by a mutable builder class in one phase of operation,
+        and thereafter to be read-only. If a <code>map:put</code> or <code>map:remove</code> operation is attempted,
+        we can rebuild the map using a different (immutable | persistent | functional) data structure. 
+        So let's first consider a structure that 
+        doesn't support <code>map:put</code> and <code>map:remove</code> operations directly. I'm calling this
+        a <code>FixedMap</code>.</p>
+        
+        <p>A <code>FixedMap</code> is underpinned by three Java structures:</p>
+        
+        <ul>
+            <li><code>keys</code>: An array of keys: type <code>AtomicValue[]</code>.</li>
+            <li><code>values</code>: An array of values: type <code>GroundedValue[]</code>.</li>
+            <li><code>index</code>: A map from atomic match keys to integers: type <code>Map&lt;AtomicMatchKey, Integer&gt;></code>.
+            Note that this map doesn't need to be ordered. The class <code>AtomicMatchKey</code> is a surrogate
+            for an XDM atomic value whose Java <code>equals()</code> method respects the XDM equality
+            semantics: for example, if the key is an <code>xs:string</code> then the <code>AtomicMatchKey</code>
+            is an instance of Saxon's <code>UnicodeString</code> class.</li>
+        </ul>
+        
+        <p>The basic operations on XDM maps are simply and efficiently implemented as follows:</p>
+        
+        <ul>
+            <li>Get the value corresponding to a given key: set <code>i = index.get(key)</code>;
+                return if <code>i == null</code> then <code>null</code> else <code>values[i]</code>.</li>
+            <li>Get all keys in map order: iterate over <code>keys</code>.</li>
+            <li>Get all values in map order: iterate over <code>values</code>.</li>
+        </ul>
+        
+        <p>The new operations required to support JNode navigation can also be efficiently implemented:</p>
+        
+        <ul>
+            <li>Determine which of two entries with keys <code>X</code> and <code>Y</code> is first in document
+                order: compare <code>index.get(X)</code> with <code>index.get(Y)</code> (an integer comparison).</li>
+            <li>Get preceding or following siblings of an entry with key <code>X</code>: find <code>index.get(X)</code>
+            and then iterate forwards or backwards in the <code>keys</code> and <code>values</code> arrays
+            from this integer offset.</li>
+        </ul>
+        
+        <p>All very straightforward. Now, what about <code>map:put</code> and <code>map:remove</code>?</p>
+        
+        <p>When one of these operations occurs, I propose to copy the <code>FixedMap</code> to an
+        <code>ExtensibleMap</code>. This will have a very similar structure to the <code>FixedMap</code>, except
+        that:</p>
+        
+        <ul>
+            <li>The arrays of keys and values are replaced by immutable lists of keys and values. 
+            I propose to implement these immutable lists using the existing Saxon class <code>ZenoChain</code>.
+            This uses the same logic as the <code>ZenoString</code> which I introduced in 
+            <a href="https://www.balisage.net/Proceedings/vol26/html/Kay01/BalisageVol26-Kay01.html">a 2021 Balisage paper.</a>
+            It provides efficient support for getting an entry at a particular integer offset, and for appending
+            individual entries at the end of the list: therefore for <code>map:get</code> and <code>map:put</code>.</li>
+            <li>The map from <code>AtomicMatchKey</code> to <code>Integer</code> is replaced by an immutable map.
+            There are plenty of implementations available (we could revert to the Michael Froh implementation
+            used in earlier Saxon releases), because there is no need for this structure to support ordering.</li>
+        </ul>
+        
+        <p>The design relies on the fact that adding or removing entries to the map does not change the integer
+        offset of existing entries. That's fine for <code>map:put</code>, which always puts new entries at the end
+        (in terms of map ordering). To support <code>map:remove</code>, I propose to keep a separate list holding
+        the integer offsets of map entries that have been removed; a traversal of the map keys or arrays needs
+        to check this list and skip an entry if it is present. When the number of removed entries exceeds some
+        threshold (a rare event) we can rebuild the map from scratch.</p>
+        
+        <p>The new design looks as if all the main operations perform in constant or logarithmic time, with traversal
+        of the map in linear time; and it seems to be reasonably economical in terms of memory usage.</p>
+        
+        <p>The design allows the use of an optimization whereby the index (from atomic match keys to integer offsets)
+        is built lazily, the first time <code>map:get</code> is called. This is useful when processing JSON, because
+        it's likely that many maps constructed during JSON parsing will either be copied unchanged to the
+        transformation output, or will never be referenced at all, so the work needed to construct an index can be
+        saved (it's still necessary to check for duplicate keys, but this can be done cheaply with a simple Bloom
+        filter).</p>
+        
+        <p>We currently have an optimized implementation of maps for cases where all the keys are known in advance
+        to be instances of <code>xs:string</code>. This can potentially save a bit of space because in place
+            of the <code>StringValue</code> representing each string-valued key, we can simply store the underlying
+            <code>UnicodeString</code>. This saves holding the wrapper object and the type annotation, which can
+            be significant in the case of very large maps.</p>
+        
+        <p>One of the benefits of this design is that it reduces our dependencies on third-party code, which in
+        turn simplifies porting Saxon across different platforms, and transpiling to C# for the .NET platform.
+        In the current Saxon 13 code base, we're not only dependent on the VAVR library, but we're actually
+        dependent on a fork of that library that uses a different implentation of linked hash maps, to avoid
+        a <a href="https://github.com/vavr-io/vavr/issues/2727"></a>performance bug</a>.</p>
+        
+        
+  
+ 
+   
+    </body>
+</html>
