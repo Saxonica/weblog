@@ -81,6 +81,7 @@
         <ul>
             <li>The arrays of keys and values are replaced by immutable lists of keys and values. 
             I propose to implement these immutable lists using the existing Saxon class <code>ZenoChain</code>.
+            This is described in a <a href="https://blog.saxonica.com/mike/2021/03/zeno_chains.html">previous blog</a>.    
             This uses the same logic as the <code>ZenoString</code> which I introduced in 
             <a href="https://www.balisage.net/Proceedings/vol26/html/Kay01/BalisageVol26-Kay01.html">a 2021 Balisage paper.</a>
             It provides efficient support for getting an entry at a particular integer offset, and for appending
@@ -117,7 +118,7 @@
         turn simplifies porting Saxon across different platforms, and transpiling to C# for the .NET platform.
         In the current Saxon 13 code base, we're not only dependent on the VAVR library, but we're actually
         dependent on a fork of that library that uses a different implentation of linked hash maps, to avoid
-        a <a href="https://github.com/vavr-io/vavr/issues/2727"></a>performance bug</a>.</p>
+        a <a href="https://github.com/vavr-io/vavr/issues/2727">performance bug</a>.</p>
         
         
   
