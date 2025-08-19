@@ -1,4 +1,120 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-08-14T10:43:18.052302372Z</updated><entry><title>SaxonC Python 12.8 for Python 3.14</title><link href="https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html</id><published>2025-08-14T11:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-08-19T14:24:19.720910983Z</updated><entry><title>Ordered Maps and JNodes</title><link href="https://blog.saxonica.com/mike/2025/08/implementing-jnodes.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2025/08/implementing-jnodes.html</id><published>2025-08-19T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2025/08/implementing-jnodes.html"><div xmlns="http://www.w3.org/1999/xhtml">
+        <h1>Ordered Maps and JNodes</h1>
+        
+        <p>Since I last wrote about <a href="https://blog.saxonica.com/mike/2024/12/ordered-maps.html">ordered maps</a>,
+        the XPath 4.0 specifications have now introduced the idea of JNodes, which adds a new set of 
+        requirements to the specification.</p>
+        
+        <p>I wrote about JNodes in <a href="https://www.balisage.net/Proceedings/vol30/html/Kay01/BalisageVol30-Kay01.html">my paper at Balisage 2025</a>, 
+        and I won't repeat the introduction here. Suffice it to say that a JNode can wrap a specific entry in an XDM
+        map, and it allows you (among other things) to:</p>
+        
+        <ol>
+            <li>Establish which of two entries in the same map comes first in document order (or equivalently,
+            in map order);</li>
+            <li>Get the preceding or following siblings of a map entry (the entries that precede it or follow it 
+                in map order).</li>
+        </ol>
+        
+        <p>The prototype implementation of JNodes that I demonstrated at Balisage included support for these
+        operations, but the implementation would be hopelessly inefficient in production. The current implementation
+        of ordered maps on the Saxon 13 development branch uses the <code>LinkedHashMap</code> implementation
+            from the VAVR library, and this doesn't have anything that would support either of these operations.</p>
+        
+        <p>I'm therefore proposing to use a home-grown map implementation as described below.</p>
+        
+        <p>First note that <code>map:put</code> and <code>map:remove</code> operations are rare, and it's OK
+        to have a map implementation that allows the map to be constructed by a mutable builder class in one phase of operation,
+        and thereafter to be read-only. If a <code>map:put</code> or <code>map:remove</code> operation is attempted,
+        we can rebuild the map using a different (immutable | persistent | functional) data structure. 
+        So let's first consider a structure that 
+        doesn't support <code>map:put</code> and <code>map:remove</code> operations directly. I'm calling this
+        a <code>FixedMap</code>.</p>
+        
+        <p>A <code>FixedMap</code> is underpinned by three Java structures:</p>
+        
+        <ul>
+            <li><code>keys</code>: An array of keys: type <code>AtomicValue[]</code>.</li>
+            <li><code>values</code>: An array of values: type <code>GroundedValue[]</code>.</li>
+            <li><code>index</code>: A map from atomic match keys to integers: type <code>Map&lt;AtomicMatchKey, Integer&gt;&gt;</code>.
+            Note that this map doesn't need to be ordered. The class <code>AtomicMatchKey</code> is a surrogate
+            for an XDM atomic value whose Java <code>equals()</code> method respects the XDM equality
+            semantics: for example, if the key is an <code>xs:string</code> then the <code>AtomicMatchKey</code>
+            is an instance of Saxon's <code>UnicodeString</code> class.</li>
+        </ul>
+        
+        <p>The basic operations on XDM maps are simply and efficiently implemented as follows:</p>
+        
+        <ul>
+            <li>Get the value corresponding to a given key: set <code>i = index.get(key)</code>;
+                return if <code>i == null</code> then <code>null</code> else <code>values[i]</code>.</li>
+            <li>Get all keys in map order: iterate over <code>keys</code>.</li>
+            <li>Get all values in map order: iterate over <code>values</code>.</li>
+        </ul>
+        
+        <p>The new operations required to support JNode navigation can also be efficiently implemented:</p>
+        
+        <ul>
+            <li>Determine which of two entries with keys <code>X</code> and <code>Y</code> is first in document
+                order: compare <code>index.get(X)</code> with <code>index.get(Y)</code> (an integer comparison).</li>
+            <li>Get preceding or following siblings of an entry with key <code>X</code>: find <code>index.get(X)</code>
+            and then iterate forwards or backwards in the <code>keys</code> and <code>values</code> arrays
+            from this integer offset.</li>
+        </ul>
+        
+        <p>All very straightforward. Now, what about <code>map:put</code> and <code>map:remove</code>?</p>
+        
+        <p>When one of these operations occurs, I propose to copy the <code>FixedMap</code> to an
+        <code>ExtensibleMap</code>. This will have a very similar structure to the <code>FixedMap</code>, except
+        that:</p>
+        
+        <ul>
+            <li>The arrays of keys and values are replaced by immutable lists of keys and values. 
+            I propose to implement these immutable lists using the existing Saxon class <code>ZenoChain</code>.
+            This is described in a <a href="https://blog.saxonica.com/mike/2021/03/zeno_chains.html">previous blog</a>.    
+            This uses the same logic as the <code>ZenoString</code> which I introduced in 
+            <a href="https://www.balisage.net/Proceedings/vol26/html/Kay01/BalisageVol26-Kay01.html">a 2021 Balisage paper.</a>
+            It provides efficient support for getting an entry at a particular integer offset, and for appending
+            individual entries at the end of the list: therefore for <code>map:get</code> and <code>map:put</code>.</li>
+            <li>The map from <code>AtomicMatchKey</code> to <code>Integer</code> is replaced by an immutable map.
+            There are plenty of implementations available (we could revert to the Michael Froh implementation
+            used in earlier Saxon releases), because there is no need for this structure to support ordering.</li>
+        </ul>
+        
+        <p>The design relies on the fact that adding or removing entries to the map does not change the integer
+        offset of existing entries. That's fine for <code>map:put</code>, which always puts new entries at the end
+        (in terms of map ordering). To support <code>map:remove</code>, I propose to keep a separate list holding
+        the integer offsets of map entries that have been removed; a traversal of the map keys or arrays needs
+        to check this list and skip an entry if it is present. When the number of removed entries exceeds some
+        threshold (a rare event) we can rebuild the map from scratch.</p>
+        
+        <p>The new design looks as if all the main operations perform in constant or logarithmic time, with traversal
+        of the map in linear time; and it seems to be reasonably economical in terms of memory usage.</p>
+        
+        <p>The design allows the use of an optimization whereby the index (from atomic match keys to integer offsets)
+        is built lazily, the first time <code>map:get</code> is called. This is useful when processing JSON, because
+        it's likely that many maps constructed during JSON parsing will either be copied unchanged to the
+        transformation output, or will never be referenced at all, so the work needed to construct an index can be
+        saved (it's still necessary to check for duplicate keys, but this can be done cheaply with a simple Bloom
+        filter).</p>
+        
+        <p>We currently have an optimized implementation of maps for cases where all the keys are known in advance
+        to be instances of <code>xs:string</code>. This can potentially save a bit of space because in place
+            of the <code>StringValue</code> representing each string-valued key, we can simply store the underlying
+            <code>UnicodeString</code>. This saves holding the wrapper object and the type annotation, which can
+            be significant in the case of very large maps.</p>
+        
+        <p>One of the benefits of this design is that it reduces our dependencies on third-party code, which in
+        turn simplifies porting Saxon across different platforms, and transpiling to C# for the .NET platform.
+        In the current Saxon 13 code base, we're not only dependent on the VAVR library, but we're actually
+        dependent on a fork of that library that uses a different implentation of linked hash maps, to avoid
+        a <a href="https://github.com/vavr-io/vavr/issues/2727">performance bug</a>.</p>
+        
+        
+  
+ 
+   
+    </div></content></entry><entry><title>SaxonC Python 12.8 for Python 3.14</title><link href="https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html</id><published>2025-08-14T11:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>With the recent release of Python 3.14.0rc1, the ABI for Python 3.14 is
@@ -2140,208 +2256,4 @@ For a full list, see
 <a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
 on our issue tracker.</p>
 
-</div></content></entry><entry><title>Schema Modularity</title><link href="https://blog.saxonica.com/mike/2023/06/schema-modules.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/06/schema-modules.html</id><published>2023-06-20T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/06/schema-modules.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-            
-
-        <p>Saxon, ever since we first introduced schema awareness back in 2004, has always
-        worked with a single global schema maintained at the level of the <code>Configuration</code>
-        object. This article discusses the advantages and disadvantages of this approach, and
-        looks at possible alternatives.</p>
-        
-        <p>Let's start by getting some terminology clear. A <b>schema</b>, in the terminology
-        of the XSD specification, is a set of schema components (such as element declarations
-        and type definitions). Don't confuse it with a <b>schema document</b>, which is an
-        XML document rooted at an <code>xs:schema</code> element. A <b>schema</b>
-        is what you get when you compile a collection of schema documents linked to each
-        other using <code>xs:include</code> and <code>xs:import</code> declarations.</p>
-        
-        <p>Not every set of schema components constitutes a valid schema. Most obviously
-        you can't have two different components (for example, two type definitions) with the
-        same name, unless they are identical. The XSD specification is a bit fuzzy about what
-        it means for two components to be identical.</p>
-        
-        <p>This means that in general, you can try and combine two schemas into one by
-        taking their union, but the operation won't always succeed because the two
-        schemas may be found to be inconsistent with each other.</p>
-        
-        <h2>The Global Schema</h2>
-        
-        <p>Saxon currently maintains a global schema at the level of the <code>Configuration</code>
-        object. This means that every time you introduce a new schema, for example by
-        compiling a schema-aware query or stylesheet that has an <code>import schema</code> declaration,
-        or by validating a document against a schema loaded using the <code>SchemaManager</code>
-        API, or referenced using <code>xsi:schemaLocation</code>, the schema components
-        from that schema are added to the global pool, provided they are consistent with
-        the declarations already present in the pool.</p>
-        
-        <p>These consistency checks are of two kinds:</p>
-        
-        <ul>
-            <li><p>Firstly, the new components must not have names that clash with the old.
-            You can't have two different types with the same name. To test whether two types
-            are the same, Saxon basically checks that they came from the same place: the same
-            line number in the same source schema document.</p></li>
-            <li><p>Secondly, the new components must not change the semantics of existing
-            components, if the existing components have already been used for validation purposes.
-            The test whether components have been used is done at the level of a target
-            namespace: if any declaration or definition in a target namespace has been
-            used for validating a source document, or if it has been used when compiling
-            a stylesheet or query, then the namespace is <b>sealed</b>, which means that its
-            components must not be extended or redefined by any new components.
-            We'll talk later about exactly what this means.</p></li>
-        </ul>
-        
-        <p>The main benefit of the global schema approach is that you can always be sure
-        that type annotations in validated instance documents are consistent with types
-        that are mentioned (or inferred) in compiled queries and stylesheets. If a query
-        is compiled believing that element <i>E</i> will always be empty, then you can be sure
-        that every validated instance of <i>E</i> will be empty, because no-one is allowed, between
-        compilation and validation, to add a type definition that extends or redefines <i>E</i>
-        allowing it to be non-empty. That's the theory, anyway.    
-        </p>
-        
-        <p>The most obvious <i>disadvantage</i> of the approach is that an application can't
-        work with two different versions of the same schema. If you want to write a stylesheet
-        that transforms input documents from <i>V1</i> to <i>V2</i> of the same schema, you
-        can't import both versions into the same stylesheet, one to validate the input and one
-        to validate the output. In fact, you can't even have both versions in the same
-        <code>Configuration</code> — which means you can't process an input collection containing
-        a mix of different versions (or if you do, you have to forgo validation).</p>
-        
-        <p>There are other less obvious disadvantages. One of them is revealed by a recent
-        embarrassing bug where we discovered that schema compilation isn't thread safe: you
-        can't reliably run two schema compilations within a single <code>Configuration</code>
-        at the same time. We've patched that by adding some locking, but it's an imperfect
-        solution because the lock is rather coarse-grained. We need to find a better solution,
-        and that gives us an opportunity to re-examine the design and see whether we can fix some
-        other long-standing issues at the same time.</p>
-        
-        <p>Another outstanding issue is a long-standing bug #3531, concerning a situation where
-        two independently-loaded schemas <i>X</i> and <i>Y</i> both extend the same substitution
-        group. This has remained outstanding because we have had no reports of users being affected
-        by it; but it remains an unsatisfactory state of affairs.</p>
-        
-        <h2>The X+Y Problem</h2>
-        
-        <p>Suppose that <i>X</i> and <i>Y</i> are valid schemas. Then we've already seen
-        that their union, which I will call <i>X+Y</i>, is not necessarily a valid schema;
-        their declarations might be inconsistent. Apart from the obvious inconsistencies
-        where <i>X</i> and <i>Y</i> contain different elements or types with the same name,
-        there can be much more subtle inconsistencies:</p>
-        
-        <ul>
-            <li><p><i>Y</i> might contain a type that redefines a type in <i>X</i>.</p>
-            <p>The semantics of <code>xs:redefine</code> as defined in XSD are a bit
-            fuzzy round the edges, but the effect is supposed to be global: if a type
-            is redefined, then all references to that type are affected. Exactly what
-            happens when the same type is redefined more than once isn't made clear.
-            </p>
-            <p>The introduction of <code>xs:override</code> in XSD 1.1 makes this
-            problem even worse, because <code>xs:override</code> allows existing
-            definitions to be changed in completely arbitrary ways.</p></li>
-            <li><p><i>Y</i> might contain a type that extends a type in <i>X</i>,
-            by allowing additional child elements or attributes. To be valid, 
-            instances that use the extended type have to identify themselves
-            with an <code>xsi:type</code> attribute, but this doesn't alter the
-            fact that adding the extended type to the global schema makes some
-            things valid that were previously invalid. It's bad news if a document
-            that was invalid at breakfast time suddenly becomes valid at tea time
-            because a new schema has been added to the <code>Configuration</code>.
-            It's even worse news if the schema changes during the course of
-            validating an input document. </p></li>
-            <li><p><i>Y</i> might contain an element declaration that
-            adds to the substitution group of an element defined in <i>X</i>.
-            Again, this means that a document that was invalid when validated
-            against schema <i>X</i> becomes valid when validated against
-            <i>X+Y</i>.</p></li>
-            <li><p><i>X</i> might contain a wildcard, for example 
-                <code>&lt;xs:any processContents="lax"/&gt;</code>. Suppose
-            an instance document matches this wildcard with an element
-            named <i>W</i>, and is valid (under the rules for lax validation)
-            because the schema contains no element declaration for <i>W</i>.
-            Now schema <i>Y</i> comes along and adds a definition for
-            element <i>W</i>, and suddenly our source document is no
-            longer valid.</p></li>
-        </ul>
-        
-        <p>It doesn't really help that all these situations are rare. Should the
-        processor simply ignore the problem and hope it doesn't happen? For the first
-        three cases above, Saxon prevents the situation occurring, which imposes an
-        inconvenience on users who are actually doing something completely safe.
-        For the final case (wildcards), Saxon ignores the problem, which creates
-        the theoretical risk that queries and stylesheets are not type-safe: a document
-        that has been validated against a type <i>T</i> might not satisfy all the contraints
-        that the query or stylesheet processor assumes to be true for any valid instance
-        of <i>T</i>.</p>
-        
-        <h2>An Alternative: Modular Schemas</h2>
-        
-        <p>Let's consider an alternative model, where instead of adding all schema
-        components to a single global schema at <code>Configuration</code> level,
-        we keep schemas independent and modular. So two stylesheets that import
-        different schema documents have separate unrelated schemas, and there are
-        no requirements that the two schemas should be consistent with each other.</p>
-        
-        <p>The challenge now is to ensure that a source document validated against
-        a schema <i>S1</i> is consistent with a stylesheet that imports schema <i>S2</i>.
-        If the two schemas are identical, there's no problem (and it's not too hard to
-        detect that they are identical, for example if they load the same schema
-        document as their starting point).</p>
-        
-        <p>But what if <i>S2</i> is a superset of <i>S1</i>? Suppose the document is
-        validated against a schema with target namespace <i>X</i>, while the stylesheet
-        has two <code>xsl:import-schema</code> declarations, for namespaces <i>X</i> 
-        and <i>Y</i>? We're now back with the <i>X+Y</i> problem: a document that is valid
-        against <i>X</i> is not necessarily valid against <i>X+Y</i>.</p>
-        
-        <p>It gets worse: if we have a pipeline of stylesheets, each of which imports
-        schemas for both its input document and its output document, then the first
-        stylesheet might import schemas for <i>X+Y</i>, and the second for <i>Y+Z</i>,
-        and we need to be sure that when the first stylesheet validates its output against
-        <i>X+Y</i>, the result will also be valid input against <i>Y+Z</i>.</p>
-        
-        <p>One possible solution here is to keep the imported schemas within a single
-        stylesheet separate. Import one schema for the input, and another for the output,
-        and don't require the two to be consistent. This also solves the problem of transforming
-        from <i>V1</i> to <i>V2</i> of the same schema. So in our pipeline, the output
-        of the first stylesheet would be validated not against <i>X+Y</i>, but merely
-        against <i>Y</i>, which is the same schema used for the input of the second stylesheet.
-        This would need language changes: <code>xsl:import-schema</code> declarations
-        would need to identify which schema they belong to, and type names used in 
-        <code>type</code> or <code>as</code> attributes would need to qualify the type
-        name with a schema name.</p>
-        
-        <p>I've started doing work to allow free-standing schemas to be constructed
-        and used for validation, independently of the <code>Configuration</code>.
-        There are clearly cases where this is useful. However, there's a lot more
-        work to be done on ensuring consistency of free-standing schemas, when a validated
-        document is used as input to a schema-aware stylesheet or query. Expect a new
-        class of (initially bewildering) error messages saying that element <i>E</i>
-        is known to be valid against type <i>T</i> in schema <i>X</i>. but it isn't known
-        to be valid against type <i>T</i> in schema <i>Y</i>. Hopefully these will be rare.</p>
-        
-        <h2>What about Wildcards?</h2>
-        
-        <p>I mentioned that there's an open issue with wildcards: if a schema type include
-        a lax wildcard, then an element that's valid against that schema (because there's
-        no element declaration matching the actual element name) can become invalid when
-        more element declarations are added.</p>
-        
-        <p>This isn't the only issue with wildcards. XSD 1.1 allows you to say, for example
-        <code>notQName="##defined"</code> which means that the name used for an element or
-        attribute must be one that has no global declaration anywhere in the schema. That's
-        another example of how adding new declarations to a schema can make existing content
-        invalid.</p>
-        
-        <p>I think the answer to this problem is to interpret these definitions in the context
-        of a "schema compilation unit". That is, when you compile a schema, 
-            <code>notQName="##defined"</code> is interpreted as meaning "not a name used for
-        a global element/attribute declaration in the that schema"; any
-        names or declarations added later (by merging this schema with others) have no effect 
-        on the meaning.</p>
-        
-        <p>This seems to solve the problem whether using a global schema or local free-standing
-        schemas, and makes the two cases behave more consistently and predictably.</p>
-        
-    </div></content></entry></feed>
+</div></content></entry></feed>
