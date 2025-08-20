@@ -2,830 +2,838 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
       <loc>https://blog.saxonica.com/announcements/2023/03/saxon-12.1.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2023/05/saxon-12.2.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2023/08/saxon-11.6.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2023/10/saxonjs-2.6.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2023/11/saxon-12.4.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2023/12/saxonc-12.4.1.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2024/01/saxonc-12.4.2.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2024/07/saxon-12.5.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2024/10/saxonjs-2.7.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2024/12/saxonjs-he-3.0.0-beta1.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2025/05/saxon-12.6.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2025/05/saxon-12.7.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2025/06/saxonjs-3.0.0-beta2.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2025/07/saxon-11.7-and-12.8.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2025/07/saxon-11.7.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2025/07/saxon-12.8.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/announcements/2025/08/saxon-12.8-for-python-3.14.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/apple-touch-icon.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/css/announcements.css</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
+   </url>
+   <url>
+      <loc>https://blog.saxonica.com/css/atom.css</loc>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/css/blog.css</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/css/michael-kay.css</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/css/norm-tovey-walsh.css</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/css/oneil-delpratt.css</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/favicon.ico</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/icon-192.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/icon-512.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/annheader.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/mkheader.gif</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/odheader.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/saxon21.jpg</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/saxonica.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/sccard.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/scheader.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/scicon-032.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/img/sitecard.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/manifest.webmanifest</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/02/comparability.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/02/finite-state-machines.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/02/floating-point-numbers-again.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/02/formatting-of-floating-point-numbers.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/02/regex-libraries-in-java-and-net.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/02/thanks-for-the-compliment.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/02/thoughts-on-schema-awareness.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/02/w3c-working-groups-in-florida.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/03/apis-for-xml-processing.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/03/conference-season-approaching.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/04/how-not-to-manage-crypto-keys.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/04/schema-aware-xmark.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/04/xmark-q12-examined-further.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/05/wrapping-the-net-dom.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/05/xqj-republished.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/06/killing-bugs.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/07/experiments-with-compilation.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/07/push-and-pull-parsing.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/07/push-and-pull.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/07/streaming-mode-on-large-documents.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/07/tuning-the-chess-fo-stylesheet.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/07/xime-p-in-chicago.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/08/tail-recursive-functions.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/08/zounds-i-was-never-so-bethumpd-with-words.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/09/compiling-the-knights-tour.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/09/more-experiments-with-compilation.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/10/altova-mudslinging.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/10/choosing-java-class-names.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/10/progress-on-xquery-compilation.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/10/still-compiling-the-knights-tour.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/11/first-compiled-xmark-results.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/12/compiling-q10.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2006/12/new-w3c-xml-schema-test-suite.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/01/how-not-to-fold-constants.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/01/xml-schema-tests-progress-report.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/02/unexpected-flattery.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/03/assertions-in-xml-schema.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/03/saxon-vs-xalan-performance-and-dom.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/04/path-expressions-revisited.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/06/a-new-xqj-draft.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/09/transforming-20-gigabytes.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/11/final-draft-of-xqj.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/12/implementing-xquery-update.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2007/12/progress-on-xquery-update.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/01/further-progress-on-xquery-update.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/02/xquery-update-and-node-identity.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/07/document-projection.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/09/a-stylesheet-conversion.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/09/compile-time-performance.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/09/join-optimization.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/09/just-in-time-optimization.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/09/more-thoughts-on-compile-time-performance.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/09/theres-an-r-in-the-month.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/09/tweaking-the-tinytree.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/10/software-patents.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/10/xml-schema-allowing-new-lexical-forms.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/11/schema-awareness-and-xmark-performance.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/11/tei-conference.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/12/bugs-that-dont-crawl-out-of-the-woodwork.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2008/12/ten-reasons-why-saxon-xquery-is-fast.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/02/another-five-finger-performance-exercise.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/02/some-threading-tests.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/02/streaming-templates.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/05/all-nodes-untyped.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/05/repackaging-saxon.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/06/saxon-repackaging.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/06/the-gnu-public-license.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/08/beyond-saxon-92.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/09/analyzing-dependencies-in-a-class-library-a-use-case-for-xslt-streaming.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/11/moving-forward-with-streaming-templates.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/12/intel-joins-the-club.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/12/on-the-streamability-of-sectionhead.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/12/patents-an-open-letter-to-my-mp.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2009/12/streaming-templates---towards-a-more-coherent-design.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/01/importing-a-stylesheet-module-repeatedly.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/01/pipedreaming-could-xpath-have-been-better.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/01/unicode-regular-expressions-and-java.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/05/the-first-saxon-deadlock.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/06/parameterized-validation.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/06/the-ten-most-common-xslt-programming-mistakes.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/11/compiling-saxon-using-gwt.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/11/cutting-saxon-down-to-size.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/11/peer-to-patent-should-i-take-part.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2010/11/tpac-the-morning-after.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2011/05/bytecode-generation.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2011/07/tuples.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2012/01/a-new-regex-engine.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2012/01/maps.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2012/02/taking-saxon-ce-forward.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2012/05/a-new-api-for-access-to-schema-information.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2012/06/saxon-ce-is-10-today-1.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2012/08/ftanml---a-new-markup-language.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2012/09/comparing-dom-and-other-object-models.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2012/12/keys-and-maps.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2013/02/xslt-in-microxml.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2013/03/result-documents-validation-and-multi-threading.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2013/03/whats-new-in-saxon-95.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2013/09/reducing-the-size-of-saxon-ce.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2013/09/stripping-the-dom.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2014/02/another-regex-rewrite.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2014/06/sharing-key-indexes.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2014/11/redesigning-the-saxon-expression-tree.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2015/02/functions-function-calls-function-items.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2015/02/how-long-is-a-piece-of-string.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2015/06/a-redesign-of-the-namepool.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2015/06/another-look-in-the-namepool.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2015/06/lazy-evaluation.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2015/09/parent-pointers-in-the-saxon-expression-tree.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2016/02/introducing-saxon-js.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2016/06/improving-compile-time-performance.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2016/09/tuple-types-and-type-aliases.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2016/12/guaranteed-streamability.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2017/02/bugs-how-well-are-we-doing.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2017/11/transforming-json.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2018/02/could-we-write-an-xsd-schema-processor-in-xslt.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2018/03/capturing-accumulators.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2018/03/diagnostics-on-type-errors.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2018/04/navigating-xml-trees-using-java-streams.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2018/06/the-receiver-pipeline.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2019/02/representing-namespaces-in-xdm-tree-models.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2019/05/a-new-push-event-api.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2019/10/alphacodes-for-sequence-types.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2020/01/java-generics-revisited.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2020/02/the-java-class-hierarchy-for-xpath-type-objects.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2020/07/string-charsequence-ikvm-and-net.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2020/10/29-xslt_update_some_ideas.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2020/11/14-qt40-proposal-comments.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2020/11/19-arrow-expressions.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2021/03/saxon_cs_hello_world.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2021/03/zeno_chains.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2021/06/arrays.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2022/05/except-patterns.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2022/05/xml-vs-json.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2023/06/schema-modules.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2023/07/schema-safety.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2023/10/eot.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2024/08/maps-and-records.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2024/12/ordered-maps.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/mike/2025/08/implementing-jnodes.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2020/10/01-hello.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2020/10/02-maven.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2020/10/06-atom.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2020/10/27-helloWorld.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2020/10/29-maven.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2020/11/15-helloWorldNode.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2021/01/08-saxon-js-203.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2021/05/11-saxon-js-22.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/04/19-shoelace.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/06/15-saxonjs.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/08/09-net6.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/12/21-net6.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/12/23-saxon-c.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/12/HelloWorld.dmg</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/12/img/app-build.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/12/img/app-main.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/12/img/app-password.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2022/12/img/app-wait.png</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2023/03/16-weblog.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2023/08/16-xmldoclet.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2023/08/24-icu4j.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2023/08/31-infrastructure.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2023/10/02-saxonica.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2024/08/16-packaging.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2024/10/17-oops.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/norm/2025/02/06-flash.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/oneil/2012/12/performance-measures-of-the-word-ladders-problem-in-xslt.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/oneil/2013/03/experiences-with-client-side-xsltforms-and-server-side-servlex.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
    <url>
       <loc>https://blog.saxonica.com/oneil/2013/12/saxonc---saxon-for-the-cc-and-php-platforms.html</loc>
-      <lastmod>2025-08-19T15:20:34+01:00</lastmod>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
+   </url>
+   <url>
+      <loc>https://blog.saxonica.com/xslt/atom.xsl</loc>
+      <lastmod>2025-08-20T14:24:16+01:00</lastmod>
    </url>
 </urlset>
