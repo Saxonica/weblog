@@ -1,0 +1,38 @@
+body {
+    max-width: clamp(320px, 90%, 1000px);
+    margin: auto;
+    font-size: 1.25rem;
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: sans-serif;
+    text-wrap: balance;
+}
+
+h1 {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+h2.subtitle {
+    padding-top: 0;
+    margin-top: 0;
+}
+
+code {
+    font-size: 85%;
+}
+
+details summary {
+    font-size: 140%;
+    padding-bottom: 0.5em;
+}
+
+details .body {
+    border: 1px solid #7a7a7a;
+    padding-left: 1em;
+    padding-right: 1em;
+    border-radius: 0.5em;
+    margin-bottom: 1em;
+}
