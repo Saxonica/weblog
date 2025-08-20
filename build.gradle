@@ -144,6 +144,8 @@ task configureEnvironment() {
 }
 
 task copyResources(type: Copy) {
+  inputs.files(everythingElse)
+
   from "src/"
   into "${buildDir}/docs/"
   include everythingElse

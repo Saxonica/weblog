@@ -15,6 +15,7 @@
 <xsl:param name="author-id" as="xs:string?"/>
 
 <xsl:template match="/">
+  <xsl:processing-instruction name="xml-stylesheet"> href="/xslt/atom.xsl" type="text/xsl"</xsl:processing-instruction>
   <feed xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:dcterms="http://purl.org/dc/terms/"
         xml:lang="EN-us">
