@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Removing XSLT from the web browser</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2025-08-20T17:00:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+</head>
+<body>
+<h1>Removing XSLT from the browser</h1>
+
+<p>The <a href="https://whatwg.org/">WHATWG</a> recently proposed to “remove
+XSLT from the web platform”. This is not the
+<a href="https://groups.google.com/a/chromium.org/g/blink-dev/c/zIg2KC7PyH0">first attempt</a>.
+There’s a long discussion thread on the GitHub issue for the
+<a href="https://github.com/whatwg/html/issues/11523 ">current proposal</a>,
+including a lot of pushback. The same is true of the
+<a href="https://github.com/whatwg/html/pull/11563">related issue</a>
+to “remove mentions of XSLT from the html[sic] spec”.</p>
+
+<p>Whether the current attempt to deprecate XSLT in the browser succeeds, or
+whether feedback from users will be sufficient to discourage them again, I don’t
+know. Regardless of the outcome, it's clear that we are heading closer and
+closer to a monoculture in web browsers.</p>
+
+<p>Deprecating XSLT will break a lot of web pages. Thousands of Saxonica's pages,
+and perhaps tens of thousands of others. It will break web pages that have been
+quietly and usefully referenced by an unknown number of users for a couple of
+decades. It will break web pages that are immutable, that are not, or can no
+longer be, maintained because the projects have ended or the authors have died.
+Things will be forever lost because tens of thousands of pages aren’t enough.</p>
+
+<p>I’m sure there are technical arguments in favor of removing XSLT from the
+browser, including arguments about code complexity or security. And I’m sure
+there are economic arguments about the importance of investing resources where
+they matter most, or at least in places offering the best return on investment.
+None of these arguments show consideration for the health of the web as a
+reliable, open set of technologies which can be easily used by individuals and
+large corporations alike.</p>
+
+<p>Of course, building web applications with XSLT 1.0 is a considerable challenge.
+This is probably the main reason why most publishers delivering complex XML
+documents have continued to use XSLT on the server, where the technology is
+constantly refreshed, rather than sticking with a stagnant 25-year-old
+client-side implementation. Many XSLT users would happily switch to using
+client-side transformation if it were actively supported by the browser vendors,
+including support for later versions of the standard, which offer much higher
+productivity.</p>
+
+<p>Saxonica publishes world-class implementations of XSLT for Java, C#, C, C++,
+Python, and JavaScript. Our JavaScript implementation runs both in the browser
+and on NodeJS. We support the current, modern standards and we’re actively
+involved in developing those standards for the future. XSLT is the most
+cost-effective solution for a wide range of practical use cases, and the size
+and breadth of Saxonica's user base reflects this fact.</p>
+
+<p>XSLT will continue to survive, and thrive, even if the WHATWG insists on
+depriving web developers and users of the many advantages modern XSLT would
+offer them.</p>
+
+</body>
+</html>
