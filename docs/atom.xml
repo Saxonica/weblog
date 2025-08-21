@@ -1,4 +1,182 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-08-20T16:52:06.836621628Z</updated><entry><title>Removing XSLT from the browser</title><link href="https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html</id><published>2025-08-20T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-08-21T10:37:23.83809329Z</updated><entry><title>Serving and styling XML on the web</title><link href="https://blog.saxonica.com/norm/2025/08/21-styling-xml.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/08/21-styling-xml.html</id><published>2025-08-21T11:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/08/21-styling-xml.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>For more than twenty years, it’s been possible to serve XML documents on the
+web, making them available to applications as well-formed XML and to humans as
+nicely formatted web pages. This is a win-win scenario for many users, but the
+<a href="https://whatwg.org/">WHATWG</a> is moving aggressively to take away
+this long-standing web capability.</p>
+
+<p>The WHATWG is moving to deprecate, and then remove, native support for XSLT
+in the browser. It’s XSLT that provides the formatted web page from an XML
+document. Faced with the prospect of losing native support for XSLT in the
+browser, a natural question our users ask is “can we use SaxonJS instead?” The
+answer is yes, but it’s a little bit complicated.</p>
+
+<p>Let’s step back for a moment and look (broadly) at how the web works and what’s
+actually going on under the hood.</p>
+
+<p>For the application, this is simple: it requests the web page; it gets back a
+document with an <code>application/xml</code> media type; it parses it; and it does what it
+does with the XML data. Job done.</p>
+
+<p>For the human user reading the page with a web browser, there’s a little bit
+more going on.</p>
+
+<ol type="1">
+<li>The browser requests the page.</li>
+<li>It gets back an <code>application/xml</code> page and parses it.</li>
+<li>If the page has an <code>xml-stylesheet</code> processing instruction:
+  <ol type="a">
+    <li>The browser loads the stylesheet that the processing instruction points to;</li>
+    <li>if it’s an XSLT stylesheet, it transforms the XML document with the stylesheet;</li>
+    <li>and it displays the transformed result to the reader</li>
+  </ol>
+</li>
+</ol>
+   
+<p>(If the document doesn’t have an <code>xml-stylesheet</code> processing instruction, the
+browser just displays the raw XML in some way or another. How useful this is
+depends on the browser and the XML markup.)</p>
+
+<p>It’s the fact that the browser recognizes, and responds to, the
+<code>xml-stylesheet</code> processing instruction that starts the process off.
+This document:</p>
+
+<pre><code>&lt;?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?&gt;
+&lt;feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:dcterms="http://purl.org/dc/terms/"
+      xml:lang="EN-us"&gt;
+   &lt;title&gt;Saxonica Weblogs&lt;/title&gt;
+   &lt;link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/&gt;
+   &lt;link href="https://blog.saxonica.com/atom.xml" rel="self"/&gt;
+   &lt;id&gt;https://blog.saxonica.com/atom.xml&lt;/id&gt;
+   …
+</code></pre>
+
+<p>Will be styled with the <code>/xslt/atom.xsl</code> stylesheet before being
+displayed because the <code>xml-stylesheet</code> processing intruction on the
+first line tells it to.</p>
+
+<p>If WHATWG takes away that capability, the XML document becomes inert.</p>
+
+<p>The challenge that we, as users, face is to find some place to stand from
+which we can begin the styling process. The more common SaxonJS use case begins
+with an HTML browser page, and it’s obvious how to bootstrap a JavaScript
+application from there.</p>
+
+<p>Luckily, for the moment at least, the browser will run scripts that are
+embedded in the XML using the <code>script</code> element in the HTML namespace.
+So that’s where we can stand. If we remove the processing instruction and add
+script lines, we can run SaxonJS:</p>
+
+<pre><code>&lt;feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:dcterms="http://purl.org/dc/terms/"
+      xml:lang="EN-us"&gt;
+
+   &lt;script xmlns="http://www.w3.org/1999/xhtml"
+           type="text/javascript" src="/js/saxon-js/SaxonJS2.rt.js"&gt;&lt;/script&gt;
+   &lt;script xmlns="http://www.w3.org/1999/xhtml"&gt;
+      SaxonJS.transform({
+        stylesheetLocation: "/xslt/atom.sef.json",
+        initialTemplate: "main"
+      }, "async");
+   &lt;/script&gt;
+
+   &lt;title&gt;Saxonica Weblogs&lt;/title&gt;
+   &lt;link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/&gt;
+   &lt;link href="https://blog.saxonica.com/atom.xml" rel="self"/&gt;
+   &lt;id&gt;https://blog.saxonica.com/atom.xml&lt;/id&gt;
+   …
+</code></pre>
+
+<p>I’m not going to try to give a SaxonJS tutorial here, but in brief: the first
+script loads SaxonJS; the second script loads the <em>compiled</em> version of the stylesheet,
+<code>/xslt/atom.sef.json</code>, and runs the template named “<code>main</code>”.
+</p>
+
+<p>The <code>/xslt/atom.xsl</code> stylesheet can remain mostly the same as the
+one you’re using currently in the browser except, of course, that you can now
+use XSLT 3.0 features.
+One complication is that you have to add two templates to your XSLT
+stylesheet. The easiest way to do that is by placing these lines in a file
+called <code>saxonjs-templates.xsl</code>:</p>
+
+<pre><code>&lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT"
+                version="3.0"&gt;
+
+&lt;xsl:template name="main"&gt;
+  &lt;xsl:apply-templates select="ixsl:page()" mode="format-feed"/&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match="/" mode="format-feed"&gt;
+  &lt;xsl:result-document href="?." method="ixsl:replace-content"&gt;
+    &lt;xsl:apply-templates select="."/&gt;
+  &lt;/xsl:result-document&gt;
+&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;</code></pre>
+
+<p>The first template is the one that is run from the script in the XML
+document. It doesn’t have to be named “<code>main</code>” but the names used in
+both places have to be the same. This template takes the current page, the XML
+document, and processes it in the <code>format-feed</code> mode.</p>
+
+<p>The second template just uses <code>xsl:apply-templates</code> on itself to
+process the XML document in the default mode, this will run the rest of your
+stylesheet, <code>/xslt/atom.xsl</code>. Surrounding that call to
+apply-templates is an <code>xsl:result-document</code> instruction that will have the effect
+of replacing the current document with the styled result. That’s what “<code>?.</code>” and
+<code>ixsl:replace-content</code> achieve.</p>
+
+<p>Use <code>xsl:include</code> at the top of <code>/xslt/atom.xsl</code> to include
+the contents of <code>saxonjs-templates.xsl</code>:</p>
+
+<pre><code>&lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:atom="http://www.w3.org/2005/Atom"
+                xmlns="http://www.w3.org/1999/xhtml" 
+                exclude-result-prefixes="#all"
+                version="3.0"&gt;
+&lt;xsl:include href="saxonjs-templates.xsl"/&gt;
+&lt;xsl:output method="html" html-version="5"
+            encoding="utf-8" indent="no"/&gt;
+  ...
+</code></pre>
+
+<p>I’ve taken the opportunity to update the version and the
+<code>xsl:output</code> method as well, since we’re now using XSLT 3.0 not 1.0.</p>
+
+<p>To compile <code>/xslt/atom.xsl</code> to <code>/xslt/atom.sef.json</code>,
+you can use Saxon-EE or you can install SaxonJS on Node.js and use node,
+something like this:</p>
+
+<pre><code>node xslt3.js -xsl:xslt/atom.xsl -export:xslt/atom.sef.json -nogo -ns:##html5</code></pre>
+
+<p>(Depending on your platform, you might have to quote or escape the hashes in <code>-ns:##html5</code>)</p>
+
+<p>That all works. This is an unexplored use case; it’s clear that we could make
+it a little simpler by adding some options to the <code>SaxonJS.transform</code>
+method.</p>
+
+<p>Not everyone will find this situation wholly satisfying. It’s a little bit
+complicated and it introduces an edit-compile-debug cycle into your workflow. You
+can’t just use the plain old XSL stylesheet; you have to use the compiled
+version. The compiler comes with Saxon-EE and is also available for free on
+Node.js, but they aren’t open source.</p>
+
+<p>Other approaches that could be used include
+<a href="https://en.wikipedia.org/wiki/Content_negotiation">content negotiation</a> or simply using
+redirects. Content negotiation is also a little bit complicated and requires the ability
+to configure the web server. Redirects are simpler, but introduce two different
+URIs which might be confusing.</p>
+
+<p>With luck, the WHATWG will be persuaded not to break the web and we won’t have to
+do any of these things. But there are options.</p>
+
+</div></content></entry><entry><title>Removing XSLT from the browser</title><link href="https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html</id><published>2025-08-20T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Removing XSLT from the browser</h1>
 
 <p>The <a href="https://whatwg.org/">WHATWG</a> recently proposed to “remove
@@ -2095,81 +2273,4 @@ parse the sources myself.</p>
 
 <p>Comments most welcome…</p>
 
-</div></content></entry><entry><title>How Safe is your Schema?</title><link href="https://blog.saxonica.com/mike/2023/07/schema-safety.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2023/07/schema-safety.html</id><published>2023-07-22T12:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2023/07/schema-safety.html"><div xmlns="http://www.w3.org/1999/xhtml">
-        
-        
-        <p>When you validate a document, you expect to set the rules for what it can contain.
-        If you specify that your nesting box can only contain wrens and robins, you don't want
-        any cuckoos in there.</p>
-        
-        <p>So you write a schema <code>nesting-box.xsd</code> like this:</p>
-        
-        <pre>&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    elementFormDefault="qualified"
-    attributeFormDefault="unqualified"
-    version="1.1"&gt;
-    
-    &lt;xs:element name="nesting-box" type="nesting-box-type"/&gt;
-    
-    &lt;xs:complexType name="nesting-box-type"&gt;
-        &lt;xs:choice minOccurs="0" maxOccurs="unbounded"&gt;
-            &lt;xs:element ref="wren"/&gt;
-            &lt;xs:element ref="robin"/&gt;
-        &lt;/xs:choice&gt;
-    &lt;/xs:complexType&gt;
-    
-    &lt;xs:element name="wren" type="xs:string"/&gt;
-    &lt;xs:element name="robin" type="xs:string"/&gt;
-&lt;/xs:schema&gt;         
-        </pre>
-        
-        <p>And you're now comfortable that any <code>&lt;nesting-box&gt;</code> that
-            passes validation will look something like this:</p>
-        
-        <pre>&lt;nesting-box&gt;
-   &lt;wren&gt;Nice!&lt;/wren&gt;
-   &lt;robin&gt;Nicer!&lt;/robin&gt;
-   &lt;robin&gt;Nicest!&lt;/robin&gt;
-&lt;/nesting-box&gt;
-        </pre>
-        
-        <p><b><i>You're wrong!</i></b></p>
-        
-        <p>The following document also passes validation:</p>
-        
-        <pre>&lt;nesting-box xsi:schemaLocation="cuckoo.ns cuckoo.xsd" 
-               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
-   &lt;wren&gt;Nice!&lt;/wren&gt;
-   &lt;robin&gt;Nicer!&lt;/robin&gt;
-   &lt;robin&gt;Nicest!&lt;/robin&gt;
-   &lt;cuckoo xmlns="cuckoo.ns"&gt;Horrid!&lt;/cuckoo&gt;
-&lt;/nesting-box&gt;
-        </pre>
-        
-        <p>Here <code>cuckoo.xsd</code> is another schema document, like this:</p>
-        
-        <pre>&lt;xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    elementFormDefault="qualified"
-    attributeFormDefault="unqualified"
-    targetNamespace="cuckoo.ns"
-    version="1.1"&gt;
-    
-    &lt;xs:import schemaLocation="nesting-box.xsd"/&gt;
-    
-    &lt;xs:element name="cuckoo" type="xs:string"
-       substitutionGroup="robin"/&gt;
-    
-&lt;/xs:schema&gt;
-        </pre>
-        
-        <p>So you thought you were constraining what could appear in the document,
-        and the user found a way past your defenses, submitting a document that
-        your code probably can't handle.</p>
-        
-        <p>Saxon does allow you to disable use of <code>xsi:schemaLocation</code>,
-        but it's enabled by default. I'm inclined to think the default needs to
-        be changed.</p>
-        
- 
-   
-    </div></content></entry></feed>
+</div></content></entry></feed>

@@ -1,4 +1,182 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-08-20T16:52:06.697881381Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Removing XSLT from the browser</title><link href="https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html</id><published>2025-08-20T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-08-21T10:37:23.686460846Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Serving and styling XML on the web</title><link href="https://blog.saxonica.com/norm/2025/08/21-styling-xml.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/08/21-styling-xml.html</id><published>2025-08-21T11:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/08/21-styling-xml.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>For more than twenty years, it’s been possible to serve XML documents on the
+web, making them available to applications as well-formed XML and to humans as
+nicely formatted web pages. This is a win-win scenario for many users, but the
+<a href="https://whatwg.org/">WHATWG</a> is moving aggressively to take away
+this long-standing web capability.</p>
+
+<p>The WHATWG is moving to deprecate, and then remove, native support for XSLT
+in the browser. It’s XSLT that provides the formatted web page from an XML
+document. Faced with the prospect of losing native support for XSLT in the
+browser, a natural question our users ask is “can we use SaxonJS instead?” The
+answer is yes, but it’s a little bit complicated.</p>
+
+<p>Let’s step back for a moment and look (broadly) at how the web works and what’s
+actually going on under the hood.</p>
+
+<p>For the application, this is simple: it requests the web page; it gets back a
+document with an <code>application/xml</code> media type; it parses it; and it does what it
+does with the XML data. Job done.</p>
+
+<p>For the human user reading the page with a web browser, there’s a little bit
+more going on.</p>
+
+<ol type="1">
+<li>The browser requests the page.</li>
+<li>It gets back an <code>application/xml</code> page and parses it.</li>
+<li>If the page has an <code>xml-stylesheet</code> processing instruction:
+  <ol type="a">
+    <li>The browser loads the stylesheet that the processing instruction points to;</li>
+    <li>if it’s an XSLT stylesheet, it transforms the XML document with the stylesheet;</li>
+    <li>and it displays the transformed result to the reader</li>
+  </ol>
+</li>
+</ol>
+   
+<p>(If the document doesn’t have an <code>xml-stylesheet</code> processing instruction, the
+browser just displays the raw XML in some way or another. How useful this is
+depends on the browser and the XML markup.)</p>
+
+<p>It’s the fact that the browser recognizes, and responds to, the
+<code>xml-stylesheet</code> processing instruction that starts the process off.
+This document:</p>
+
+<pre><code>&lt;?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?&gt;
+&lt;feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:dcterms="http://purl.org/dc/terms/"
+      xml:lang="EN-us"&gt;
+   &lt;title&gt;Saxonica Weblogs&lt;/title&gt;
+   &lt;link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/&gt;
+   &lt;link href="https://blog.saxonica.com/atom.xml" rel="self"/&gt;
+   &lt;id&gt;https://blog.saxonica.com/atom.xml&lt;/id&gt;
+   …
+</code></pre>
+
+<p>Will be styled with the <code>/xslt/atom.xsl</code> stylesheet before being
+displayed because the <code>xml-stylesheet</code> processing intruction on the
+first line tells it to.</p>
+
+<p>If WHATWG takes away that capability, the XML document becomes inert.</p>
+
+<p>The challenge that we, as users, face is to find some place to stand from
+which we can begin the styling process. The more common SaxonJS use case begins
+with an HTML browser page, and it’s obvious how to bootstrap a JavaScript
+application from there.</p>
+
+<p>Luckily, for the moment at least, the browser will run scripts that are
+embedded in the XML using the <code>script</code> element in the HTML namespace.
+So that’s where we can stand. If we remove the processing instruction and add
+script lines, we can run SaxonJS:</p>
+
+<pre><code>&lt;feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:dc="http://purl.org/dc/elements/1.1/"
+      xmlns:dcterms="http://purl.org/dc/terms/"
+      xml:lang="EN-us"&gt;
+
+   &lt;script xmlns="http://www.w3.org/1999/xhtml"
+           type="text/javascript" src="/js/saxon-js/SaxonJS2.rt.js"&gt;&lt;/script&gt;
+   &lt;script xmlns="http://www.w3.org/1999/xhtml"&gt;
+      SaxonJS.transform({
+        stylesheetLocation: "/xslt/atom.sef.json",
+        initialTemplate: "main"
+      }, "async");
+   &lt;/script&gt;
+
+   &lt;title&gt;Saxonica Weblogs&lt;/title&gt;
+   &lt;link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/&gt;
+   &lt;link href="https://blog.saxonica.com/atom.xml" rel="self"/&gt;
+   &lt;id&gt;https://blog.saxonica.com/atom.xml&lt;/id&gt;
+   …
+</code></pre>
+
+<p>I’m not going to try to give a SaxonJS tutorial here, but in brief: the first
+script loads SaxonJS; the second script loads the <em>compiled</em> version of the stylesheet,
+<code>/xslt/atom.sef.json</code>, and runs the template named “<code>main</code>”.
+</p>
+
+<p>The <code>/xslt/atom.xsl</code> stylesheet can remain mostly the same as the
+one you’re using currently in the browser except, of course, that you can now
+use XSLT 3.0 features.
+One complication is that you have to add two templates to your XSLT
+stylesheet. The easiest way to do that is by placing these lines in a file
+called <code>saxonjs-templates.xsl</code>:</p>
+
+<pre><code>&lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:ixsl="http://saxonica.com/ns/interactiveXSLT"
+                version="3.0"&gt;
+
+&lt;xsl:template name="main"&gt;
+  &lt;xsl:apply-templates select="ixsl:page()" mode="format-feed"/&gt;
+&lt;/xsl:template&gt;
+
+&lt;xsl:template match="/" mode="format-feed"&gt;
+  &lt;xsl:result-document href="?." method="ixsl:replace-content"&gt;
+    &lt;xsl:apply-templates select="."/&gt;
+  &lt;/xsl:result-document&gt;
+&lt;/xsl:template&gt;
+
+&lt;/xsl:stylesheet&gt;</code></pre>
+
+<p>The first template is the one that is run from the script in the XML
+document. It doesn’t have to be named “<code>main</code>” but the names used in
+both places have to be the same. This template takes the current page, the XML
+document, and processes it in the <code>format-feed</code> mode.</p>
+
+<p>The second template just uses <code>xsl:apply-templates</code> on itself to
+process the XML document in the default mode, this will run the rest of your
+stylesheet, <code>/xslt/atom.xsl</code>. Surrounding that call to
+apply-templates is an <code>xsl:result-document</code> instruction that will have the effect
+of replacing the current document with the styled result. That’s what “<code>?.</code>” and
+<code>ixsl:replace-content</code> achieve.</p>
+
+<p>Use <code>xsl:include</code> at the top of <code>/xslt/atom.xsl</code> to include
+the contents of <code>saxonjs-templates.xsl</code>:</p>
+
+<pre><code>&lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:atom="http://www.w3.org/2005/Atom"
+                xmlns="http://www.w3.org/1999/xhtml" 
+                exclude-result-prefixes="#all"
+                version="3.0"&gt;
+&lt;xsl:include href="saxonjs-templates.xsl"/&gt;
+&lt;xsl:output method="html" html-version="5"
+            encoding="utf-8" indent="no"/&gt;
+  ...
+</code></pre>
+
+<p>I’ve taken the opportunity to update the version and the
+<code>xsl:output</code> method as well, since we’re now using XSLT 3.0 not 1.0.</p>
+
+<p>To compile <code>/xslt/atom.xsl</code> to <code>/xslt/atom.sef.json</code>,
+you can use Saxon-EE or you can install SaxonJS on Node.js and use node,
+something like this:</p>
+
+<pre><code>node xslt3.js -xsl:xslt/atom.xsl -export:xslt/atom.sef.json -nogo -ns:##html5</code></pre>
+
+<p>(Depending on your platform, you might have to quote or escape the hashes in <code>-ns:##html5</code>)</p>
+
+<p>That all works. This is an unexplored use case; it’s clear that we could make
+it a little simpler by adding some options to the <code>SaxonJS.transform</code>
+method.</p>
+
+<p>Not everyone will find this situation wholly satisfying. It’s a little bit
+complicated and it introduces an edit-compile-debug cycle into your workflow. You
+can’t just use the plain old XSL stylesheet; you have to use the compiled
+version. The compiler comes with Saxon-EE and is also available for free on
+Node.js, but they aren’t open source.</p>
+
+<p>Other approaches that could be used include
+<a href="https://en.wikipedia.org/wiki/Content_negotiation">content negotiation</a> or simply using
+redirects. Content negotiation is also a little bit complicated and requires the ability
+to configure the web server. Redirects are simpler, but introduce two different
+URIs which might be confusing.</p>
+
+<p>With luck, the WHATWG will be persuaded not to break the web and we won’t have to
+do any of these things. But there are options.</p>
+
+</div></content></entry><entry><title>Removing XSLT from the browser</title><link href="https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html</id><published>2025-08-20T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/08/20-removing-xslt.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Removing XSLT from the browser</h1>
 
 <p>The <a href="https://whatwg.org/">WHATWG</a> recently proposed to “remove
@@ -2023,263 +2201,5 @@ addressed before the new year.</p>
 <div class="fn">
 <hr/>
 <sup>†</sup>That’s “tires” for my American friends.
-</div>
-</div></content></entry><entry><title>Signed, sealed, and delivered</title><link href="https://blog.saxonica.com/norm/2022/12/21-net6.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2022/12/21-net6.html</id><published>2022-12-21T13:19:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2022/12/21-net6.html"><div xmlns="http://www.w3.org/1999/xhtml">
-<h1>Signed, sealed, and delivered</h1>
-
-<p>I have been trying to build SaxonCS for .NET such that I could deliver it
-on MacOS without warning messages for
-<a href="https://github.com/dotnet/sdk/issues/24337">a long time</a>.
-It has not been an easy or enjoyable adventure. Here are some
-breadcrumbs for the next poor soul forced to tread down this path.</p>
-
-<p>You can’t do this with .NET 5. That’s probably less important today
-than it was when I started. I don’t understand the details, but something has
-been fixed in .NET 6 that isn’t going to be backported to .NET 5. (There’s
-a comment to that effect in an issue, but I can’t now locate that issue.)</p>
-
-<p>There are several problems that have to be solved. The application
-has to be built such that it will run when signed. All of the various pieces
-have to be (correctly) signed. A DMG must be constructed to distribute
-the application (maybe I don’t <em>have</em> to do this step, but it’s
-reasonably what users expect). The <em>DMG</em> has to be signed.
-<em>And</em> the whole thing has to be notarized by Apple so that
-it will open without warnings.</p>
-
-<div>
-<h2>The objective</h2>
-<p>A complete, hands off, CI-driven build of a C# application to produce
-a MacOS DMG file that a user can open and use without any warnings about
-unsigned code or potentially malicious applications.</p>
-</div>
-
-<div>
-<h2>Prerequisites</h2>
-
-<p>Before you begin, there are some things you have to have setup.</p>
-
-<ul>
-<li><p>You need <a href="https://dotnet.microsoft.com/en-us/">dotnet</a> 6
-(or later, I assume, but we’re planning to ship Saxon 12 with .NET 6
-so that’s what I’m using).</p></li>
-<li><p>You need the
-<a href="https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools">nuget</a>
-command line tool. This is distinct from the <em>nuget</em> subcommand
-of the <em>dotnet</em> tool. As far as I can tell, only the former
-can actually install packages.</p>
-<p>On a Mac, you need the Mono framework and some
-other fiddling to make it work. Because that’s the way it is. The details
-are outlined on the tools page linked above.</p>
-</li>
-<li><p>You’ll need
-<a href="https://developer.apple.com/xcode/">XCode</a>. I’m using version 14.2.
-I think you need to install the XCode command line tools and you need to run
-XCode at least once, it does a bunch of initialization the first time it runs.
-</p></li>
-<li><p>You need an Apple developer account and you have to go through
-the dance necessary to create a developer ID certificate. The certificate
-and (at least some of) the certificate chain need to be downloaded and
-installed in your keychain. I don’t remember the exact details, but I seem
-to recall that it was spelled out <em>reasonably</em> well in the Apple developer
-documentation.</p>
-</li>
-<li><p>I decided to use
-<a href="https://www.araelium.com/dmgcanvas">DMG Canvas</a> to build the
-DMG. In addition to building the DMG, this application does the sign
-and notarize dance with Apple for me. $20 well spent, I think. I
-assume these steps can be done manually, but I’m not inspired to try
-to figure out how just at the moment.</p>
-</li>
-</ul>
-
-<p>Use the <em>nuget</em> command to install <code>Dotnet.Bundle</code>:</p>
-
-<pre><code>$ nuget install Dotnet.Bundle</code></pre>
-
-<p>This package constructs the “bundle” of files that MacOS expects
-for an application. (That’s the <code><em>application</em>.app</code> directory
-and its descendants.)</p>
-</div>
-
-<div>
-<h2>Application files</h2>
-
-<p>Start with your application. In our case, this complex beast:</p>
-
-<pre><code>using System;
-
-namespace HelloWorld
-{
-    public class HelloWorld
-    {
-        public static void Main(string[] arg)
-        {
-            Console.WriteLine("Hello, World!");
-        }
-    }
-}</code></pre>
-
-<p>You will also need a <code>.csproj</code> file. Here’s one that works
-for me:</p>
-
-<pre><code>&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
-
-  &lt;PropertyGroup&gt;
-    &lt;PlatformTarget&gt;AnyCPU&lt;/PlatformTarget&gt;
-    &lt;DebugType&gt;pdbonly&lt;/DebugType&gt;
-    &lt;Optimize&gt;true&lt;/Optimize&gt;
-    &lt;OutputType&gt;Exe&lt;/OutputType&gt;
-    &lt;TargetFramework&gt;net6.0&lt;/TargetFramework&gt;
-    &lt;PublishSingleFile&gt;true&lt;/PublishSingleFile&gt;
-    &lt;SelfContained&gt;true&lt;/SelfContained&gt;
-    &lt;PublishReadyToRun&gt;true&lt;/PublishReadyToRun&gt;
-    &lt;RuntimeIdentifier&gt;osx-x64&lt;/RuntimeIdentifier&gt;
-    &lt;UseHardenedRuntime&gt;true&lt;/UseHardenedRuntime&gt;
-    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
-    &lt;Nullable&gt;enable&lt;/Nullable&gt;
-    &lt;IncludeNativeLibrariesForSelfExtract&gt;true&lt;/IncludeNativeLibrariesForSelfExtract&gt;
-    &lt;IncludeSymbolsInSingleFile&gt;false&lt;/IncludeSymbolsInSingleFile&gt;
-  &lt;/PropertyGroup&gt;
-
-  &lt;PropertyGroup&gt;
-    &lt;CFBundleName&gt;HelloWorld&lt;/CFBundleName&gt;
-    &lt;CFBundleDisplayName&gt;HelloWorld&lt;/CFBundleDisplayName&gt;
-    &lt;CFBundleIdentifier&gt;com.saxonica.helloworld&lt;/CFBundleIdentifier&gt;
-    &lt;CFBundleVersion&gt;1.0.0&lt;/CFBundleVersion&gt;
-    &lt;CFBundleShortVersionString&gt;1.0.0&lt;/CFBundleShortVersionString&gt;
-    &lt;CFBundleExecutable&gt;HelloWorld&lt;/CFBundleExecutable&gt;
-    &lt;CFBundleIconFile&gt;HelloWorld.icns&lt;/CFBundleIconFile&gt;
-    &lt;NSPrincipalClass&gt;NSApplication&lt;/NSPrincipalClass&gt;
-    &lt;NSHighResolutionCapable&gt;true&lt;/NSHighResolutionCapable&gt;
-    &lt;NSRequiresAquaSystemAppearance&gt;false&lt;/NSRequiresAquaSystemAppearance&gt;
-  &lt;/PropertyGroup&gt;
-
-  &lt;ItemGroup&gt;
-    &lt;PackageReference Include="DotNet.Bundle" Version="0.9.13" /&gt;
-  &lt;/ItemGroup&gt;
-
-&lt;/Project&gt;</code></pre>
-
-<p>The first property group specifies properties of the build, the second
-defines how the application will be bundled, and the last item group is
-necessary to make the bundler part of the build.</p>
-
-<p>Notes:</p>
-
-<ol>
-<li>You must specify <code>net6</code> for the framework and create
-a single file, self-contained application.</li>
-<li>You must use the hardened runtime.</li>
-<li>You must include native libraries for self extraction.</li>
-<li>You must <em>not</em> include symbols in the single file, that’s an option that
-apparently stopped working in .NET 5.</li>
-<li>I created <code>HelloWorld.icns</code> from a PNG with ImageMagick.</li>
-</ol>
-</div>
-
-<div>
-<h2>Building the application</h2>
-
-<p>Add <code>Dotnet.Bundle</code> to the project:</p>
-
-<pre><code>$ dotnet add package Dotnet.Bundle</code></pre>
-
-<p>(You only have to do this once.)</p>
-
-<p>Build the application:</p>
-
-<pre><code>$ dotnet msbuild -t:BundleApp -p:RuntimeIdentifier=osx-x64 -p:Configuration=Release</code></pre>
-
-<p>You can run the bundled application to make sure it works:</p>
-
-<pre><code>$ bin/Release/net6.0/osx-x64/publish/HelloWorld.app/Contents/MacOS/HelloWorld
-Hello, World!</code></pre>
-</div>
-
-<div>
-<h2>Sign the application</h2>
-
-<p>Next we have to sign the application. But before we can do that, we have
-to make an entitlements plist file. I called mine <code>entitlements.plist</code>:</p>
-
-<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-          "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
-&lt;plist version="1.0"&gt;
-&lt;dict&gt;
-    &lt;key&gt;com.apple.security.cs.allow-jit&lt;/key&gt;
-    &lt;true/&gt;
-    &lt;key&gt;com.apple.security.cs.allow-unsigned-executable-memory&lt;/key&gt;
-    &lt;true/&gt;
-    &lt;key&gt;com.apple.security.cs.disable-library-validation&lt;/key&gt;
-    &lt;true/&gt;
-    &lt;key&gt;com.apple.security.cs.disable-executable-page-protection&lt;/key&gt;
-    &lt;true/&gt;
-&lt;/dict&gt;
-&lt;/plist&gt;</code></pre>
-
-<p>Now we can sign it:</p>
-
-<pre><code>$ codesign --force --options runtime --entitlements ./entitlements.plist --deep \
-  --sign "Developer ID Application: YOUR DEVELOPER ID GOES HERE" \
-  --timestamp bin/Release/net6.0/osx-x64/publish/HelloWorld.app</code></pre>
-
-<p>You must use the entitlements option and the timestamp option. (You probably
-need all the other options too, but those were the ones that I initially 
-overlooked.)</p>
-
-<p>You can run it again to make sure it still works:</p>
-
-<pre><code>$ bin/Release/net6.0/osx-x64/publish/HelloWorld.app/Contents/MacOS/HelloWorld
-Hello, World!</code></pre>
-
-<p>(It didn’t for me for the longest time!)</p>
-</div>
-
-<div>
-<h2>Construct the DMG</h2>
-
-<p>Fire up the <em>DMG Canvas</em> application. (Yes, I know, I said I wanted this to
-be a hands-off process. I believe <em>DMG Canvas</em> can be automated, but I haven’t
-tried to figure out exactly how yet.)</p>
-
-<p>The first time you open it up, go to the Preferences dialog and add your Apple ID
-and a one-time password on the Notarization tab:</p>
-
-<figure>
-<img src="img/app-password.png" alt="Screen capture of the DMG Canvas notarization preferences tab."/>
-</figure>
-
-<p>This will enable signing and notarizing the DMG later.</p>
-
-<p>On the main screen, add the application to the canvas. On the right hand
-side, choose the second tab and select “Code Sign and Notarize” in the drop down.
-You’ll have to specify the certificate you want to use, your Apple ID, and the primary
-bundle ID. (I have no idea what that means in this context, but you have to put
-something in there.)</p>
-
-<figure>
-<img src="img/app-main.png" alt="Screen capture of the DMG Canvas main screen with the notarization dialog shown on the right."/>
-</figure>
-
-<p>Click the “Build” button in the upper right corner, fill in the details,</p>
-
-<figure>
-<img src="img/app-build.png" alt="Screen capture of the DMG Canvas build dialog."/>
-</figure>
-
-<p>Hit Save and wait (nervously, and for quite a while) for the results!</p>
-
-<figure>
-<img src="img/app-wait.png" alt="Screen capture of the DMG Canvas modal dialog while it's building and notarizing the DMG file."/>
-</figure>
-
-<p>With luck, it all goes smoothly and you get back a signed, notarized DMG file.</p>
-
-<p>There’s obviously more to be done in the DMG: it needs a background image, the
-standard symlink to <code>/Applications</code> should be present, etc. But
-I got a <a href="HelloWorld.dmg">working DMG</a> file out of it so, I’m
-declaring victory for the moment.</p>
-
 </div>
 </div></content></entry></feed>
