@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Announcing Saxon 12.9</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2025-09-12T17:00:00" />
+</head>
+<body>
+<h1>Announcing Saxon 12.9!</h1>
+
+<p>The Saxon 12.9 maintenance release has been published. This is a maintenance
+release for Java, C#, C/C++, PHP, and Python that fixes a number of
+issues that have been raised since 12.8 was released.</p>
+
+<p>Saxon 12.9 was released on 12 September 2025. This release has been uploaded to the
+usual locations on the Saxonica website, GitHub, and Maven, PyPi, and NuGet.
+SaxonCS 12.9 is built with .NET 8.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;amp;set_filter=1&amp;amp;sort=id%3Adesc&amp;amp;f%5B%5D=status_id&amp;amp;op%5Bstatus_id%5D=c&amp;amp;f%5B%5D=cf_6&amp;amp;op%5Bcf_6%5D=%3D&amp;amp;v%5Bcf_6%5D%5B%5D=105&amp;amp;f%5B%5D=&amp;amp;c%5B%5D=tracker&amp;amp;c%5B%5D=status&amp;amp;c%5B%5D=priority&amp;amp;c%5B%5D=subject&amp;amp;c%5B%5D=assigned_to&amp;amp;c%5B%5D=updated_on&amp;amp;group_by=&amp;amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=106&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.9">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>SaxonC releases for HE, PE, and EE are also available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Issues resolved in SaxonJ</h2>
+
+<p>This release fixes about twenty issues in SaxonJ and SaxonCS.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6893">6893</a>
+    Corrected an error in the Gizmo help messages</li>
+<li><a href="https://saxonica.plan.io/issues/6892">6892</a>
+    Fixed expression tree corruption after a rewrite optimization</li>
+<li><a href="https://saxonica.plan.io/issues/6891">6891</a>
+    Fixed an issue with regex flags when using the Java regex engine</li>
+<li><a href="https://saxonica.plan.io/issues/6889">6889</a>
+    Fixed an infinite loop when using trace listeners with try/catch and function variables</li>
+<li><a href="https://saxonica.plan.io/issues/6887">6887</a>
+    Added synchronization to avoid an exception</li>
+<li><a href="https://saxonica.plan.io/issues/6883">6883</a>
+    Corrected an error where the xsl:catch errors attribute didn’t accept EQNames</li>
+<li><a href="https://saxonica.plan.io/issues/6881">6881</a>
+    Fixed an exception when using 'position() eq last()' with no context item</li>
+<li><a href="https://saxonica.plan.io/issues/6878">6878</a>
+    Changed <code>parse-xml()</code> so that validation is never attempted</li>
+<li><a href="https://saxonica.plan.io/issues/6866">6866</a>
+    Corrected a namespace handling error when using the Domino tree model</li>
+<li><a href="https://saxonica.plan.io/issues/6864">6864</a>
+    Implemented a performance improvement for slash expressions and simple step expressions</li>
+<li><a href="https://saxonica.plan.io/issues/6863">6863</a>
+    Corrected a navigation error in snapshot trees</li>
+<li><a href="https://saxonica.plan.io/issues/6860">6860</a>
+    Corrected errors in how character maps were handled when using adaptive serialization</li>
+<li><a href="https://saxonica.plan.io/issues/6858">6858</a>
+    Improved error location information for some exceptions</li>
+<li><a href="https://saxonica.plan.io/issues/6856">6856</a>
+    Corrected an API error distinguishing between empty maps and empty sequences</li>
+<li><a href="https://saxonica.plan.io/issues/6840">6840</a>
+    Fixed an incorrect type inference for call on abs()</li>
+<li><a href="https://saxonica.plan.io/issues/6824">6824</a>
+    Fixed an error in how the retained static context is managed</li>
+<li><a href="https://saxonica.plan.io/issues/6818">6818</a>
+    Corrected an exception that could arise if attempting to serialize a free-standing attribute</li>
+<li><a href="https://saxonica.plan.io/issues/6809">6809</a>
+    Fixed the line number of errors in a free-standing XPath expression</li>
+<li><a href="https://saxonica.plan.io/issues/6805">6805</a>
+    Fixed a streaming bug related to comment handling</li>
+<li><a href="https://saxonica.plan.io/issues/6799">6799</a>
+    Fixed an exception on number-formatter option function of xml-to-json using xsl:value-of</li>
+</ul>
+
+<h2>Issues in SaxonC</h2>
+
+<p>This release includes a number of improvements in memory management
+and support for multi-threaded execution.</p>
+
+<ul>
+<li><a href="https://saxonica.plan.io/issues/6897">6897</a>
+    Fixed a bug where the <code>XQueryProcessor.setQueryBaseURI()</code> method had no effect</li>
+<li><a href="https://saxonica.plan.io/issues/6885">6885</a>
+    Corrected a Python bug where getting the parent of the root node threw an exception</li>
+<li><a href="https://saxonica.plan.io/issues/6880">6880</a>
+    Fixed a bug where <code>XsltExexutable.getXslMessages()</code> did not release memory</li>
+<li><a href="https://saxonica.plan.io/issues/6879">6879</a>
+    Fixed a bug where <code>XsltExecutable.callFunctionReturningValue()</code> did not release memory</li>
+<li><a href="https://saxonica.plan.io/issues/6859">6859</a>
+    Corrected an error where <code>saxonc-core.h</code> header was missing from source zip</li>
+<li><a href="https://saxonica.plan.io/issues/6843">6843</a>
+    Fixed a bug where <code>XsltExecutable.clone()</code> did not work correctly with multiple threads</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.9, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</body>
+</html>
+
