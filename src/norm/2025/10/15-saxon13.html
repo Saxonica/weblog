@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Preparing for Saxon 13</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2025-10-15T12:15:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+</head>
+<body>
+<h1>Preparing for Saxon 13</h1>
+
+<p>We’ve made a couple of Saxon 12 releases where we (once intentionally, once
+accidentally) built the Java release without support for JDK 8. Users
+noticed.</p>
+
+<p>We’re starting to think about Saxon 13 and we’re definitely planning to move
+the minimum Java version forward. There are still a few years left in JDK 8
+extended service support, but our build tools are beginning to issue deprecation
+warnings for it.</p>
+
+<p>JDK 8 was released more than a decade ago. There have been a lot of Java
+language improvements in the intervening years and we’re starting to take
+advantage of some of them.</p>
+
+<p>It makes sense to choose a “long term service” (LTS) release. We’ll want to
+avoid changing the version during maintenance releases. The <a
+href="https://www.oracle.com/java/technologies/java-se-support-roadmap.html">Java
+LTS releases</a> are 11, 17, 21, and 25. Premier support for 11 has already
+ended and version 25 was only released last month, that’s probably too
+aggressive.</p>
+
+<p>That leaves 17 or 21. We’re leaning towards Java 17, but we’d welcome any
+thoughts you might have.</p>
+
+</body>
+</html>
