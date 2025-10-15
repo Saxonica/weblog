@@ -1,4 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-09-12T16:28:05.857744244Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 12.9!</title><link href="https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html</id><published>2025-09-12T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2025-10-15T11:12:46.74373352Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Preparing for Saxon 13</title><link href="https://blog.saxonica.com/norm/2025/10/15-saxon13.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/10/15-saxon13.html</id><published>2025-10-15T12:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/10/15-saxon13.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>We’ve made a couple of Saxon 12 releases where we (once intentionally, once
+accidentally) built the Java release without support for JDK 8. Users
+noticed.</p>
+
+<p>We’re starting to think about Saxon 13 and we’re definitely planning to move
+the minimum Java version forward. There are still a few years left in JDK 8
+extended service support, but our build tools are beginning to issue deprecation
+warnings for it.</p>
+
+<p>JDK 8 was released more than a decade ago. There have been a lot of Java
+language improvements in the intervening years and we’re starting to take
+advantage of some of them.</p>
+
+<p>It makes sense to choose a “long term service” (LTS) release. We’ll want to
+avoid changing the version during maintenance releases. The <a href="https://www.oracle.com/java/technologies/java-se-support-roadmap.html">Java
+LTS releases</a> are 11, 17, 21, and 25. Premier support for 11 has already
+ended and version 25 was only released last month, that’s probably too
+aggressive.</p>
+
+<p>That leaves 17 or 21. We’re leaning towards Java 17, but we’d welcome any
+thoughts you might have.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 12.9!</title><link href="https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html</id><published>2025-09-12T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.9!</h1>
 
 <p>The Saxon 12.9 maintenance release has been published. This is a maintenance
@@ -2273,17 +2298,5 @@ For a full list, see
 <p>If you encounter any issues with Saxon 12.1, please
 <a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
 on our issue tracker.</p>
-
-</div></content></entry><entry><title>Brand new weblog, just like the old weblog</title><link href="https://blog.saxonica.com/norm/2023/03/16-weblog.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/03/16-weblog.html</id><published>2023-03-16T10:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/03/16-weblog.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>As part of some infrastructure cleanup, we decided to change how
-the weblog is managed. It’s now hosted on
-<a href="https://blog.saxonica.com/">blog.saxonica.com</a>.</p>
-
-<p>All of the old posts have been copied over and redirects are in
-place. Along the way, I cleaned up a few broken links.</p>
-
-<p>If anything seems broken, please do let me know!</p>
 
 </div></content></entry></feed>
