@@ -1,4 +1,104 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-10-15T11:12:46.894423599Z</updated><entry><title>Preparing for Saxon 13</title><link href="https://blog.saxonica.com/norm/2025/10/15-saxon13.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/10/15-saxon13.html</id><published>2025-10-15T12:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/10/15-saxon13.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-11-03T17:46:49.475389114Z</updated><entry><title>Windows Help?</title><link href="https://blog.saxonica.com/norm/2025/11/03-windows.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/11/03-windows.html</id><published>2025-11-03T17:45:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/11/03-windows.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>I’m asking for help, but first, a little background. Saxon 10.x is the last Saxon release that
+supported Microsoft .NET Framework. The Saxon 11 and 12 releases only run on
+.NET Core. But we still have customers with applications that need .NET
+Framework and Microsoft continues to support it on Windows.</p>
+
+<p>We’d like to be able to provide a .NET Framework version of SaxonCS built
+from the current sources. In principle, this should be possible because we build
+SaxonCS by transpiling Java source code to C# source code (mixed in with some
+hand-written C#).</p>
+
+<p>I undertook to see if I could make that work. I took a SaxonCS 12.x build and
+attempted to compile it with .NET Framework. I worked back and forth on the
+transpiler and on the generated C# code until I got something that compiled.</p>
+
+<p>But a simple
+<a href="https://dev.saxonica.com/12.99.99/identity.xsl">identity transformation</a>
+fails with an <code>AccessViolationException</code>:</p>
+
+<pre><code>
+C:\tmp&gt;.\SaxonCS transform -s:\tmp\identity.xsl -xsl:\tmp\identity.xsl
+file:/C:/tmp/identity.xsl
+Processing item &lt;xsl:stylesheet/&gt; ::
+Processing item @exclude-result-prefixes ::
+System.AccessViolationException: Attempted to read or write protected memory. This is often an indication that other memory is corrupt.
+   at Saxon.Hej.trans.rules.ShallowCopyRuleSet.process(...) in ...generated\Saxon\Hej\trans\rules\ShallowCopyRuleSet.cs:line 93
+   at Saxon.Hej.trans.Mode.applyTemplates(...) in ...generated\Saxon\Hej\trans\Mode.cs:line 186
+   at Saxon.Hej.trans.rules.ShallowCopyRuleSet.process(...) in ...generated\Saxon\Hej\trans\rules\ShallowCopyRuleSet.cs:line 58
+   at Saxon.Hej.trans.Mode.applyTemplates(...) in ...generated\Saxon\Hej\trans\Mode.cs:line 186
+   at Saxon.Hej.expr.instruct.ApplyTemplates.ApplyTemplatesPackage.processLeavingTail() in ...generated\Saxon\Hej\expr\instruct\ApplyTemplates.cs:line 243
+   at Saxon.Hej.trans.Mode.applyTemplates(...) in ...generated\Saxon\Hej\trans\Mode.cs:line 153
+   at Saxon.Hej.trans.XsltController.applyTemplates(...) in ...generated\Saxon\Hej\trans\XsltController.cs:line 206
+   at Saxon.Hej.s9api.Xslt30Transformer.applyTemplates(...) in ...generated\Saxon\Hej\s9api\Xslt30Transformer.cs:line 76
+   at Saxon.Hej.Transform.processFile(...) in ...generated\Saxon\Hej\Transform.cs:line 805
+   at Saxon.Hej.Transform.doTransform(...) in ...generated\Saxon\Hej\Transform.cs:line 547
+Fatal error during transformation: AccessViolationException: Attempted to read or write protected memory. This is often an indication that other memory is corrupt.
+Exiting with code 2
+</code></pre>
+
+<p>No amount of effort on my part has enabled me to find out where that problem occurs, or why.
+In the debugger, it’s on a perfectly harmless looking statement and taking one step forward
+immediately crashes the process.
+We got a Windows consultant (he’s helping us with some performance analysis, but he knows
+a lot more about Windows than I do) to take a look.</p>
+
+<p>Thing is, it works on his machine. My build works on his machine, his build fails on my machine.
+And those builds fail on some other machines too.</p>
+
+<p>I expressed some frustration (*cough*) at a team meeting and threatened to just pull the plug
+on the whole thing. But, we seem to be so close…</p>
+
+<p>Mike said, “why don’t we ask the internet”. So that’s what I’m doing. If you’re a Windows
+developer, you can get the entirely janky
+<a href="https://dev.saxonica.com/12.99.99/SaxonCS-net481-12-99-99.zip">SaxonCS-net481-12-99-99.zip</a>
+build and run it through your favorite debugging tools. If you can
+show me what I’ve done wrong, I would be ever so grateful. (To the tune of a free
+individual license, if you like.)</p>
+
+<p>A few points about the build:</p>
+
+<ul>
+<li>It’s a .NET Framework 4.8.1 Windows/X86 build.</li>
+<li>It’s really janky; it’s from C# source code that I’ve hacked on mercilessly.</li>
+<li>It emits a bunch of random debugging messages.</li>
+<li>It won’t read a license file and there’s no way to enable licensable features.</li>
+<li>Some commands do succeed, but that identity transform fails on some machines.</li>
+<li>It should go without saying, but I’m going to say it anyway, do not use that
+build for anything except testing.</li>
+</ul>
+
+<p>The failure isn’t related to the version of Windows (at least not the major
+version number). We aren’t able to see any obvious differences in the SDKs
+installed or the build tools used between machines where it succeeds and where
+it fails.</p>
+
+<p>Can you:</p>
+
+<ol>
+<li>Explain why it succeeds on some machines and fails on others?</li>
+<li>Tell me what to change so that it will always succeed?</li>
+</ol>
+
+<p>Clues most humbly solicited, if it’s the sort of puzzle that interests you.
+I recognize that not being able to provide the source code and build environment 
+is a serious limitation.</p>
+
+<p>If it helps, here are the build commands I used:</p>
+
+<pre><code>dotnet restore SaxonCS.sln --verbosity Normal -p:Configuration=Release -p:Platform="Any CPU"
+dotnet build SaxonCS.sln --verbosity Normal /nodereuse:false --no-restore \
+       -p:Version=12.99.99 -p:PackageVersion=12.99.99 -p:Configuration=Release \
+       -p:Platform="Any CPU" -p:DefineConstants=EE
+dotnet publish SaxonCS.sln -r win-x64 --self-contained true -p:PublishSingleFile=false \
+       -p:Version=12.99.99 -p:PackageVersion=12.99.99 -p:Configuration=Release \
+       -p:Platform="Any CPU"</code></pre>
+
+<p>🤞</p>
+
+</div></content></entry><entry><title>Preparing for Saxon 13</title><link href="https://blog.saxonica.com/norm/2025/10/15-saxon13.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/10/15-saxon13.html</id><published>2025-10-15T12:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/10/15-saxon13.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>We’ve made a couple of Saxon 12 releases where we (once intentionally, once
@@ -2304,51 +2404,5 @@ be broken. There are redirects in place for things we know moved and
 a few very old things have fallen by the wayside.</p>
 
 <p>If you see something that you think is broken, please tell us!</p>
-
-</div></content></entry><entry><title>Announcing Saxon 11.6!</title><link href="https://blog.saxonica.com/announcements/2023/08/saxon-11.6.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/08/saxon-11.6.html</id><published>2023-08-24T13:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/08/saxon-11.6.html"><div xmlns="http://www.w3.org/1999/xhtml">
-<h1>Announcing Saxon 11.6!</h1>
-
-<p>The Saxon 11.6 maintenance release has been published. This is a
-maintenance release for Java, C#, C/C++, PHP, and Python that fixes
-almost 40 issues reported since the 11.5 release.</p>
-
-<p>Saxon 11.6 was released on 24 August 2023. This release has been
-uploaded to the usual locations on the Saxonica website, GitHub,
-Maven, and NuGet. SaxonCS 11.6 is built with .NET 6.</p>
-
-<p>For a list of the issues resolved in this release, please visit the
-<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=93&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">issue tracker</a>
-on the Saxon support site.
-</p>
-
-<p>Download products:</p>
-
-<ul>
-<li>Binaries for PE and EE are available from our
-<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
-</li>
-<li>SaxonJ-HE is available on the
-<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/11.6">Maven Central
-repository</a>.
-</li>
-<li>SaxonJ-HE, PE, and EE can also be found on our
-<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
-</li>
-<li>SaxonCS is available on
-<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
-<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
-our open source
-<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
-The GitHub repository also provides source code for those who need it.
-</li>
-</ul>
-
-<p>For more details, please consult
-<a href="https://www.saxonica.com/documentation11">the documentation</a>.
-</p>
-
-<p>If you encounter any issues with Saxon 11.6, please
-<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
-on our issue tracker.</p>
 
 </div></content></entry></feed>

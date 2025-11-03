@@ -1,0 +1,110 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>Windows Help?</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2025-11-03T17:45:00">
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/norm-tovey-walsh.css"><meta content="Saxon Chronicles (in a Norman style)" property="og:site_name"><meta content="https://blog.saxonica.com/img/sccard.png" property="og:image"><meta content="Norm Tovey-Walsh's Saxonica weblog." property="og:description"><meta content="https://blog.saxonica.com/norm" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Windows Help?" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/norm/">Saxon Chronicles</a></h1><div class="tagline">( in a Norman style )</div></div><h2>Windows Help?</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2025-11"><span class="date" time="2025-11-03T17:45:00">November&nbsp;03, 2025 at 05:45p.m.</span></a></div></header><main>
+
+
+<p>I’m asking for help, but first, a little background. Saxon 10.x is the last Saxon release that
+supported Microsoft .NET Framework. The Saxon 11 and 12 releases only run on
+.NET Core. But we still have customers with applications that need .NET
+Framework and Microsoft continues to support it on Windows.</p>
+
+<p>We’d like to be able to provide a .NET Framework version of SaxonCS built
+from the current sources. In principle, this should be possible because we build
+SaxonCS by transpiling Java source code to C# source code (mixed in with some
+hand-written C#).</p>
+
+<p>I undertook to see if I could make that work. I took a SaxonCS 12.x build and
+attempted to compile it with .NET Framework. I worked back and forth on the
+transpiler and on the generated C# code until I got something that compiled.</p>
+
+<p>But a simple
+<a href="https://dev.saxonica.com/12.99.99/identity.xsl">identity transformation</a>
+fails with an <code>AccessViolationException</code>:</p>
+
+<pre><code>
+C:\tmp&gt;.\SaxonCS transform -s:\tmp\identity.xsl -xsl:\tmp\identity.xsl
+file:/C:/tmp/identity.xsl
+Processing item &lt;xsl:stylesheet/&gt; ::
+Processing item @exclude-result-prefixes ::
+System.AccessViolationException: Attempted to read or write protected memory. This is often an indication that other memory is corrupt.
+   at Saxon.Hej.trans.rules.ShallowCopyRuleSet.process(...) in ...generated\Saxon\Hej\trans\rules\ShallowCopyRuleSet.cs:line 93
+   at Saxon.Hej.trans.Mode.applyTemplates(...) in ...generated\Saxon\Hej\trans\Mode.cs:line 186
+   at Saxon.Hej.trans.rules.ShallowCopyRuleSet.process(...) in ...generated\Saxon\Hej\trans\rules\ShallowCopyRuleSet.cs:line 58
+   at Saxon.Hej.trans.Mode.applyTemplates(...) in ...generated\Saxon\Hej\trans\Mode.cs:line 186
+   at Saxon.Hej.expr.instruct.ApplyTemplates.ApplyTemplatesPackage.processLeavingTail() in ...generated\Saxon\Hej\expr\instruct\ApplyTemplates.cs:line 243
+   at Saxon.Hej.trans.Mode.applyTemplates(...) in ...generated\Saxon\Hej\trans\Mode.cs:line 153
+   at Saxon.Hej.trans.XsltController.applyTemplates(...) in ...generated\Saxon\Hej\trans\XsltController.cs:line 206
+   at Saxon.Hej.s9api.Xslt30Transformer.applyTemplates(...) in ...generated\Saxon\Hej\s9api\Xslt30Transformer.cs:line 76
+   at Saxon.Hej.Transform.processFile(...) in ...generated\Saxon\Hej\Transform.cs:line 805
+   at Saxon.Hej.Transform.doTransform(...) in ...generated\Saxon\Hej\Transform.cs:line 547
+Fatal error during transformation: AccessViolationException: Attempted to read or write protected memory. This is often an indication that other memory is corrupt.
+Exiting with code 2
+</code></pre>
+
+<p>No amount of effort on my part has enabled me to find out where that problem occurs, or why.
+In the debugger, it’s on a perfectly harmless looking statement and taking one step forward
+immediately crashes the process.
+We got a Windows consultant (he’s helping us with some performance analysis, but he knows
+a lot more about Windows than I do) to take a look.</p>
+
+<p>Thing is, it works on his machine. My build works on his machine, his build fails on my machine.
+And those builds fail on some other machines too.</p>
+
+<p>I expressed some frustration (*cough*) at a team meeting and threatened to just pull the plug
+on the whole thing. But, we seem to be so close…</p>
+
+<p>Mike said, “why don’t we ask the internet”. So that’s what I’m doing. If you’re a Windows
+developer, you can get the entirely janky
+<a href="https://dev.saxonica.com/12.99.99/SaxonCS-net481-12-99-99.zip">SaxonCS-net481-12-99-99.zip</a>
+build and run it through your favorite debugging tools. If you can
+show me what I’ve done wrong, I would be ever so grateful. (To the tune of a free
+individual license, if you like.)</p>
+
+<p>A few points about the build:</p>
+
+<ul>
+<li>It’s a .NET Framework 4.8.1 Windows/X86 build.</li>
+<li>It’s really janky; it’s from C# source code that I’ve hacked on mercilessly.</li>
+<li>It emits a bunch of random debugging messages.</li>
+<li>It won’t read a license file and there’s no way to enable licensable features.</li>
+<li>Some commands do succeed, but that identity transform fails on some machines.</li>
+<li>It should go without saying, but I’m going to say it anyway, do not use that
+build for anything except testing.</li>
+</ul>
+
+<p>The failure isn’t related to the version of Windows (at least not the major
+version number). We aren’t able to see any obvious differences in the SDKs
+installed or the build tools used between machines where it succeeds and where
+it fails.</p>
+
+<p>Can you:</p>
+
+<ol>
+<li>Explain why it succeeds on some machines and fails on others?</li>
+<li>Tell me what to change so that it will always succeed?</li>
+</ol>
+
+<p>Clues most humbly solicited, if it’s the sort of puzzle that interests you.
+I recognize that not being able to provide the source code and build environment 
+is a serious limitation.</p>
+
+<p>If it helps, here are the build commands I used:</p>
+
+<pre><code>dotnet restore SaxonCS.sln --verbosity Normal -p:Configuration=Release -p:Platform="Any CPU"
+dotnet build SaxonCS.sln --verbosity Normal /nodereuse:false --no-restore \
+       -p:Version=12.99.99 -p:PackageVersion=12.99.99 -p:Configuration=Release \
+       -p:Platform="Any CPU" -p:DefineConstants=EE
+dotnet publish SaxonCS.sln -r win-x64 --self-contained true -p:PublishSingleFile=false \
+       -p:Version=12.99.99 -p:PackageVersion=12.99.99 -p:Configuration=Release \
+       -p:Platform="Any CPU"</code></pre>
+
+<p>🤞</p>
+
+</main><footer><div class="prev-uri"><a href="/norm/2025/10/15-saxon13.html">Preparing for Saxon 13</a></div></footer></body>
+</html>
