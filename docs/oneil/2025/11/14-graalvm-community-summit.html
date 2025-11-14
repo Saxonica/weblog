@@ -1,0 +1,52 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>Saxonica takes SaxonC to the GraalVM community summit</title>
+  <meta name="author" content="O’Neil Delpratt">
+  <meta name="pubdate" content="2025-11-14T17:30:00">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/oneil-delpratt.css"><meta content="O'Neil Delpratt's Blog" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Saxon, XSLT, XQuery, and XML related." property="og:description"><meta content="https://blog.saxonica.com/oneil" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Saxonica takes SaxonC to the GraalVM community summit" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="oneil-delpratt"><header><div class="banner"><h1><a href="/oneil/">O'Neil Delpratt's Blog</a></h1><div class="tagline">Saxon, XSLT, XQuery and XML related</div></div><h2>Saxonica takes SaxonC to the GraalVM community summit</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#oneil-delpratt">O’Neil Delpratt</a></span><span class="on"> on </span><a href="/authors.html#oneil-delpratt-D2025-11"><span class="date" time="2025-11-14T17:30:00">November&nbsp;14, 2025 at 05:30p.m.</span></a></div></header><main>
+
+<br>
+<img src="graalvm_summit25.jpg" type="image/jpg">
+
+<p>Saxonica is a small company, but we’re doing innovative work all the same. In October,
+            Matt Patterson and I represented Saxonica at the <a href="https://www.graalvm.org/community/summit/">GraalVM Community Summit</a> at Oracle’s
+            offices in Zurich, because of the work we’re doing using <a href="https://www.graalvm.org/">GraalVM’s Native Image</a>
+            technology in <a href="https://www.saxonica.com/saxon-c/index.xml">SaxonC</a>.</p>
+        <p>It was an excellent chance to put faces to names, ask and answer questions, get to show
+            what we’re doing, and ask the engineers behind the tools detailed questions. The GraalVM
+            team were welcoming and more than willing to dive in.</p>
+        <p>There were all sorts of people with an interest in contributing to and using GraalVM,
+            from the biggest players in the industry to small companies like ours, and it was good
+            to see the sheer enthusiasm and investment that is being contributed into GraalVM and in
+            their projects.</p>
+        <p>This year’s summit came at an especially interesting time, following the <a href="https://blogs.oracle.com/java/detaching-graalvm-from-the-java-ecosystem-train">announcement</a>
+            that GraalVM will be decoupled from the Oracle Java release schedule. That change has
+            sparked fresh discussions about the future direction of the JDK. It was reassuring to
+            hear from the core team that they remain deeply committed; not only to GraalVM’s
+            continued development but also to its non-Java languages, including GraalPy and GraalJS,
+            which are rapidly maturing.</p>
+        <p>During the unconference sessions, we had the opportunity to share how Saxonica is using
+            GraalVM to build SaxonC as a shared library. We discussed our experiences with the
+            performance costs of crossing the C/C++ boundary with Java and limits we apply for
+            improvements, and our efforts to enable calling C, C++, PHP, and Python native functions
+            from Java as the host language, a long-requested feature we’re aiming to deliver user
+            defined extension function for XSLT, XQuery and in XPath. We are in the home stretch now
+            for releasing this feature in SaxonC 13.</p>
+        <p>One of the most valuable parts of the summit was being in the same room as the GraalVM
+            developers themselves. We compared development approaches for the C Native API vs. JNI;
+            and learned that JNI has evolved considerably in recent years. Even so, we’ve decided to
+            stick with the C Native API to keep things low level and for the use of function pointer
+            indirection for now, as it best fits our architecture and goals.</p>
+        <p>The unconference sessions also featured a range of fascinating talks, from BellSoft’s
+            work on parallel processing in Liberica, to developments in GraalJS/Wasm and Spring. The
+            Crema project, which tackles dynamic class loading in native-image was impressive and
+            may benefit SaxonC in the future. And the Shenandoah garbage collector from Amazon
+            promises to deliver exciting improvements for high-performance Java applications.</p>
+        <p>For a “small” company like Saxonica, being part of these conversations and contributing
+            to the future of the JVM and polyglot ecosystem feels immensely rewarding. We left
+            Zurich energised, inspired, and ready to keep pushing the boundaries of what’s possible
+            with GraalVM.</p>
+</main><footer><div class="prev-uri"><a href="/norm/2025/11/03-windows.html">Windows Help?</a></div></footer></body>
+</html>

@@ -1,4 +1,47 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-11-03T17:46:49.475389114Z</updated><entry><title>Windows Help?</title><link href="https://blog.saxonica.com/norm/2025/11/03-windows.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/11/03-windows.html</id><published>2025-11-03T17:45:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/11/03-windows.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-11-14T18:02:20.472672939Z</updated><entry><title>Saxonica takes SaxonC to the GraalVM community summit</title><link href="https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html</id><published>2025-11-14T17:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+<br/>
+<img src="graalvm_summit25.jpg" type="image/jpg"/>
+
+<p>Saxonica is a small company, but we’re doing innovative work all the same. In October,
+            Matt Patterson and I represented Saxonica at the <a href="https://www.graalvm.org/community/summit/">GraalVM Community Summit</a> at Oracle’s
+            offices in Zurich, because of the work we’re doing using <a href="https://www.graalvm.org/">GraalVM’s Native Image</a>
+            technology in <a href="https://www.saxonica.com/saxon-c/index.xml">SaxonC</a>.</p>
+        <p>It was an excellent chance to put faces to names, ask and answer questions, get to show
+            what we’re doing, and ask the engineers behind the tools detailed questions. The GraalVM
+            team were welcoming and more than willing to dive in.</p>
+        <p>There were all sorts of people with an interest in contributing to and using GraalVM,
+            from the biggest players in the industry to small companies like ours, and it was good
+            to see the sheer enthusiasm and investment that is being contributed into GraalVM and in
+            their projects.</p>
+        <p>This year’s summit came at an especially interesting time, following the <a href="https://blogs.oracle.com/java/detaching-graalvm-from-the-java-ecosystem-train">announcement</a>
+            that GraalVM will be decoupled from the Oracle Java release schedule. That change has
+            sparked fresh discussions about the future direction of the JDK. It was reassuring to
+            hear from the core team that they remain deeply committed; not only to GraalVM’s
+            continued development but also to its non-Java languages, including GraalPy and GraalJS,
+            which are rapidly maturing.</p>
+        <p>During the unconference sessions, we had the opportunity to share how Saxonica is using
+            GraalVM to build SaxonC as a shared library. We discussed our experiences with the
+            performance costs of crossing the C/C++ boundary with Java and limits we apply for
+            improvements, and our efforts to enable calling C, C++, PHP, and Python native functions
+            from Java as the host language, a long-requested feature we’re aiming to deliver user
+            defined extension function for XSLT, XQuery and in XPath. We are in the home stretch now
+            for releasing this feature in SaxonC 13.</p>
+        <p>One of the most valuable parts of the summit was being in the same room as the GraalVM
+            developers themselves. We compared development approaches for the C Native API vs. JNI;
+            and learned that JNI has evolved considerably in recent years. Even so, we’ve decided to
+            stick with the C Native API to keep things low level and for the use of function pointer
+            indirection for now, as it best fits our architecture and goals.</p>
+        <p>The unconference sessions also featured a range of fascinating talks, from BellSoft’s
+            work on parallel processing in Liberica, to developments in GraalJS/Wasm and Spring. The
+            Crema project, which tackles dynamic class loading in native-image was impressive and
+            may benefit SaxonC in the future. And the Shenandoah garbage collector from Amazon
+            promises to deliver exciting improvements for high-performance Java applications.</p>
+        <p>For a “small” company like Saxonica, being part of these conversations and contributing
+            to the future of the JVM and polyglot ecosystem feels immensely rewarding. We left
+            Zurich energised, inspired, and ready to keep pushing the boundaries of what’s possible
+            with GraalVM.</p>
+</div></content></entry><entry><title>Windows Help?</title><link href="https://blog.saxonica.com/norm/2025/11/03-windows.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2025/11/03-windows.html</id><published>2025-11-03T17:45:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2025/11/03-windows.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>I’m asking for help, but first, a little background. Saxon 10.x is the last Saxon release that
@@ -2383,26 +2426,5 @@ that the next releases of Saxon will be ship with XML Resolver
 <a href="https://xmlresolver.org/6x-snapshot/">preview the planned changes</a>
 and provide feedback about how they work in your applications, that’d
 be grand.</p>
-
-</div></content></entry><entry><title>New infrastructure…</title><link href="https://blog.saxonica.com/norm/2023/08/31-infrastructure.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/31-infrastructure.html</id><published>2023-08-31T13:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/31-infrastructure.html"><div xmlns="http://www.w3.org/1999/xhtml">
-<h1>New infrastructure…</h1>
-
-<p>Just FYI, we’ve moved some things around. Some of our web
-infrastructure, the way
-<a href="https://www.saxonica.com/">www.saxonica.com</a>
-and
-<a href="https://dev.saxonica.com/">dev.saxonica.com</a>
-are served, for example, has changed.
-Plus we have some new infrastructure for
-<a href="https://downloads.saxonica.com/">downloads</a>
-and 
-<a href="https://maven.saxonica.com/">Maven</a>.
-</p>
-
-<p>You aren’t supposed to notice. Or, at least, it isn’t supposed to
-be broken. There are redirects in place for things we know moved and
-a few very old things have fallen by the wayside.</p>
-
-<p>If you see something that you think is broken, please tell us!</p>
 
 </div></content></entry></feed>
