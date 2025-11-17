@@ -4,7 +4,6 @@
     --title-family: "Noto Sans", sans-serif, var(--symbol-fonts);
     --mono-family: "B612 Mono", monospace, var(--symbol-fonts);
     --rule-color: #7a7a7a;
-    --max-width: 45rem;
 }
 
 html {
@@ -33,44 +32,47 @@ body {
     grid-template-columns: 100%;
 }
 
-aside.nav {
-    position: relative;
-    margin-left: calc(var(--max-width) + 2em);
-    width: 12em;
-    height: 0;
-}
-
-aside .navlinks {
-    border-top: 2px dashed var(--rule-color);
-    border-left: 2px dashed var(--rule-color);
-    padding-top: 1em;
-    padding-left: 1em;
-}
-
-aside.nav div {
-    font-size: 80%;
-    line-height: 1.5;
-}
-
 header {
-    margin-left: 4em;
+    margin-left: 0.25rem;
     font-family: var(--title-family);
 }
 
 header .banner {
-    margin-left: -4em;
-    padding-left: 4em;
+    margin-left: -0.25rem;
+    padding-left: 0.25rem;
 }
 
 main {
-    margin-left: 4em;
-    max-width: var(--max-width);
+    margin-left: 0.25rem;
+}
+
+aside.nav {
+    display: none;
+}
+
+h1 a, h1 a:visited,
+h2 a, h2 a:visited,
+h3 a, h3 a:visited,
+.post-index ul.years > li > a,
+.post-index ul.years > li > a:visited,
+.post-index ul.months > li > a,
+.post-index ul.months > li > a:visited {
+    text-decoration: none;
+}
+
+a, a:visited {
+    color: inherit;
+}
+
+code {
+    font-family: var(--mono-family);
+    font-size: 80%;
 }
 
 img.logo-header {
     padding-top: 1rem;
-    padding-bottoM: 1rem;
-    max-width: var(--max-width);
+    padding-bottom: 1rem;
+    max-width: 90vw;
     border-bottom: 3px solid rgb(121, 138, 177);
 }
 
@@ -83,7 +85,6 @@ footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 100%;
-    max-width: var(--max-width);
 }
 
 footer .prev-uri::before {
@@ -127,16 +128,6 @@ pre {
     font-family: var(--body-family);
 }
 
-h1 a, h1 a:visited,
-h2 a, h2 a:visited,
-h3 a, h3 a:visited,
-.post-index ul.years > li > a,
-.post-index ul.years > li > a:visited,
-.post-index ul.months > li > a,
-.post-index ul.months > li > a:visited {
-    text-decoration: none;
-}
-
 li.announcements::before {
     color: rgb(140,72,64);
     content: "🎉";
@@ -146,15 +137,6 @@ li.announcements::before {
 
 li.announcements {
     text-indent: -0.65rem;
-}
-
-a, a:visited {
-    color: inherit;
-}
-
-code {
-    font-family: var(--mono-family);
-    font-size: 80%;
 }
 
 /* ============================================================ */
@@ -241,3 +223,49 @@ code {
 }
 
 /* ============================================================ */
+
+@media screen and (min-width: 890px) {
+    img.logo-header {
+        max-width: clamp(50%, calc(100vw - 16rem), 35rem);
+    }
+
+    header {
+        margin-left: 4rem;
+    }
+
+    header .banner {
+        margin-left: -4rem;
+        padding-left: 4rem;
+    }
+
+    main {
+        margin-left: 4rem;
+        max-width: clamp(50%, calc(100vw - 16rem), 35rem);
+    }
+
+    aside.nav {
+        display: block;
+        position: relative;
+        margin-left: calc(100vw - 15rem);
+        width: 12rem;
+        height: 0;
+    }
+
+    aside .navlinks {
+        border-top: 2px dashed var(--rule-color);
+        border-left: 2px dashed var(--rule-color);
+        padding-top: 1em;
+        padding-left: 1em;
+    }
+
+    aside.nav div {
+        font-size: 80%;
+        line-height: 1.5;
+    }
+
+    footer {
+        max-width: clamp(50%, calc(100vw - 16rem), 35rem);
+    }
+
+}
+
