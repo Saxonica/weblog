@@ -4,20 +4,32 @@ body.oneil-delpratt {
 
 .oneil-delpratt header {
     background-color: white;
-    width: var(--max-width);
-    padding-left: 1em;
-    padding-right: 1em;
 }
 
-.oneil-delpratt header .banner {
+header {
+    margin-left: 0;
+}
+
+header .banner {
+    margin-left: 0;
+    padding-left: 0;
+}
+
+header .banner {
     border-top: 10px solid #8e3b03;
-    padding-left: 1em;
-    margin-left: -1em;
-    width: calc(var(--max-width) + 1em);
     height: 6em;
     padding-top: 1em;
     padding-bottom: 2.5em;
+    padding-left: 1rem;
     background: #77dbfe url(/img/odheader.png) no-repeat left bottom;
+}
+
+header h2 {
+    padding-left: 1rem;
+}
+
+header .byline {
+    padding-left: 1rem;
 }
 
 .oneil-delpratt header .banner h1 {
@@ -26,18 +38,35 @@ body.oneil-delpratt {
 
 .oneil-delpratt main {
     background-color: white;
-    padding-left: 1em;
-    padding-right: 1em;
-}
-
-.oneil-delpratt footer {
-    background-color: white;
-    width: calc(var(--max-width) + 2em);
-    margin-top: 0;
-    padding-left: 1em;
-    padding-right: 1em;
+    padding-left: 1rem;
+    margin-left: 0;
 }
 
 aside.nav {
     color: white;
+}
+
+@media screen and (min-width: 890px) {
+    header {
+        margin-left: 4rem;
+        padding-left: 1rem;
+        max-width: clamp(50%, calc(100vw - 16rem), 100vw);
+    }
+
+    header h2 {
+        padding-left: 0;
+    }
+
+    header .byline {
+        padding-left: 0;
+    }
+
+    .oneil-delpratt main {
+        margin-left: 4rem;
+        max-width: clamp(50%, calc(100vw - 16rem), 100vw);
+    }
+
+    header .banner {
+        margin-left: -1rem;
+    }
 }
