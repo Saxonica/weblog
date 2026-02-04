@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Maven repository</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2026-02-04T17:00:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+</head>
+<body>
+<h1>Maven repository</h1>
+
+<p>I’ve posted about our Maven repository
+<a href="/norm/2020/10/29-maven.html">before</a> (and
+<a href="/norm/2020/10/02-maven.html">before that</a>).
+It’s where we publish our commercial products, Saxon PE and Saxon EE, accessible
+via Maven. It’s moved since we first announced it, it’s now at
+<a href="https://maven.saxonica.com/">https://maven.saxonica.com</a>.</p>
+
+<p>You can use it by configuring your build system to include our
+repository. For example, in a Kotlin Gradle build script, like this:</p>
+
+<pre><code>repositories {
+    maven { url = uri("https://maven.saxonica.com/maven") }
+}</code></pre>
+
+<p>Then you can use Maven coordinates to get the libraries. For example, like
+this:</p>
+
+<pre><code>dependencies {
+  implementation("com.saxonica:Saxon-EE:12.9")
+}</code></pre>
+
+<p>It’s been running without incident for just over five years now, so I think
+we can stop calling it experimental. It wasn’t clear when we first put it up if
+just hosting it on some static web pages would be sufficient. It appears to be.
+I’m confident that whatever benefits we’d see from running an actual artifact
+repository system would be outweighed by the complexity of doing so.</p>
+
+<p>Our open source product, Saxon HE, is published in our repository for
+completeness, but it’s also available as usual through
+<a href="https://search.maven.org/artifact/net.sf.saxon/Saxon-HE">Maven Central</a>.</p>
+
+</body>
+</html>
