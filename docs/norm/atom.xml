@@ -1,4 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2026-02-04T12:09:49.847309111Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Two steps forward…</title><link href="https://blog.saxonica.com/norm/2026/02/04-qt4cg.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2026/02/04-qt4cg.html</id><published>2026-02-04T12:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2026/02/04-qt4cg.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2026-02-04T17:02:41.14800024Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Maven repository</title><link href="https://blog.saxonica.com/norm/2026/02/04-maven.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2026/02/04-maven.html</id><published>2026-02-04T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2026/02/04-maven.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>I’ve posted about our Maven repository
+<a href="/norm/2020/10/29-maven.html">before</a> (and
+<a href="/norm/2020/10/02-maven.html">before that</a>).
+It’s where we publish our commercial products, Saxon PE and Saxon EE, accessible
+via Maven. It’s moved since we first announced it, it’s now at
+<a href="https://maven.saxonica.com/">https://maven.saxonica.com</a>.</p>
+
+<p>You can use it by configuring your build system to include our
+repository. For example, in a Kotlin Gradle build script, like this:</p>
+
+<pre><code>repositories {
+    maven { url = uri("https://maven.saxonica.com/maven") }
+}</code></pre>
+
+<p>Then you can use Maven coordinates to get the libraries. For example, like
+this:</p>
+
+<pre><code>dependencies {
+  implementation("com.saxonica:Saxon-EE:12.9")
+}</code></pre>
+
+<p>It’s been running without incident for just over five years now, so I think
+we can stop calling it experimental. It wasn’t clear when we first put it up if
+just hosting it on some static web pages would be sufficient. It appears to be.
+I’m confident that whatever benefits we’d see from running an actual artifact
+repository system would be outweighed by the complexity of doing so.</p>
+
+<p>Our open source product, Saxon HE, is published in our repository for
+completeness, but it’s also available as usual through
+<a href="https://search.maven.org/artifact/net.sf.saxon/Saxon-HE">Maven Central</a>.</p>
+
+</div></content></entry><entry><title>Two steps forward…</title><link href="https://blog.saxonica.com/norm/2026/02/04-qt4cg.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2026/02/04-qt4cg.html</id><published>2026-02-04T12:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2026/02/04-qt4cg.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Two steps forward…</h1>
 
 <p><a href="https://qt4cg.org/">QT4CG</a>, the commuity group developing the
@@ -2074,141 +2108,5 @@ access to that information. In the end, I applied an old maxim:</p>
 parse the sources myself.</p>
 
 <p>Comments most welcome…</p>
-
-</div></content></entry><entry><title>Announcing Saxon 12.3!</title><link href="https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html</id><published>2023-07-04T17:50:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/07/saxon-12.3.html"><div xmlns="http://www.w3.org/1999/xhtml">
-<h1>Announcing Saxon 12.3!</h1>
-
-<p>The Saxon 12.3 maintenance release has been published. This is a
-maintenance release for Java, C#, C/C++, PHP, and Python that fixes a
-number of issues reported since the Saxon 12.2 release.</p>
-
-<p>Saxon 12.3 was released on
-<span title="Happy Independence Day to all our readers in the United States!">4 July 2023</span>.
-This release has been
-uploaded to the usual locations on the Saxonica website, GitHub, and
-Maven, PyPi, and NuGet. SaxonCS 12.3 is built with .NET 6. This
-release includes SaxonC and Python releases for the ARM 64
-architecture as well as X86-64 architecture.</p>
-
-<p>For a list of the issues resolved in this release, please visit the issue trackers
-for
-<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=92&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonJ and SaxonCS</a> or
-<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.3&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">SaxonC</a>
-on the Saxon support site.
-</p>
-
-<p>Download products:</p>
-
-<ul>
-<li>Binaries for PE and EE are available from our
-<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
-</li>
-<li>SaxonJ-HE is available on the
-<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.3">Maven Central
-repository</a>.
-</li>
-<li>SaxonJ-HE, PE, and EE can also be found on our
-<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
-</li>
-<li>Python wheels for SaxonC (HE, PE, and EE) are available from
-<a href="https://pypi.org/user/saxonica/">PyPI</a>.
-</li>
-<li>SaxonCS is available on
-<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
-<li>Saxon-HE is no longer distributed on SourceForge. It is now available from
-our open source
-<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
-The GitHub repository also provides source code for those who need it.
-</li>
-</ul>
-
-<p>For more details, please consult
-<a href="https://www.saxonica.com/documentation12">the documentation</a>.
-</p>
-
-<h2>Partial list of issues resolved</h2>
-
-<p>This section is a subset of the complete list of resolved issues.
-It’s curated to bring attention to the bugs that seem most likely to
-impact customers. 
-</p>
-
-<h3>Issues in SaxonJ and SaxonCS</h3>
-
-<p>For a full list, see
-<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_6&amp;op%5Bcf_6%5D=%3D&amp;v%5Bcf_6%5D%5B%5D=92&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.</p>
-
-<ul>
-<li><a href="https://saxonica.plan.io/issues/6003">6003</a>:
-    Inline function expression evaluated using xsl:evaluate</li>
-<li><a href="https://saxonica.plan.io/issues/6018">6018</a>:
-    UnicodeString - indexWhere does not start from the expected position</li>
-<li><a href="https://saxonica.plan.io/issues/6022">6022</a>:
-    Eager evaluation prematurely throws exception in analyze-string/non-matching-string.</li>
-<li><a href="https://saxonica.plan.io/issues/6024">6024</a>:
-    java.lang.NoClassDefFoundError: org/jdom2/Document</li>
-<li><a href="https://saxonica.plan.io/issues/6033">6033</a>:
-    Invalid warning about field in xs:key</li>
-<li><a href="https://saxonica.plan.io/issues/6034">6034</a>:
-    Problems with saxon:slice()</li>
-<li><a href="https://saxonica.plan.io/issues/6036">6036</a>:
-    Undeclaration of default namespace is not reported to a SAXResult</li>
-<li><a href="https://saxonica.plan.io/issues/6040">6040</a>:
-    Invalid warning displayed when map:contains() is used</li>
-<li><a href="https://saxonica.plan.io/issues/6054">6054</a>:
-    NamedNodeMap.getNamedItem throw UnsupportedOperationException</li>
-<li><a href="https://saxonica.plan.io/issues/6059">6059</a>:
-    Bug on "-" castable to xs:duration</li>
-<li><a href="https://saxonica.plan.io/issues/6061">6061</a>:
-    Crash in SaxonCS using ";n" in regex flags</li>
-<li><a href="https://saxonica.plan.io/issues/6063">6063</a>:
-    Incorrect attribute indentation</li>
-<li><a href="https://saxonica.plan.io/issues/6067">6067</a>:
-    Fixed NPE in Saxon HE 12.2</li>
-<li><a href="https://saxonica.plan.io/issues/6076">6076</a>:
-    Fixed NPE in Saxon HE 12.2</li>
-<li><a href="https://saxonica.plan.io/issues/6085">6085</a>:
-    Fixed an incomplete path in error messages in a validation report</li>
-<li><a href="https://saxonica.plan.io/issues/6086">6086</a>:
-    Updated the validation-reports.xsd</li>
-<li><a href="https://saxonica.plan.io/issues/6091">6091</a>:
-    Fixed an NPE in ContextStackIterator.getMajorCaller</li>
-<li><a href="https://saxonica.plan.io/issues/6092">6092</a>:
-    Fixed a bug in defaultOpenContent/@appliesToEmpty in XML Schema support</li>
-<li><a href="https://saxonica.plan.io/issues/6093">6093</a>:
-    Fixed a bug in a predicate with last()</li>
-<li><a href="https://saxonica.plan.io/issues/6095">6095</a>:
-    Fixed an index out-of-bounds exception when using an accumulator-rule match with variables</li>
-</ul>
-
-<h3>Issues in SaxonC</h3>
-
-For a full list, see
-<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=status_id&amp;op%5Bstatus_id%5D=c&amp;f%5B%5D=cf_3&amp;op%5Bcf_3%5D=%7E&amp;v%5Bcf_3%5D%5B%5D=12.3&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">the issue tracker</a>.
-
-<ul>
-<li><a href="https://saxonica.plan.io/issues/6017">6017</a>:
-    Interrupted by signal 11: SIGSEGV when PyDocumentBuilder.set_schema_validator is set to None</li>
-<li><a href="https://saxonica.plan.io/issues/6023">6023</a>:
-    Thread 1 "python3" received signal SIGSEGV, Segmentation fault</li>
-<li><a href="https://saxonica.plan.io/issues/6025">6025</a>:
-    Python Saxon not releasing memory</li>
-<li><a href="https://saxonica.plan.io/issues/6053">6053</a>:
-    PydmNode object gets deleted before reuse</li>
-<li><a href="https://saxonica.plan.io/issues/6075">6075</a>:
-    Unable to read unicodeBlocks.xml file</li>
-<li><a href="https://saxonica.plan.io/issues/6077">6077</a>:
-    Axis Iterator required on the XdmNode</li>
-<li><a href="https://saxonica.plan.io/issues/6078">6078</a>:
-    Undefined reference to <code>dlopen@GLIBC_2.34</code></li>
-<li><a href="https://saxonica.plan.io/issues/6084">6084</a>:
-    Exception: Initial template parameters can only be of type PyXdmValue</li>
-<li><a href="https://saxonica.plan.io/issues/6098">6098</a>:
-    SaxonApiException::getSystemId() throws NullPointerException</li>
-</ul>
-
-<p>If you encounter any issues with Saxon 12.3, please
-<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
-on our issue tracker.</p>
 
 </div></content></entry></feed>
