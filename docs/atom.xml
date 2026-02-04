@@ -1,4 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2025-11-17T11:47:18.35748196Z</updated><entry><title>Saxonica takes SaxonC to the GraalVM community summit</title><link href="https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html</id><published>2025-11-14T17:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2026-02-04T12:09:49.985428455Z</updated><entry><title>Two steps forward…</title><link href="https://blog.saxonica.com/norm/2026/02/04-qt4cg.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2026/02/04-qt4cg.html</id><published>2026-02-04T12:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2026/02/04-qt4cg.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Two steps forward…</h1>
+
+<p><a href="https://qt4cg.org/">QT4CG</a>, the commuity group developing the
+4.0 versions of XPath, XQuery, XSLT, and related specifications, has been hard
+at work now for more than three years. We just had our 151st meeting.</p>
+
+<p>It’s a large body of work. Lots of changes have been requested: there are
+2,437 issues today, with 70 remaining open. Lots of changes have been proposed,
+drafted, reviewed and accepted (or rejected, as the case may be): there are
+2,441 pull requests today, with 12 currently open. We’ve added tests to the test
+suite and implementations are underway.</p>
+
+<p>I’m pleased, in my role as chair of the group, to announce that we’ve
+published our first set of “<a href="https://qt4cg.org/#drafts-2026-01-28">stable drafts</a>”.
+These <em>are not</em> final specifications, but they do reflect the consensus of
+the group near the end of January, 2026. The
+<a href="https://qt4cg.org/#speclist">current drafts</a> are still the place to look for the most
+recent consensus positions.</p>
+
+<p>Publishing dated, stable drafts serves a couple of purposes. First and
+foremost, it gives users and implementors a stable set of documents to refer to.
+As Saxonica works towards a Saxon 13 release, we’ll be able to make assertions
+about what features we do (or do not) support, confident that those features
+won’t change in the draft we’re referencing. Those features may still change, of
+course, but we can say we implemented against a stable draft.</p>
+
+<p>It’s also a strong signal to the community that we think we’re making
+progress towards the finish line. </p>
+
+<p><em>Yes, but when will you be done</em>, I hear you ask?</p>
+
+<p>In practical terms, when the group thinks the specifications are complete and
+coherent, and when it agrees to stop changing them. That’s a
+social engineering issue, not a technical one. Specifications, perhaps even more than code,
+are governed by the <a href="https://en.wikipedia.org/wiki/Ninety%E2%80%93ninety_rule">90/90 rule</a>:
+the first 90% of drafting takes 90% of the time, the remaining 10% of drafting takes the
+other 90% of the time.</p>
+
+<p>Personally, I’ll be <em>very</em> surprised if we finish in 2026 (that remaining 10%
+really is <em>a lot</em> of work), and surprised [if somewhat less <em>very</em>], if
+we don’t finish in 2027. </p> </div></content></entry><entry><title>Saxonica takes SaxonC to the GraalVM community summit</title><link href="https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html</id><published>2025-11-14T17:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/oneil/2025/11/14-graalvm-community-summit.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 <br/>
 <img src="graalvm_summit25.jpg" type="image/jpg"/>
@@ -2409,22 +2450,4 @@ Mike has worked so hard to establish.</p>
         admitting to our mistakes when we make them, and above all being active 
         contributors to the thriving community without which we would not exist. 
         I hope to remain part of that for many years to come.</p>
-    </div></content></entry><entry><title>XML Resolver 6.x SNAPSHOT</title><link href="https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html</id><published>2023-09-14T14:55:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/09/14-xmlresolver.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>Under the hood, Saxon uses a “resolver” whenever it
-attempts to load a document (a source document, stylesheet module,
-unparsed text document, etc.). For the past few releases, the Java,
-C#, and C products have been using resolvers based on the
-<a href="https://xmlresolver.org/">XML Resolver APIs</a>.</p>
-
-<p>I’ve been working on some improvements to those APIs. It’s likely
-that the next releases of Saxon will be ship with XML Resolver
-6.x.</p>
-
-<p>If you’d like to
-<a href="https://xmlresolver.org/6x-snapshot/">preview the planned changes</a>
-and provide feedback about how they work in your applications, that’d
-be grand.</p>
-
-</div></content></entry></feed>
+    </div></content></entry></feed>
