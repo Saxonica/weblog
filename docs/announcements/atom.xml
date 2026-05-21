@@ -1,4 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica announcements</title><link href="https://blog.saxonica.com/announcements/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/announcements/atom.xml" rel="self"/><id>https://blog.saxonica.com/announcements/atom.xml</id><updated>2026-02-04T17:02:40.904945066Z</updated><entry><title>Announcing Saxon 12.9!</title><link href="https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html</id><published>2025-09-12T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica announcements</title><link href="https://blog.saxonica.com/announcements/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/announcements/atom.xml" rel="self"/><id>https://blog.saxonica.com/announcements/atom.xml</id><updated>2026-05-21T13:53:38.893694077Z</updated><entry><title>Saxonica User Group Meeting</title><link href="https://blog.saxonica.com/announcements/2026/05/21-saxonica.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/05/21-saxonica.html</id><published>2026-05-21T14:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/05/21-saxonica.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>Saxonica is pleased to announce that we’re having a user group meeting on the
+<a href="https://www.xmlprague.cz/day1-2026/">pre-conference day</a>
+at <a href="https://www.xmlprague.cz/">XML Prague</a>. Everyone is welcome!</p>
+
+<p>We have a very loose agenda prepared, but this will be an informal event with
+lots of opportunities to ask questions and explore what’s new with Saxonica, our
+products, and the standards.</p>
+
+<p>The proposed line up is:</p>
+
+<ul>
+<li>Introductions, products, product roadmap,
+and maybe a bit of a peek at what’s been going on in <a href="https://qt4cg.org/">QT4CG</a> as it
+relates to Saxonica.</li>
+<li>An overview of the new features under development for Saxon 13.</li>
+<li>A presentation of some of the exciting new developments in SaxonC, Python, and PHP.</li>
+<li>A demonstration of some of the new capabilities of Saxon 13.</li>
+<li>Lots of opportunity to chat with the whole Saxonica team!</li>
+</ul>
+
+<p>Please come join us in room RB211 starting at 10:00am on Thursday, 4 June 2026.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 12.9!</title><link href="https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html</id><published>2025-09-12T17:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2025/09/saxon-12.9.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 12.9!</h1>
 
 <p>The Saxon 12.9 maintenance release has been published. This is a maintenance
