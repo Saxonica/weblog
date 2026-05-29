@@ -1,4 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2026-05-26T20:46:27.974553415Z</updated><entry><title>101 Fun things to do with QT4</title><link href="https://blog.saxonica.com/mike/2026/05/101-things-in-QT4.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2026/05/101-things-in-QT4.html</id><published>2026-05-26T18:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2026/05/101-things-in-QT4.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2026-05-29T15:00:52.641382101Z</updated><entry><title>Announcing Saxon 13.0!</title><link href="https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html</id><published>2026-05-29T16:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 13.0!</h1>
+
+<p>The first release of Saxon 13 has just been published. This is a new release
+for Java, C#, C/C++, PHP, and Python. The highlights in this release are:
+</p>
+
+<ul>
+<li>A redesigned Schema API that allows multiple schemas to coexist. You can now validate
+an input document with one schema and the result with another, even for the same namespace.</li>
+<li>More than 175 features from the draft 4.0 specifications are now available
+in Saxon-PE and Saxon-EE, including:
+  <ul>
+    <li>JNodes, path navigation over trees of JSON maps and arrays,</li>
+    <li>Lookahead and lookbehind in regular expressions,</li>
+    <li>Functions for CSV parsing,</li>
+    <li>Functions for parsing with <a href="https://invisiblexml.org/">Invisible XML</a>, and</li>
+    <li>More flexible XML-to-JSON conversions with <code>fn:element-to-map</code>.</li>
+  </ul>
+</li>
+<li>On the topic of 4.0,
+  <ul>
+    <li>Mike <a href="/mike/2026/05/101-things-in-QT4.html">recently published</a>
+    a list of <em>101 new things</em> you can do with Saxon using 4.0 features!</li>
+    <li>(For more information about 4.0, see <a href="https://qt4cg.org/">QT4CG</a>.)</li>
+  </ul>
+</li>
+<li>Support for SaxonC extension functions written in C++, Python, and PHP.</li>
+<li>SaxonCS-HE, our first release of the free Saxon HE product built for .NET with C#.</li>
+</ul>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for SaxonJ, SaxonC, and SaxonCS are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/13.0">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS-EE and SaxonCS-EE are available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>At the time of publication, a technical issue prevents us from
+publishing Python wheels for Windows. We will update the PyPI repository with
+those wheels as soon as they are available. Also, the resources release is not
+yet ready.</p>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation13">the documentation</a>.
+</p>
+
+<p>If you encounter any issues with Saxon 13.0, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+<p>P.S. <a href="/announcements/2026/05/21-saxonica.html">See you in Prague!</a>
+</p>
+
+</div></content></entry><entry><title>101 Fun things to do with QT4</title><link href="https://blog.saxonica.com/mike/2026/05/101-things-in-QT4.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2026/05/101-things-in-QT4.html</id><published>2026-05-26T18:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2026/05/101-things-in-QT4.html"><div xmlns="http://www.w3.org/1999/xhtml">
         
         
         <p>Here's a fun list of new features in the XPath 4.0, XQuery 4.0, and XSLT 4.0,
@@ -2779,44 +2850,6 @@ impact customers.
 
 <p>If you encounter any issues with Saxon 12.4, please
 <a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
-on our issue tracker.</p>
-
-</div></content></entry><entry><title>Announcing SaxonJS 2.6!</title><link href="https://blog.saxonica.com/announcements/2023/10/saxonjs-2.6.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2023/10/saxonjs-2.6.html</id><published>2023-10-13T15:45:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2023/10/saxonjs-2.6.html"><div xmlns="http://www.w3.org/1999/xhtml">
-<h1>Announcing SaxonJS 2.6!</h1>
-
-<p>The SaxonJS 2.6 maintenance release has been published. This is a
-maintenance release for NodeJS and the browser. It fixes more than a
-dozen bugs (including <a href="/norm/2023/10/06-no-longer-supported.html">that one</a>
-about the spurious warning message). Highlights include:</p>
-
-<ul>
-<li><a href="https://saxonica.plan.io/issues/5597">#5597</a>: ixsl:schedule-action fails without xsl:call-template</li>
-<li><a href="https://saxonica.plan.io/issues/5714">#5714</a>: Update documentation to mention the backtick escaping mechanism</li>
-<li><a href="https://saxonica.plan.io/issues/5739">#5739</a>: Space in string in text template not output as element content</li>
-<li><a href="https://saxonica.plan.io/issues/5761">#5761</a>: fn:transform called from XPath with simplified stylesheet gives an error</li>
-<li><a href="https://saxonica.plan.io/issues/5855">#5855</a>: map:merge with duplicates=combine gives wrong answer</li>
-<li><a href="https://saxonica.plan.io/issues/5925">#5925</a>: Dynamic function lookup runs very slowly</li>
-<li><a href="https://saxonica.plan.io/issues/5974">#5974</a>: SaxonJS documentation does not address namespaces</li>
-<li><a href="https://saxonica.plan.io/issues/6037">#6037</a>: ixsl:schedule-action return objects</li>
-<li><a href="https://saxonica.plan.io/issues/6107">#6107</a>: Can't use namespaced attributes on the root element of the body of a SaxonJS http-request</li>
-<li><a href="https://saxonica.plan.io/issues/6134">#6134</a>: Partial function application call to function in ixsl namespace fails</li>
-<li><a href="https://saxonica.plan.io/issues/6216">#6216</a>: base-uri() value empty for documents async-loaded with ixsl:schedule-action/@http-request</li>
-<li><a href="https://saxonica.plan.io/issues/6219">#6219</a>: base-uri(ixsl:page()) returns empty value</li>
-</ul>
-
-<p>For a complete list of the issues resolved in this release, please visit the
-<a href="https://saxonica.plan.io/projects/saxon-js/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f%5B%5D=cf_10&amp;op%5Bcf_10%5D=%3D&amp;v%5Bcf_10%5D%5B%5D=94&amp;f%5B%5D=&amp;c%5B%5D=tracker&amp;c%5B%5D=status&amp;c%5B%5D=priority&amp;c%5B%5D=subject&amp;c%5B%5D=assigned_to&amp;c%5B%5D=updated_on&amp;group_by=&amp;t%5B%5D=">issue tracker</a>
-on the Saxonica support site.</p>
-
-<p>SaxonJS 2.6 was released on 13 October 2023. This release has been
-uploaded to the usual locations on the Saxonica website and the NPM
-repository.
-For more details, please consult
-<a href="https://www.saxonica.com/saxon-js/documentation2/index.html">the documentation</a>.
-</p>
-
-<p>If you encounter any issues with SaxonJS 2.6, please
-<a href="https://saxonica.plan.io/projects/saxon-js/issues">report them</a>
 on our issue tracker.</p>
 
 </div></content></entry></feed>

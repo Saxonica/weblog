@@ -1,4 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2026-05-26T20:46:27.826574597Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Saxonica User Group Meeting</title><link href="https://blog.saxonica.com/announcements/2026/05/21-saxonica.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/05/21-saxonica.html</id><published>2026-05-21T14:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/05/21-saxonica.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2026-05-29T15:00:52.499378651Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 13.0!</title><link href="https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html</id><published>2026-05-29T16:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 13.0!</h1>
+
+<p>The first release of Saxon 13 has just been published. This is a new release
+for Java, C#, C/C++, PHP, and Python. The highlights in this release are:
+</p>
+
+<ul>
+<li>A redesigned Schema API that allows multiple schemas to coexist. You can now validate
+an input document with one schema and the result with another, even for the same namespace.</li>
+<li>More than 175 features from the draft 4.0 specifications are now available
+in Saxon-PE and Saxon-EE, including:
+  <ul>
+    <li>JNodes, path navigation over trees of JSON maps and arrays,</li>
+    <li>Lookahead and lookbehind in regular expressions,</li>
+    <li>Functions for CSV parsing,</li>
+    <li>Functions for parsing with <a href="https://invisiblexml.org/">Invisible XML</a>, and</li>
+    <li>More flexible XML-to-JSON conversions with <code>fn:element-to-map</code>.</li>
+  </ul>
+</li>
+<li>On the topic of 4.0,
+  <ul>
+    <li>Mike <a href="/mike/2026/05/101-things-in-QT4.html">recently published</a>
+    a list of <em>101 new things</em> you can do with Saxon using 4.0 features!</li>
+    <li>(For more information about 4.0, see <a href="https://qt4cg.org/">QT4CG</a>.)</li>
+  </ul>
+</li>
+<li>Support for SaxonC extension functions written in C++, Python, and PHP.</li>
+<li>SaxonCS-HE, our first release of the free Saxon HE product built for .NET with C#.</li>
+</ul>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for SaxonJ, SaxonC, and SaxonCS are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/13.0">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">Maven repository</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS-EE and SaxonCS-EE are available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>At the time of publication, a technical issue prevents us from
+publishing Python wheels for Windows. We will update the PyPI repository with
+those wheels as soon as they are available. Also, the resources release is not
+yet ready.</p>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation13">the documentation</a>.
+</p>
+
+<p>If you encounter any issues with Saxon 13.0, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+<p>P.S. <a href="/announcements/2026/05/21-saxonica.html">See you in Prague!</a>
+</p>
+
+</div></content></entry><entry><title>Saxonica User Group Meeting</title><link href="https://blog.saxonica.com/announcements/2026/05/21-saxonica.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/05/21-saxonica.html</id><published>2026-05-21T14:30:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/05/21-saxonica.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>Saxonica is pleased to announce that we’re having a user group meeting on the
@@ -2066,37 +2137,5 @@ The GitHub repository also provides source code for those who need it.
 <p>If you encounter any issues with Saxon 11.6, please
 <a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
 on our issue tracker.</p>
-
-</div></content></entry><entry><title>ICU4J and SaxonJ EE</title><link href="https://blog.saxonica.com/norm/2023/08/24-icu4j.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/08/24-icu4j.html</id><published>2023-08-24T12:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/08/24-icu4j.html"><div xmlns="http://www.w3.org/1999/xhtml">
-<h1>ICU4J and SaxonJ EE</h1>
-
-<p>We’ve recently discovered a small discrepancy in how we manage the
-dependencies between <a href="https://unicode-org.github.io/icu/userguide/icu4j/">ICU4J</a>
-and SaxonJ EE.</p>
-
-<p>If you download the EE release from our website, you get a
-distribution that includes SaxonJ EE, XML Resolver, ICU4J, and JLine
-(used by Gizmo). The manifest in the SaxonJ EE jar file puts those
-additional dependencies on your classpath automatically.</p>
-
-<p>If you get the EE release from our Maven repository, ICU4J is an
-<em>optional</em> dependency. So Maven won’t automatically put it on
-your classpath. That’s the discrepancy.</p>
-
-<p>Saxon EE will function without ICU4J, so it is technically
-optional. I’m unsure which would be better: making it optional in both
-places or non-optional in both places. Having it different certainly
-seems like the worst choice and we should fix it.</p>
-
-<p>In the short term, if you’re using Saxon EE and you want the
-collations supported by ICU4J, make sure you’re also arranging for
-ICU4J to be on your classpath.</p>
-
-<p>We discovered this in the course of examining issue
-<a href="https://saxonica.plan.io/issues/6183">#6183</a>. For slightly
-complicated reasons involving our type hierarchy, if ICU4J is missing,
-you can get an error message that suggests you’re running Saxon HE
-even when you’re running EE. We’ll fix that too.
-</p>
 
 </div></content></entry></feed>
