@@ -53,3 +53,15 @@ header .banner {
         padding-left: 178px;
     }
 }
+
+.isslist {
+    list-style: disc outside none;
+    margin-left: 0; 
+    padding-left: 2em;
+    text-indent: -2.5em;
+}
+
+.isslist li {
+    padding-left: 2.5em;
+}
+

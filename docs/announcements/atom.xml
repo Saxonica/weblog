@@ -1,4 +1,172 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica announcements</title><link href="https://blog.saxonica.com/announcements/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/announcements/atom.xml" rel="self"/><id>https://blog.saxonica.com/announcements/atom.xml</id><updated>2026-05-29T15:00:52.272955624Z</updated><entry><title>Announcing Saxon 13.0!</title><link href="https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html</id><published>2026-05-29T16:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica announcements</title><link href="https://blog.saxonica.com/announcements/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/announcements/atom.xml" rel="self"/><id>https://blog.saxonica.com/announcements/atom.xml</id><updated>2026-07-10T10:00:02.90867572Z</updated><entry><title>Announcing Saxon 12.10!</title><link href="https://blog.saxonica.com/announcements/2026/07/saxon-12.10.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/07/saxon-12.10.html</id><published>2026-07-10T11:15:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/07/saxon-12.10.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>Announcing Saxon 12.10!</h1>
+
+<p>The Saxon 12.10 maintenance release has been published. This is a maintenance
+release for Java, C#, C/C++, PHP, and Python that fixes a number of
+issues that have been raised since 12.9 was released.</p>
+
+<p>Saxon 12.10 was released on 10 July 2026. This release has been uploaded to the
+usual locations on the Saxonica website, GitHub, and Maven, PyPi, and NuGet.
+SaxonCS 12.10 is built with .NET 8.</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.plan.io/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f[]=status_id&amp;op[status_id]=c&amp;f[]=cf_6&amp;op[cf_6]=%3D&amp;v[cf_6][]=109&amp;f[]=&amp;c[]=tracker&amp;c[]=status&amp;c[]=priority&amp;c[]=subject&amp;c[]=assigned_to&amp;c[]=updated_on&amp;group_by=&amp;t[]=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.plan.io/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f[]=status_id&amp;op[status_id]=c&amp;f[]=cf_6&amp;op[cf_6]=%3D&amp;v[cf_6][]=110&amp;f[]=&amp;c[]=tracker&amp;c[]=status&amp;c[]=priority&amp;c[]=subject&amp;c[]=assigned_to&amp;c[]=updated_on&amp;group_by=&amp;t[]=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/12.10">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>SaxonC releases for HE, PE, and EE are also available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS is available on
+<a href="https://www.nuget.org/packages/SaxonCS">NuGet</a></li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Issues resolved in SaxonJ and SaxonCS</h2>
+
+<p>This release fixes about thirty issues in SaxonJ and SaxonCS.</p>
+
+<ul class="isslist">
+<li><a href="https://saxonica.plan.io/issues/7143">7143</a>
+    The random-number-generator() is not really deterministic if a BigDecimal is part of the seed</li>
+<li><a href="https://saxonica.plan.io/issues/7140">7140</a>
+    Incorrect result from bin:shift()</li>
+<li><a href="https://saxonica.plan.io/issues/7139">7139</a>
+    Streamed grouping raises null pointer exception</li>
+<li><a href="https://saxonica.plan.io/issues/7138">7138</a>
+    Setting allowedProtocols to the empty string in a configuration xml file has no effect (use #none instead)</li>
+<li><a href="https://saxonica.plan.io/issues/7135">7135</a>
+    Unreported type error in general comparison</li>
+<li><a href="https://saxonica.plan.io/issues/7134">7134</a>
+    Cannot set allowedProtocols from the Transform and Query CLI.</li>
+<li><a href="https://saxonica.plan.io/issues/7128">7128</a>
+    Error with XInclude enabled</li>
+<li><a href="https://saxonica.plan.io/issues/7096">7096</a>
+    Try/Catch tests failing in XQuery push mode</li>
+<li><a href="https://saxonica.plan.io/issues/7088">7088</a>
+    URIQualifiedName rejected for named function reference when local name is reserved</li>
+<li><a href="https://saxonica.plan.io/issues/7083">7083</a>
+    Try/Catch works incorrectly if optimization is disabled</li>
+<li><a href="https://saxonica.plan.io/issues/7079">7079</a>
+    When a schema is exported to an SCM file and reloaded, the order of member types of a union is lost</li>
+<li><a href="https://saxonica.plan.io/issues/7071">7071</a>
+    java.lang.NegativeArraySizeException when serializing large primary result of transform()</li>
+<li><a href="https://saxonica.plan.io/issues/7070">7070</a>
+    Changes in the results of float to integer conversion</li>
+<li><a href="https://saxonica.plan.io/issues/7059">7059</a>
+    Incorrect caching of schema conversion rules</li>
+<li><a href="https://saxonica.plan.io/issues/7056">7056</a>
+    Problem with copy() applied to a user-defined instance of JavaExtensionFunctionCall</li>
+<li><a href="https://saxonica.plan.io/issues/7040">7040</a>
+    Exception with invalid match pattern syntax</li>
+<li><a href="https://saxonica.plan.io/issues/7037">7037</a>
+    Empty result document with xsl:result-document (no href given) when matching the top-level element in a declared mode</li>
+<li><a href="https://saxonica.plan.io/issues/7035">7035</a>
+    Performance problem for maps with numeric keys</li>
+<li><a href="https://saxonica.plan.io/issues/7034">7034</a>
+    Make sure column numbers are preserved correctly</li>
+<li><a href="https://saxonica.plan.io/issues/7024">7024</a>
+    Implement saxon:internal-dtd-subset</li>
+<li><a href="https://saxonica.plan.io/issues/7010">7010</a>
+    ResolveURI.escapeSpaces is vulnerable to stack overflow</li>
+<li><a href="https://saxonica.plan.io/issues/7004">7004</a>
+    Parsing JSON doesn't always count lines correctly.</li>
+<li><a href="https://saxonica.plan.io/issues/7002">7002</a>
+    xs:anySimpleType('x') causes a class cast exception</li>
+<li><a href="https://saxonica.plan.io/issues/6997">6997</a>
+    NullPointer exception when using fragment identifiers in stylesheet URIs</li>
+<li><a href="https://saxonica.plan.io/issues/6985">6985</a>
+    Type check for processing instruction named by as attribute</li>
+<li><a href="https://saxonica.plan.io/issues/6978">6978</a>
+    NullPointerException thrown for null parameter to unparsed-text</li>
+<li><a href="https://saxonica.plan.io/issues/6969">6969</a>
+    serialize(method=json) writes the value 0 as 0.0E1</li>
+<li><a href="https://saxonica.plan.io/issues/6932">6932</a>
+    Support for XPath 2.0</li>
+<li><a href="https://saxonica.plan.io/issues/6923">6923</a>
+    Saxon-HE class StandardErrorReporter can throw null pointer exception</li>
+<li><a href="https://saxonica.plan.io/issues/6918">6918</a>
+    XQuery "validate type xs:untyped" should remove type annotations</li>
+<li><a href="https://saxonica.plan.io/issues/6910">6910</a>
+    Incorrect type inference for schema-element(N)</li>
+<li><a href="https://saxonica.plan.io/issues/6872">6872</a>
+    NPE when attempting to compile a recursive xsd</li>
+<li><a href="https://saxonica.plan.io/issues/6857">6857</a>
+    Saxon does not stop when listener warning throws</li>
+<li><a href="https://saxonica.plan.io/issues/6815">6815</a>
+    The -TP option under SaxonCS</li>
+</ul>
+
+<p>An additional three bugs are specific to SaxonCS:</p>
+
+<ul class="isslist">
+<li><a href="https://saxonica.plan.io/issues/7144">7144</a>
+    Format-number() does not respect picture if it ends with '#'</li>
+<li><a href="https://saxonica.plan.io/issues/7142">7142</a>
+    Incorrectly parsed numeric values when culture defines “,” as the decimal separator</li>
+<li><a href="https://saxonica.plan.io/issues/6833">6833</a>
+    Absolute file URL file:///app/identity.xsl fails with SaxonCS</li>
+</ul>
+
+<h2>Issues in SaxonC</h2>
+
+<p>This release fixes about ten issues in SaxonC:</p>
+
+<ul class="isslist">
+<li><a href="https://saxonica.plan.io/issues/7113">7113</a>
+    Failed to build SaxonC PHP extension: no rule to make target php8_saxon.cpp</li>
+<li><a href="https://saxonica.plan.io/issues/7086">7086</a>
+    fix _getResourceDirectory</li>
+<li><a href="https://saxonica.plan.io/issues/7085">7085</a>
+    XdmFunctionItem operator=</li>
+<li><a href="https://saxonica.plan.io/issues/7072">7072</a>
+    TypeError: expected bytes, str found in PyXQueryProcessor.set_cwd when None passed in</li>
+<li><a href="https://saxonica.plan.io/issues/7041">7041</a>
+    SaxonApiException after X Saxon\XsltExecutable::transformFileToString</li>
+<li><a href="https://saxonica.plan.io/issues/6964">6964</a>
+    PyXPathProcessor.get_property() expects bytes instead of str</li>
+<li><a href="https://saxonica.plan.io/issues/6936">6936</a>
+    Some PHP extension code is failing to compile on Alpine Linux aarch64</li>
+<li><a href="https://saxonica.plan.io/issues/6921">6921</a>
+    Comparison for unsigned integer incorrect</li>
+<li><a href="https://saxonica.plan.io/issues/6919">6919</a>
+    XdmMap::containsKey incorrect check</li>
+<li><a href="https://saxonica.plan.io/issues/6875">6875</a>
+    On debug run, Python program using SaxonC runs through to output but then gives lots of errors</li>
+<li><a href="https://saxonica.plan.io/issues/5561">5561</a>
+    Misleading error message on failure to find external DTD</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 12.10, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 13.0!</title><link href="https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html</id><published>2026-05-29T16:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/05/saxon-13.0.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 13.0!</h1>
 
 <p>The first release of Saxon 13 has just been published. This is a new release
