@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-   
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       
-      Streaming templates
+      <title>Streaming templates</title>
+      <meta name="id" content="161">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2009-02-23T14:18:45">
+      <meta name="basename" content="streaming_templates">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Streaming templates" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Streaming templates</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2009-02"><span class="date" time="2009-02-23T14:18:45">February&nbsp;23, 2009 at 02:18p.m.</span></a></div></header><main>
       
-      
-      
-      
-      
-   
-   
-      Streaming templates
-      The streaming facilities in Saxon-SA have been proving very popular with those users
+      <p>The streaming facilities in Saxon-SA have been proving very popular with those users
          who have very large documents to process. However, at present the only thing you can
          do in streaming mode is to split the document into a flat sequence of subtrees, and
          then process each subtree independently. That meets many needs, but not all. There
@@ -18,8 +18,8 @@
          don't fit this model: for example, renaming all the elements in a document, or deleting
          all the NOTE elements. So I've started implementing "streaming templates", where the
          document is processed hierarchically in classic XSLT style by applying template rules
-         to each node at every level.
-      We've done a great deal of analysis specifying such a feature in the XSL Working Group,
+         to each node at every level.</p>
+      <p>We've done a great deal of analysis specifying such a feature in the XSL Working Group,
          though it's not yet ready for publication; what I've implemented so far is a relatively
          small subset of what's possible, but the WG analysis has proved extremely useful (in
          turn, some of this comes from previous experience with STX). Streamability is a property
@@ -29,14 +29,14 @@
          &lt;xsl:apply-templates/&gt;, but it could also be &lt;xsl:value-of select="."/&gt; or &lt;xsl:copy-of
          select="node()"/&gt;). Other instructions must not navigate downwards or sideways, though
          they are allowed to access attributes of the current node and of its ancestors. The
-         pattern used in the template rules is similarly restricted.
-      It was a bit of a mental challenge getting this working, because it required an inversion
+         pattern used in the template rules is similarly restricted.</p>
+      <p>It was a bit of a mental challenge getting this working, because it required an inversion
          of the usual logic whereby each XSLT instruction reads the data it needs. Instead,
          each instruction needs to be activated ("pushed") when the data becomes available
          from the SAX parser. In fact "inversion" is precisely what is being done here, in
          the sense that Michael Jackson uses the term in Jackson Structured Programming (JSP
-         - a popular programming methodology in the 1970s).
-      There are a lot of good ideas in JSP and I've been re-reading about it recently. It
+         - a popular programming methodology in the 1970s).</p>
+      <p>There are a lot of good ideas in JSP and I've been re-reading about it recently. It
          was developed as a way of structuring batch programs written to handle hierarchic
          data files stored on magnetic tape. A key notion is that the structure of the program
          is closely related to the structure of the input and output files. When the input
@@ -53,22 +53,22 @@
          events rather than exercising control itself: you get the usability benefits of writing
          to a pull model, combined with the component reusability benefits that come from a
          push model. The more declarative the language, the easier it is to do the analysis
-         and automate the program inversion.
-      In the 1980s, in ICL, we had a rather nice declarative 4GL language for writing both
+         and automate the program inversion.</p>
+      <p>In the 1980s, in ICL, we had a rather nice declarative 4GL language for writing both
          batch and TP systems, under the name of QuickBuild. You could write an interactive
          application in a conversational style -- send a message to the user and wait for a
          response -- and the compiler would invert this into an event-driven application suitable
          for running under a transaction processing monitor. The variables needed to retain
          state (or partial results) between user interactions were automatically identified
          by the compiler, greatly easing the task of writing transactional applications. The
-         compiler here was performing a Jackson inversion on the application.
-      The generation of a bottom-up parser from a top-down BNF description of a language
+         compiler here was performing a Jackson inversion on the application.</p>
+      <p>The generation of a bottom-up parser from a top-down BNF description of a language
          can also be seen as an inversion. In this case the state that needs to be retained
          between parser-generated events is represented explicitly using a finite-state automaton,
-         and perhaps some counters for certain kinds of grammar.
-      Similarly the process of generating code for an XSLT stylesheet in such a way that
-         it can be driven by events generated by the XML parser can be seen as an inversion.
-      Initially, in the Saxon implementation, I'm keeping things very simple. The streamed
+         and perhaps some counters for certain kinds of grammar.</p>
+      <p>Similarly the process of generating code for an XSLT stylesheet in such a way that
+         it can be driven by events generated by the XML parser can be seen as an inversion.</p>
+      <p>Initially, in the Saxon implementation, I'm keeping things very simple. The streamed
          execution is considered as a depth-first traversal of the tree in which each template
          rule processes one node. The processing of a template is divided into three phases:
          an operation that happens before processing the children, an operation that recurses
@@ -78,11 +78,12 @@
          but not to the subtree rooted at the element, because that can only be visited once.
          The (inverted) compiled code for a template rule has two entry points corresponding
          to the pre- and post- recursive descent phases, and automatically maintains the modest
-         amount of state information that needs to be retained between phases.
-      I've got enough of this working already to satisfy quite a few interesting use cases.
+         amount of state information that needs to be retained between phases.</p>
+      <p>I've got enough of this working already to satisfy quite a few interesting use cases.
          I'd like to generalize it as much as possible, but there's definitely an 80:20 rule
          in play here - meeting 80% of the requirement is only 20% of the effort. Having got
          the basic design working for those templates that are streamable, the trickiest part
          that's left is to do the static analysis that enables templates that aren't streamable
-         to be rejected with a meaningful explanation of why.
-   
+         to be rejected with a meaningful explanation of why.</p>
+   </main><footer><div class="prev-uri"><a href="/mike/2009/02/some-threading-tests.html">Some threading tests</a></div><div class="next-uri"><a href="/mike/2009/05/repackaging-saxon.html">Repackaging Saxon</a></div></footer></body>
+</html>

@@ -1,33 +1,33 @@
-<?xml version="1.0" encoding="UTF-8"?>
-   
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       
-      Unicode, regular expressions, and Java
+      <title>Unicode, regular expressions, and Java</title>
+      <meta name="id" content="177">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2010-01-13T14:18:47">
+      <meta name="basename" content="unicode_regular_expressions_and_java">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Unicode, regular expressions, and Java" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Unicode, regular expressions, and Java</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2010-01"><span class="date" time="2010-01-13T14:18:47">January&nbsp;13, 2010 at 02:18p.m.</span></a></div></header><main>
       
-      
-      
-      
-      
-   
-   
-      Unicode, regular expressions, and Java
-      
+      <p>
          
          Many moons ago, when I first introduced regular expression support to Saxon's XSLT
          processor, I picked up a piece of software written by James Clark to translate regular
          expressions as defined in the XML Schema specification to regular expressions as understood
          by Java. Like any software written by James, it was extremely robust, handled all
          the quirks of the underlying specifications with unfailing accuracy, was tightly coded
-         and fast, and was totally undocumented. 
-      One of the particular tasks it handled was to handle the fact that the Schema/XPath
+         and fast, and was totally undocumented.&nbsp;</p>
+      <p>One of the particular tasks it handled was to handle the fact that the Schema/XPath
          regex dialect counted characters above 65535 as one character, whereas the Java regex
-         library until JDK 1.4 treated them as two. 
-      Over the years I've modified the code a bit. When JDK 1.5 came along and handled high-end
+         library until JDK 1.4 treated them as two.&nbsp;</p>
+      <p>Over the years I've modified the code a bit. When JDK 1.5 came along and handled high-end
          characters correctly, I forked the code and produced one version for JDK 1.4, another
          for JDK 1.5. A third version targetted the .NET regex dialect. In Saxon 9.2 I finally
          got rid of the JDK 1.4 version, and I was also able to get rid of the .NET version
          by switching from using the .NET regular expression library to the library in OpenJDK,
-         which had finally become reliable enough. 
-      Another of the tasks performed by James's code was to map character classes such as
+         which had finally become reliable enough.&nbsp;</p>
+      <p>Another of the tasks performed by James's code was to map character classes such as
          \P{Lu} (matching any upper-case character) from what XPath said it should mean to
          what Java thought it meant. This code has been untouched until now, but I've decided
          to take a fresh look at it and see whether it is really needed. Apart from the problem
@@ -36,21 +36,21 @@
          mandated which Unicode version, but the current situation seems to be that JDK 1.5
          and 1.6 support Unicode 4.0, while the schema (and hence XPath) specs originally specified
          Unicode 3.1, but now allow you to support whatever later Unicode version you like.
-         So 4.0 support would be fine. 
-      I've generated XML documents showing the mapping of characters to classes by three
+         So 4.0 support would be fine.&nbsp;</p>
+      <p>I've generated XML documents showing the mapping of characters to classes by three
          different methods: direct Java coding using the JDK regex engine; XSLT code using
          Saxon 9.2 which uses the Clark translation of regular expressions to the JDK engine;
-         and analysis of the data files published by the Unicode consortium. 
-      Between Saxon and the JDK there is a very close match. The only difference is that
+         and analysis of the data files published by the Unicode consortium.&nbsp;</p>
+      <p>Between Saxon and the JDK there is a very close match. The only difference is that
          the JDK category C includes subcategory Cn (unassigned characters) whereas Saxon includes
-         this subcategory in its parent class. 
-      Between the data coming from Unicode and the JDK there is a less close match,. This
+         this subcategory in its parent class.&nbsp;</p>
+      <p>Between the data coming from Unicode and the JDK there is a less close match,. This
          was because I worked with Unicode 5.2 data files, which includes many more characters
          than the JDK understands. But I've repeated the comparison with Unicode 4.0.0 files,
          and this gives a very close match, after allowing for expected discrepancies such
-         as the omission of surrogates (which are non-characters in XPath) in one of the lists. 
-      So, it's looking as if I can cut out a lot more of James' translation code. 
-      There does seem to be one snag that I need to look at further: in one of my attempts
+         as the omission of surrogates (which are non-characters in XPath) in one of the lists.&nbsp;</p>
+      <p>So, it's looking as if I can cut out a lot more of James' translation code.&nbsp;</p>
+      <p>There does seem to be one snag that I need to look at further: in one of my attempts
          to collect this data, I used the complement classes such as \P{Cn}, replacing characters
          that matched this term with an empty string. The result was a string containing unmatched
          surrogates, which immediately crashes Saxon. This could be a bug in the JDK handling
@@ -59,34 +59,8 @@
          bugs in the regex library for the final ounce of conformance, and if you hit them,
          there's sometimes not much you can do about them.
          
-         
-      COMMENTS
+         </p>
       
-            
-               Re: Unicode, regular expressions, and Java
-               by Dave Pawson on Thu 14 Jan 2010 12:07 GMT |  Profile |  Permanent Link
-               Are you going to feed your updates back to the Jing Trang project on Googlecode Michael?
-            
-         
-            
-               Re: Re: Unicode, regular expressions, and Java
-               by Michael Kay on Thu 14 Jan 2010 16:26 GMT |  Profile |  Permanent Link
-               Not directly - I suspect it has diverged too far to make that easy. The work I've
-                  done to adapt it to JDK 1.5 would be useful to other projects, but the extensions
-                  to handle XPath regex extensions, etc, wouldn't; and they are all mixed up together.
-            
-         
-            
-               Re: Unicode, regular expressions, and Java
-               by Michael Kay on Thu 14 Jan 2010 16:36 GMT |  Profile |  Permanent Link
-               Update: I have confirmed that there's a bug in the JDK regex handling, and have reported
-                  it to Sun (their ID 1695003). The problem is that if a string S contains non-BMP characters
-                  matching \p{Lu}, then a search for the complement \P{Lu} returns hits on the low surrogates
-                  of those characters in the UTF-16 representation of S. James's expansion of \P{Lu}
-                  (which includes a long list of non-BMP characters matching \p{Lu}) manages to bypass
-                  the bug - and so far I haven't found any other way of bypassing it. (Ignore my tweet
-                  on the subject, it was wrong)
-            
-         
       
-   
+   </main><footer><div class="prev-uri"><a href="/mike/2010/01/importing-a-stylesheet-module-repeatedly.html">Importing a stylesheet module repeatedly</a></div><div class="next-uri"><a href="/mike/2010/01/pipedreaming-could-xpath-have-been-better.html">Pipedreaming: Could XPath have been better?</a></div></footer></body>
+</html>

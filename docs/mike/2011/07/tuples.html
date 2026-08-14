@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-   
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       
-      Tuples
+      <title>Tuples</title>
+      <meta name="id" content="186">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2011-07-30T14:18:47">
+      <meta name="basename" content="tuples">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Tuples" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Tuples</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2011-07"><span class="date" time="2011-07-30T14:18:47">July&nbsp;30, 2011 at 02:18p.m.</span></a></div></header><main>
       
-      
-      
-      
-      
-   
-   
-      Tuples
-      The XQuery FLWOR expression has semantics that are defined in terms of a sequence
+      <p>The XQuery FLWOR expression has semantics that are defined in terms of a sequence
          of tuples of variable bindings. This strange concept has never really had any direct
          representation in Saxon, because it simply isn't needed. The vast majority of XQuery
          1.0 FLWOR expressions are equivalent to a nested loop delivering a sequence of items,
@@ -20,9 +20,9 @@
          key that depends on the outer "for" variable, and a minor key that depends on the
          inner "for" variable. It's actually quite hard to construct a realistic example that
          exploits this feature, so the fact that the Saxon implementation is somewhat bizarre
-         doesn't really matter too much, because it is very rarely needed. 
-         
-      
+         doesn't really matter too much, because it is very rarely needed.&nbsp;
+         </p>
+      <p>
          XQuery 3.0, however, introduces several new clauses to the FLWOR expression. In fact,
          it's no longer a FLWOR expression because it now has an optional "count" clause, an
          optional "group by" clause, and an optional "window" clause - so it's now a FLWCGWOR
@@ -33,9 +33,9 @@
          these composable constructs ("clauses") that aren't actually expressions, manipulaling
          things ("tuples") that aren't actually values, but that's the way XQuery works. It
          seems to have something to do with a relational algebra heritage, where operations
-         defined in terms of tuples are of course the core stuff of the data model. 
-         
-      
+         defined in terms of tuples are of course the core stuff of the data model.&nbsp;
+         </p>
+      <p>
          To understand what these strange things called tuples are, it might help to start
          with simple examples and gradually increase the complexity. Consider the expression
          for $x in //a where $x[@b] return ($x+1)
@@ -48,9 +48,9 @@
          can be stored in variables, passed to functions, and so on. Saxon actually implements
          this succession of 1-tuples as a sequence of items (with pipelined evaluation, of
          course, so it never holds the whole sequence in memory); because they are 1-tuples,
-         they can be treated as regular values and don't require any special treatment. 
-         
-      
+         they can be treated as regular values and don't require any special treatment.&nbsp;
+         </p>
+      <p>
          Now consider this expression:
          for $d in //dept, $e in //empl order by $e/salary return $d/name
          This is where things start getting weird, and where we need to understand tuples.
@@ -76,9 +76,9 @@
          tuples, is probably rather inefficient, at any rate in its use of memory. Also, it
          only works because a FLOWR expression can only have a single ORDER BY clause and a
          single RETURN clause. We therefore never need to implement a pipeline of operations
-         working on the tuple stream; we only ever do one operation, which is sorting. 
-         
-      
+         working on the tuple stream; we only ever do one operation, which is sorting.&nbsp;
+         </p>
+      <p>
          To implement the extended FLWOR expression, we probably need to do something that
          is closer to the model used to describe the semantics. In this implementation the
          "stream of tuples" can be represented simply as a pair of integers, the location on
@@ -104,9 +104,9 @@
          and when it in turn is called to advance(), it gets the next tuple from the sorted
          list, and updates the slots for $d and $e in the local stack frame. The sorted list
          needs to contain the values of the variables ($d, $e) and the sort keys, as at present,
-         but it does not need to hold the result value; that should be computed after sorting. 
-         
-      
+         but it does not need to hold the result value; that should be computed after sorting.&nbsp;
+         </p>
+      <p>
          This looks like quite a substantial change, and it's because it feels fairly daunting
          that we haven't implemented this part of XQuery 3.0 in Saxon yet (the GROUP BY subset
          that's implemented in Saxon 9.3 is essentially the subset that can be implemented
@@ -116,14 +116,14 @@
          Excuse me airing my thoughts in public, it always helps me to get my ideas straight
          to try and explain them to the world! I had been thinking of putting most of this
          off beyond Saxon 9.4, but I'm starting to feel more confident in tackling some of
-         the changes sooner. 
-         
-      
+         the changes sooner.&nbsp;
+         </p>
+      <p>
          The fact that other XQuery WG members have started contributing test material is an
          encouragement: implementation is always far easier if there are test cases available
-         before you start. 
-         
-      
+         before you start.&nbsp;
+         </p>
+      <p>
          POSTSCRIPT: 1 August 2011
          I have now implemented a tuple stream pipeline that handles the for, let, where, order-by,
          group-by, and count clauses of XQuery 3.0 - everything, in fact, except windowing.
@@ -141,5 +141,6 @@
          
          
          
-         
-   
+         </p>
+   </main><footer><div class="prev-uri"><a href="/mike/2011/05/bytecode-generation.html">Bytecode generation</a></div><div class="next-uri"><a href="/mike/2012/01/a-new-regex-engine.html">A new regex engine</a></div></footer></body>
+</html>

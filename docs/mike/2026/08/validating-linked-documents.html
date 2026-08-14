@@ -1,42 +1,42 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
     
-    
-        Validating Linked Documents
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Validating Linked Documents</title>
         
-        
-        
+        <meta name="author" content="Michael Kay">
+        <meta name="pubdate" content="2026-08-13T21:00:00">
 
-    
-    
-        Validating Linked Documents
+    <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Validating Linked Documents" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+    <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Validating Linked Documents</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2026-08"><span class="date" time="2026-08-13T21:00:00">August&nbsp;13, 2026 at 09:00p.m.</span></a></div></header><main>
         
-        A chance remark at Balisage 2026 (RIP) led me to consider the question:
+        
+        <p>A chance remark at Balisage 2026 (RIP) led me to consider the question:
         can you write an XSD schema to validate a linked set of XML documents, rather
-        than just a single document?
+        than just a single document?</p>
         
        
         
-        Here's a use case: the test suite for XQuery/XPath 4.0 consists of a catalog
+        <p>Here's a use case: the test suite for XQuery/XPath 4.0 consists of a catalog
         file, which lists 800 or so linked test sets. To make it more specific, the catalog
-        contains many lines rather like this:
+        contains many lines rather like this:</p>
         
-        &lt;test-set name="bin-shift" file="bin/shift.xml"/&gt; 
+        <p><code>&lt;test-set name="bin-shift" file="bin/shift.xml"/&gt; </code></p>
         
-        Both the top-level catalog and the
+        <p>Both the top-level catalog and the
         individual test-set files are governed by XSD schemas. Currently we validate the
-        collection of documents using an XQuery query along the lines of:
+        collection of documents using an XQuery query along the lines of:</p>
         
-        //fots:test-set/@file ! (validate{doc(resolve-uri(., base-uri(..)))})
+        <p><code>//fots:test-set/@file ! (validate{doc(resolve-uri(., base-uri(..)))})</code></p>
         
-        And of course other solutions are possible, for example using XProc. But it occurred to
+        <p>And of course other solutions are possible, for example using XProc. But it occurred to
         me, can we write a schema for the catalog file that includes an XSD 1.1 assertion
         that invokes validation on the referenced test-set files? And can we use a different schema
-        to validate the test-set files, different from the one we use for the catalog?
+        to validate the test-set files, different from the one we use for the catalog?</p>
         
-        I'll give you the answer first, before describing the journey to get there. I've made it work
-        like this
+        <p>I'll give you the answer first, before describing the journey to get there. I've made it work
+        like this</p>
         
-        
+        <pre><code>
             
 &lt;xs:annotation&gt;
    &lt;xs:appinfo&gt;
@@ -63,53 +63,54 @@
       &lt;/xs:extension&gt;
     &lt;/xs:complexContent&gt;                        
   &lt;/xs:complexType&gt;
-&lt;/xs:element&gt;
+&lt;/xs:element&gt;</code></pre>
         
-        This won't run out-of-the-box in Saxon 13.0: though most of the ingredients are present
+        <p>This won't run out-of-the-box in Saxon 13.0: though most of the ingredients are present
         I had to make some tweaks to make it all hang together, which I'll describe as I go along.
-        It should work as written in 13.1.
+        It should work as written in 13.1.</p>
         
-        Firstly, the saxon:param element has been available for quite a while as
+        <p>Firstly, the <code>saxon:param</code> element has been available for quite a while as
         a Saxon extension. I'm using it here not to parameterize the validation, but rather to
-        set up a global variable. The variable is the result of the 4.0 xsd-validator
+        set up a global variable. The variable is the result of the 4.0 <code>xsd-validator</code>
         function: a new higher-order function that, given a schema, returns a function that can be
         used to validate instance documents against this schema. Putting this validator in a global
-        variable means we only need to compile the schema for the test-set documents once.
+        variable means we only need to compile the schema for the test-set documents once.</p>
         
-        The expression in the xs:assert/@test attribute contains several features
-        of note:
+        <p>The expression in the <code>xs:assert/@test</code> attribute contains several features
+        of note:</p>
         
-        
-            Firstly, it calls the doc() function to load the test-set document referenced
-            in the @file attribute. We're loading this document because we want to pass it
-            to the validation function. The way xsd-validator works, you can only validate
+        <ul>
+            <li>Firstly, it calls the <code>doc()</code> function to load the test-set document referenced
+            in the <code>@file</code> attribute. We're loading this document because we want to pass it
+            to the validation function. The way <code>xsd-validator</code> works, you can only validate
             an already-built document tree. We want to do the validation using a different schema, so we
-            can't do this within the doc function itself.
-            Invoking the validator function (let $validity := $test-set-validator($doc))
+            can't do this within the <code>doc</code> function itself.</li>
+            <li>Invoking the validator function (<code>let $validity := $test-set-validator($doc)</code>)
             returns a record containing potentially three things: a success/failure flag, a list of
             validation errors, and an annotated document representing the PSVI. We're not interested
-            in the last part, so we didn't ask for it in the options to the xsd:validator
-            call.
-            We need to know which test-set documents are invalid, so it's helpful to have customized
+            in the last part, so we didn't ask for it in the options to the <code>xsd:validator</code>
+            call.</li>
+            <li>We need to know which test-set documents are invalid, so it's helpful to have customized
             error message if the call on the validator function returns errors. There's an existing
-            Saxon extension, saxon:message, which allows you to produce a custom
+            Saxon extension, <code>saxon:message</code>, which allows you to produce a custom
             message when an assertion fails, but unfortunately it's a fixed message, it can't be
             tailored to the actual data. So I invented a new mechanism. The XSD 1.1 specification says
             that if the result of the assertion has no effective boolean value, the assertion is taken
-            as failing. So you can now return the sequence (false(), "message") from an
+            as failing. So you can now return the sequence <code>(false(), "message")</code> from an
             assertion. This has no effective boolean value, so it is equivalent to returning false,
             but it also returns a diagnostic message explaining what is wrong. (The backtick expression
-            is a string template, a new addition in XPath 4.0).
-            XSD 1.1 expects assertions to use XPath 2.0 syntax but there is a Saxon attribute
-            saxon:extensions="any-xpath-version" to relax this rule. (I found that this
-            was only allowing 3.1 syntax, not 4.0, but this is now fixed).
-            Finally, XSD 1.1 says that you can't call the doc() function from within
+            is a string template, a new addition in XPath 4.0).</li>
+            <li>XSD 1.1 expects assertions to use XPath 2.0 syntax but there is a Saxon attribute
+            <code>saxon:extensions="any-xpath-version"</code> to relax this rule. (I found that this
+            was only allowing 3.1 syntax, not 4.0, but this is now fixed).</li>
+            <li>Finally, XSD 1.1 says that you can't call the <code>doc()</code> function from within
             an assertion. This is a security mechanism. So I added a new configuration option
-            --assertionsCanSeeResources:on to bypass this mechanism: only set this
-            option if you are using a trusted schema.
+            <code>--assertionsCanSeeResources:on</code> to bypass this mechanism: only set this
+            option if you are using a trusted schema.</li>
+        </ul>
         
-        
-        So with Saxon 13.1, you will be able to invoke validation of a linked set of documents,
-        using the same schema or different schemas, in a single call of the validation API.
+        <p>So with Saxon 13.1, you will be able to invoke validation of a linked set of documents,
+        using the same schema or different schemas, in a single call of the validation API.</p>
    
-    
+    </main><footer><div class="prev-uri"><a href="/announcements/2026/07/saxon-12.10.html">Announcing Saxon 12.10!</a></div></footer></body>
+</html>

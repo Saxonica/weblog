@@ -1,26 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?>
-   
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       
-      The first Saxon deadlock
+      <title>The first Saxon deadlock</title>
+      <meta name="id" content="178">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2010-05-21T14:18:47">
+      <meta name="basename" content="the_first_saxon_deadlock">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="The first Saxon deadlock" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>The first Saxon deadlock</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2010-05"><span class="date" time="2010-05-21T14:18:47">May&nbsp;21, 2010 at 02:18p.m.</span></a></div></header><main>
       
-      
-      
-      
-      
-   
-   
-      The first Saxon deadlock
-      
+      <p>
          
          For the first time ever, I hit a deadlock in Saxon. It was with the current development
          version, fortunately, rather than in the field, though it's had me thinking about
-         whether the code in 9.2 is entirely safe in this area. 
-      In Saxon 9.2 there's only one place where Saxon uses multiple threads: namely in the
+         whether the code in 9.2 is entirely safe in this area.&nbsp;</p>
+      <p>In Saxon 9.2 there's only one place where Saxon uses multiple threads: namely in the
          "streaming copy" facility where one thread is splitting the incoming document into
          small chunks and the other thread is processing those chunks one by one. It's here
          that the deadlock occurred, though it's a bigger risk in future because Saxon 9.3
-         will allow evaluation of a for-each loop in parallel if users request it. 
-      The deadlock occurred with evaluation of global variables. These are evaluated lazily,
+         will allow evaluation of a for-each loop in parallel if users request it.&nbsp;</p>
+      <p>The deadlock occurred with evaluation of global variables. These are evaluated lazily,
          and a change I made when introducing multi-threaded for-each loops is that when Saxon
          decides it has to evaluate a global variable, it synchronizes on the Bindery which
          is where all the global variables are held. This avoids two threads evaluating the
@@ -33,17 +33,17 @@
          detected in XSLT because the dependency might be via an xsl:apply-templates call.
          Without the synchronisation (my reasoning probably was), a circularity could be wrongly
          reported because a two concurrent evaluations of the same variable could now happen
-         not because of a circularity, but because of multithreaded evaluation. 
-      But the problem is that this lock on the Bindery can be held for quite a long time,
+         not because of a circularity, but because of multithreaded evaluation.&nbsp;</p>
+      <p>But the problem is that this lock on the Bindery can be held for quite a long time,
          and in particular, it can be held by a thread that is waiting for input from another
-         thread, thus leading to the deadlock that I found in testing. 
-      So, what's the answer? Firstly, we can avoid using the "is-being-evaluated" flag in
+         thread, thus leading to the deadlock that I found in testing.&nbsp;</p>
+      <p>So, what's the answer? Firstly, we can avoid using the "is-being-evaluated" flag in
          the Bindery for detection of circularities, and replace it with a stack of global
          variables currently-being-evaluated held in the XPathContext object; the circularity
          error then triggers if you try to evaluate a variable that is already on the stack.
          This eliminates the possibility of interference with/by the evaluation of global variables
-         going on in other threads. 
-      How do we then prevent two threads evaluating the same global variable? This is something
+         going on in other threads.&nbsp;</p>
+      <p>How do we then prevent two threads evaluating the same global variable? This is something
          we still want to avoid, for various reasons: as already discussed, evaluating some
          globals might take a seriously long time; some globals (such as select="doc('a.xml')")
          are complicated because they create entries in the shared document pool; and some
@@ -55,8 +55,8 @@
          other starts with B and grabs B's lock; the two threads would deadlock against each
          other before either detected the circularity. If Java synchronization allowed one
          to detect and recover from deadlocks this would be an elegant way of detecting the
-         circularity; but sadly, it doesn't. 
-      Of course, there's a lot of support in Java for more sophisticated concurrency control
+         circularity; but sadly, it doesn't.&nbsp;</p>
+      <p>Of course, there's a lot of support in Java for more sophisticated concurrency control
          than simple synchronization: various implementations of Lock, Semaphore, and the like.
          However, none of them seem to do quite what's needed. My current thought is that as
          well as each thread holding a stack of global-variables-under-evaluation, as discussed
@@ -65,55 +65,20 @@
          a global variable, the thread should not just check whether that variable is already
          on its stack, but rather whether evaluating it would create a cycle in the global
          dependency graph. Of course, that's equivalent to doing the deadlock detection "by
-         hand". 
-      I haven't made final decisions yet, so all ideas are welcome. 
-      Is there a problem in Saxon 9.2? There won't be any deadlocks, because evaluation
+         hand".&nbsp;</p>
+      <p>I haven't made final decisions yet, so all ideas are welcome.&nbsp;</p>
+      <p>Is there a problem in Saxon 9.2? There won't be any deadlocks, because evaluation
          of variables isn't synchronized. However, I think there is a possible risk of false
          detection of circularities. The consequences of this aren't life-threatening, so I
-         think we can probably wait and see whether it happens. 
-      POSTSCRIPT: I've found the "stack of global variables currently being evaluated" already
+         think we can probably wait and see whether it happens.&nbsp;</p>
+      <p>POSTSCRIPT: I've found the "stack of global variables currently being evaluated" already
          exists: when the context changes, a new context object is created, chained to the
          previous one, with a link to the instruction being evaluated when the context object
          is created; searching down this chain provides the information required to detect
          circular dependencies among variables.
          
-         
-      COMMENTS
+         </p>
       
-            
-               Re: The first Saxon deadlock
-               by Vladimir Nesterovsky on Sat 22 May 2010 19:20 BST |  Profile |  Permanent Link
-               &gt; I haven't made final decisions yet, so all ideas are welcome.
-                  greedy initialize global variables before operation that starts dealing with multiple
-                  threads.
-            
-         
-            
-               Re: The first Saxon deadlock
-               by felixsigl on Thu 24 Jun 2010 15:42 BST |  Profile |  Permanent Link
-               Hi, can you give me an example how to reproduce such a deadlock? i think we have such deadlocks in our Java webapplication. Very rarely - but they
-                  exist.
-                  After 2 days of firing millions of requests to Tomcat with Apache JMeter i reproduced
-                  it 5 or 6 times. (full CPU load and LamdaProbe shows two open connections). the only solution is a
-                  tomcat restart
-                  We use Saxon 9.2.0.6 PE
-                  thank you for any hint, we are searching this bug for months! 
-            
-         
-            
-               Re: Re: The first Saxon deadlock
-               by Michael Kay on Thu 24 Jun 2010 15:56 BST |  Profile |  Permanent Link
-               If you're using Saxon-PE, then there is no multithreading going on, so no possibility
-                  of deadlock. Whatever the problem is, it's not this. Please use the Sourceforge help
-                  list for help if you want to use a public list, or the email address provided to customers
-                  when you bought the product if you prefer to be off-list.
-            
-         
-            
-               Re: Re: Re: The first Saxon deadlock
-               by felixsigl on Fri 25 Jun 2010 08:51 BST |  Profile |  Permanent Link
-               ok thank you
-            
-         
       
-   
+   </main><footer><div class="prev-uri"><a href="/mike/2010/01/pipedreaming-could-xpath-have-been-better.html">Pipedreaming: Could XPath have been better?</a></div><div class="next-uri"><a href="/mike/2010/06/the-ten-most-common-xslt-programming-mistakes.html">The ten most common XSLT programming mistakes</a></div></footer></body>
+</html>

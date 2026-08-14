@@ -1,29 +1,29 @@
-<?xml version="1.0" encoding="UTF-8"?>
-   
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       
-      Compiling Q10
+      <title>Compiling Q10</title>
+      <meta name="id" content="132">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2006-12-10T14:18:44">
+      <meta name="basename" content="compiling_q10">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Compiling Q10" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Compiling Q10</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2006-12"><span class="date" time="2006-12-10T14:18:44">December&nbsp;10, 2006 at 02:18p.m.</span></a></div></header><main>
       
-      
-      
-      
-      
-   
-   
-      Compiling Q10
-      
+      <p>
          
          The last remaining query in the XMark benchmark where the compiled code was running
-         significantly slower than the interpreted code was Q10. This query is along the lines:
-      for $i in distinct-values(          /site/people/person/profile/interest/@category)let $p := for    $t in /site/people/person          where  $t/profile/interest/@category = $i            return &lt;personne&gt;                &lt;statistiques&gt;                        &lt;sexe&gt;{ $t/profile/gender }&lt;/sexe&gt;,                        &lt;age&gt;{ $t/profile/age }&lt;/age&gt;,                        &lt;education&gt;{ $t/profile/education}&lt;/education&gt;,                        &lt;revenu&gt;{ $t/profile/@income } &lt;/revenu&gt;                &lt;/statistiques&gt;                &lt;otherStuff&gt;................&lt;/otherStuff&gt;              &lt;/personne&gt;return &lt;categorie&gt;        &lt;id&gt;{ $i }&lt;/id&gt;        { $p }      &lt;/categorie&gt;
-      It turned out that the interpreted code was writing all the constructed elements directly
+         significantly slower than the interpreted code was Q10. This query is along the lines:</p>
+      <p>for $i in distinct-values(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /site/people/person/profile/interest/@category)<br>let $p := for&nbsp;&nbsp;&nbsp; $t in /site/people/person<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; where&nbsp; $t/profile/interest/@category = $i<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return &lt;personne&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;statistiques&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;sexe&gt;{ $t/profile/gender }&lt;/sexe&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;age&gt;{ $t/profile/age }&lt;/age&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;education&gt;{ $t/profile/education}&lt;/education&gt;,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;revenu&gt;{ $t/profile/@income } &lt;/revenu&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/statistiques&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;otherStuff&gt;................&lt;/otherStuff&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/personne&gt;<br>return &lt;categorie&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;id&gt;{ $i }&lt;/id&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { $p }<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/categorie&gt;</p>
+      <p>It turned out that the interpreted code was writing all the constructed elements directly
          to the result stream, whereas the compiled code was constructing an intermediate tree
          representing the contents of variable $p, and then copying this to the result stream,
          which meant that the execution time was nearly doubled. The reason for this is that
          the interpreted code represents $p in a Closure object, essentially a value subject
          to lazy evaluation, and then makes a run-time decision whether to evaluate this in
          "pull" or "push" mode depending on how the value is actually used. The compiled code
-         was always evaluating such variables in "pull" mode, leading to the unnecessary copy.
-      I considered various solutions. One could reproduce the interpretive behaviour by
+         was always evaluating such variables in "pull" mode, leading to the unnecessary copy.</p>
+      <p>I considered various solutions. One could reproduce the interpretive behaviour by
          allowing a compiled closure to be evaluated in either mode, still making a run-time
          decision; or one could make a decision based on compile-time analysis that the reference
          to $p occurs in a context where push evaluation is advantageous. Instead I decided
@@ -37,80 +37,25 @@
          for that seem to be exactly the same as the conditions that allow inlining. Moreover,
          there's already a tree-rewriting operation that does variable inlining, which is used
          for a more restricted purpose. So I discovered to my great surprise that the code
-         to inline $p was only an extra four lines!
-      The effect on the performance of the interpreted code is an improvement from 167 to
+         to inline $p was only an extra four lines!</p>
+      <p>The effect on the performance of the interpreted code is an improvement from 167 to
          161ms - nothing dramatic, as one would expect, because all we've done is to eliminate
          the small overhead of remembering the variable definition and evaluating it on first
          use. For the compiled code, however, inlining eliminates the tree copy operation,
-         and improves the performance from 301ms to 104ms.
-      All the more complex queries are now showing a speed up (for compiled versus interpreted
+         and improves the performance from 301ms to 104ms.</p>
+      <p>All the more complex queries are now showing a speed up (for compiled versus interpreted
          execution) of between 25% and 50%. That's good enough for a first release, although
          I hope to improve on it. I would hope that real user workloads will see higher figures:
          as the work on the Knight's Tour showed, much higher speed-up is possible in cases
-         where there are lots of variables, function calls, and computation within the query.
-      But before the code can be released there are still a lot of things missing. Mainly
+         where there are lots of variables, function calls, and computation within the query.</p>
+      <p>But before the code can be released there are still a lot of things missing. Mainly
          things that are missing from the test suites, like external Java functions, user-defined
          collations, and so on; and also a lot more work on the functions and expressions which
          are tested in XQTS only using constant expressions that can be evaluated at compile
-         time. Plus a review of the hundreds of TODO statements scattered around the code.
+         time. Plus a review of the hundreds of TODO statements scattered around the code.<br>
          
-         
-      COMMENTS
+         </p>
       
-            
-               Re: Compiling Q10
-               by Dimitre Novatchev on Fri 10 Nov 2006 02:40 GMT  |  Permanent Link
-               Probably this is a naive question: Is it too difficult to generate C#code?
-            
-         
-            
-               Re: Re: Compiling Q10
-               by Michael Kay on Mon 13 Nov 2006 21:50 GMT |  Profile |  Permanent Link
-               I'm trying to keep the Java code generation at a sufficient level of abstraction that
-                  it shouldn't be too hard to generate C# instead. I haven't absolutely decided to go
-                  that way though. Alternatives are Java -&gt; bytecode -&gt; IL via IKVMC, or direct generation
-                  of bytecode/IL.
-            
-         
-            
-               Re: Compiling Q10
-               by Christopher Sahnwaldt on Mon 13 Nov 2006 21:37 GMT |  Profile |  Permanent Link
-               Congratulations on the speedup. I'd be interested to hear how you generate the code. We're doing some code generation as well. We're using XSLT to generate Java from a
-                  small XML 'language'. Works much better than out initial approach of using Java to
-                  walk through a DOM and generate the code.Then we use com.sun.tools.javac.Main.compile() to compile the generated java files.
-                  It works, but it's a bit clumsy, since javac can only handle java files in the file
-                  system, not Strings or something else in memory. Maybe the tools API in JDK 6 will
-                  bring some improvements.
-            
-         
-            
-               Re: Re: Compiling Q10
-               by Michael Kay on Mon 13 Nov 2006 21:54 GMT |  Profile |  Permanent Link
-               Yes, I've also found that doing the Java compile via the API is pretty kludgey. I'm
-                  leaning towards simply writing the Java out to filestore, and leaving the user to
-                  add the Java compile stage - it works much better that way when there's a raft of
-                  queries to compile en bloc. The kludginess of the compiler API seems to be the main
-                  reason that going straight to bytecode would be beneficial.
-            
-         
-            
-               Re: Re: Re: Compiling Q10
-               by Christopher Sahnwaldt on Mon 13 Nov 2006 22:40 GMT |  Profile |  Permanent Link
-               Thanks for the reply. Just to make sure I understand - do you mean the new javax.tools
-                  API http://java.sun.com/javase/6/docs/api/javax/tools/package-summary.html or Main.compile()?
-                  I just looked over the new API. I seems that it allows to somehow compile Java files
-                  from strings, but I'm not looking forward to implementing JavaFileManager. It would
-                  take me a while to thoroughly understand all these interfaces, enums, etc. So in the
-                  end it's almost as bad as Main.compile(). :-)
-            
-         
-            
-               Re: Compiling Q10
-               by Dimitre Novatchev on Sun 25 Feb 2007 16:54 GMT |  Profile |  Permanent Link
-               I believe that the compilation approach could allow the creation of compiled XSLT
-                  "function libraries" -- modules to be easily distributed, deployed and re-used by
-                  different transformations.Do you think this would be possible to achieve in a future Saxon version?
-            
-         
       
-   
+   </main><footer><div class="prev-uri"><a href="/mike/2006/11/first-compiled-xmark-results.html">First compiled XMark results</a></div><div class="next-uri"><a href="/mike/2006/12/new-w3c-xml-schema-test-suite.html">New W3C XML Schema Test Suite</a></div></footer></body>
+</html>

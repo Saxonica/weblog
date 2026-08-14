@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-   
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       
-      Lazy Evaluation
+      <title>Lazy Evaluation</title>
+      <meta name="id" content="212">
+      <meta name="author" content="Michael Kay">
+      <meta name="pubdate" content="2015-06-28T23:15:13">
+      <meta name="basename" content="lazy_evaluation">
+      <meta name="blog-id" content="3">
+   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Lazy Evaluation" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Lazy Evaluation</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2015-06"><span class="date" time="2015-06-28T23:15:13">June&nbsp;28, 2015 at 11:15p.m.</span></a></div></header><main>
       
-      
-      
-      
-      
-   
-   
-      Lazy Evaluation
-      We've seen some VM dumps recently that
+      <p>We've seen some VM dumps recently that
          showed evidence of contention problems when multiple threads
          (created, for example, using &lt;xsl:for-each&gt;
          with the saxon:threads
@@ -19,8 +19,8 @@
          to try and understand all the permutations of how it works. A blog
          posting is a good way to try and capture that understanding before I
          forget it all again. But I won't go into the extra complexities of
-         parallel execution just yet: I'll come back to that at the end.
-      Lazy evaluation applies when a variable
+         parallel execution just yet: I'll come back to that at the end.</p>
+      <p>Lazy evaluation applies when a variable
          binding, for example "let
          $v := //x[@y=3]" isn't evaluated immediately when the
          variable declaration is encountered, but only when the variable is
@@ -33,8 +33,8 @@
          sequence, so long as you don't try to process its entire value). In
          XSLT and XQuery, lazy evaluation is entirely at the discretion of the
          compiler, and in this post I shall try to summarize how Saxon makes
-         use of this freedom.
-      Internally, when a local variable is
+         use of this freedom.</p>
+      <p>Internally, when a local variable is
          evaluated lazily, Saxon instead of putting the variable's value in
          the relevant slot on the stack, will instead put a data structure
          that contains all the information needed to evaluate the variable:
@@ -49,8 +49,8 @@
          task is correctly called a closure. (If higher-order functions had
          been available in Saxon a few years earlier, we might well have
          implemented lazy evaluation this way.)
-         
-      We can distinguish two levels of lazy
+         </p>
+      <p>We can distinguish two levels of lazy
          evaluation. We might use the term "deferred evaluation" to
          indicate that a variable is not evaluated until it is first
          referenced, and "incremental evaluation" to indicate that
@@ -58,12 +58,12 @@
          For example, if the first reference is the function call head($v),
          only the first item in the sequence $v will be evaluated; remaining
          items will only be evaluated if a subsequent reference to the
-         variable requires them.
-      Lazy evaluation can apply to global
+         variable requires them.</p>
+      <p>Lazy evaluation can apply to global
          variables, local variables, parameters of templates and functions,
          and return values from templates and functions. Saxon handles each
-         case slightly differently.
-      We should mention some static
+         case slightly differently.</p>
+      <p>We should mention some static
          optimizations which are not directly related to lazy evaluation, but
          are often confused with it. First, a variable that is never
          referenced is eliminated at compile-time, so its initializing
@@ -75,8 +75,8 @@
          $x := /a/b/c return $x[d=3]",  Saxon turns this into the
          expression "(/a/b/c)[d=3]".
          (Achieving this of course requires careful attention to the static
-         and dynamic context, but we won't go into the details here.)
-      Another static optimization that
+         and dynamic context, but we won't go into the details here.)</p>
+      <p>Another static optimization that
          interacts with variable evaluation is loop-lifting. If an expression
          within a looping construct (for example the content of xsl:for-each,
          or of a predicate, or the right-hand-side of the "/"
@@ -88,52 +88,52 @@
          (both to avoid wasted evaluation cost, and to give the right
          behaviour in the event that evaluating the expression fails with a
          dynamic error.) So lazy evaluation of such a variable becomes
-         mandatory.
-      The combined effect of these static
+         mandatory.</p>
+      <p>The combined effect of these static
          optimizations, together with lazy evaluation, is that the order of
          evaluation of expressions can be quite unintuitive. To enable users
          to understand what is going on when debugging, it is therefore normal
          for some of these rewrites to be suppressed if debugging or tracing
-         are enabled.
-      For global variables, Saxon uses
+         are enabled.</p>
+      <p>For global variables, Saxon uses
          deferred evaluation but not incremental evaluation. A global variable
          is not evaluated until it is first referenced, but at that point it
          is completely evaluated, and the sequence representing its value is
-         held in memory in its entirety.
-      For local variables, evaluation is
+         held in memory in its entirety.</p>
+      <p>For local variables, evaluation is
          generally both deferred and incremental. However, the rules are quite
-         complex.
-      
-         
+         complex.</p>
+      <ul>
+         <li>
             
             
-            If the static type shows that the
+            <p>If the static type shows that the
                value will be a singleton, then it will be evaluated eagerly. [It's
                not at all clear that this rule makes sense. Certainly, incremental
                evaluation makes no sense for singletons. But deferred evaluation
                could still be very useful, for example if the evaluation is
                expensive and the variable is only referenced within a branch of a
-               conditional, so the value is not always needed.]
+               conditional, so the value is not always needed.]</p>
+            </li>
+         <li>
             
-         
             
-            
-            Eager evaluation is used when the
+            <p>Eager evaluation is used when the
                binding expression is very simple: in particular when it is a
-               literal or a reference to another variable.
+               literal or a reference to another variable.</p>
+            </li>
+         <li>
             
-         
             
-            
-            Eager evaluation is used for
+            <p>Eager evaluation is used for
                binding expressions that depend on position()
                or last(), to
-               avoid the complexities of saving these values in the Closure.
+               avoid the complexities of saving these values in the Closure.</p>
+            </li>
+         <li>
             
-         
             
-            
-            There are some optimizations which
+            <p>There are some optimizations which
                take precedence over lazy evaluation. For example if there are
                variable references using predicates, such as $v[@x=3],
                then the variable will not only be evaluated eagerly, but will also
@@ -144,21 +144,21 @@
                then we use a "shared append expression" which is a data
                structure that allows a sequence to be constructed by appending to
                an existing sequence without copying the entire sequence, which is a
-               common pattern in algorithms using head-tail recursion.
+               common pattern in algorithms using head-tail recursion.</p>
+            </li>
+         <li>
             
-         
             
-            
-            Lazy evaluation (and inlining)
+            <p>Lazy evaluation (and inlining)
                need special care if the variable is declared outside a try/catch
                block, but is referenced within it. In such a case a dynamic error
                that occurs while evaluating the initialization expression must not
                be caught by the try/catch; it is logically outside its scope.
                (Writing this has made me realise that this is not yet implemented
-               in Saxon; I have written a test case and it currently fails.)
-            
-      
-      If none of these special circumstances
+               in Saxon; I have written a test case and it currently fails.)</p>
+            </li>
+      </ul>
+      <p>If none of these special circumstances
          apply, lazy evaluation is chosen. There is one more choice to be
          made: between a Closure
          and a MemoClosure.
@@ -174,69 +174,69 @@
          all the information needed to materialize the sequence. (Like most
          rules in this story, there is an important exception: tail-call
          optimization, where the last thing a function does is to call itself,
-         takes precedence over lazy evaluation).
-      So let's look more closely at the
+         takes precedence over lazy evaluation).</p>
+      <p>So let's look more closely at the
          MemoClosure. A
          MemoClosure is a
-         data structure that holds the following information:
-      
-         
+         data structure that holds the following information:</p>
+      <ul>
+         <li>
             
             
-            The Expression itself (a pointer
+            <p>The Expression itself (a pointer
                to a node in the expression tree). The Expression object also holds
                any information from the static context that is needed during
-               evaluation, for example namespace bindings.
+               evaluation, for example namespace bindings.</p>
+            </li>
+         <li>
             
-         
             
-            
-            A copy of the dynamic context at
+            <p>A copy of the dynamic context at
                the point where the variable is bound. This includes the context
                item, and values of any local variables referenced by the
-               expression.
+               expression.</p>
+            </li>
+         <li>
             
-         
             
-            
-            The current evaluation state: one
+            <p>The current evaluation state: one
                of UNREAD (no access to the variable has yet been made), MAYBE_MORE
                (some items in the value of the variable are available, but there
                may be more to come), ALL_READ (the value of the variable is fully
                available), BUSY (the variable is being evaluated), or EMPTY
                (special case of ALL_READ in which the value is known to be an empty
-               sequence).
+               sequence).</p>
+            </li>
+         <li>
             
-         
             
-            
-            An InputIterator:
+            <p>An InputIterator:
                an iterator over the results of the expression, relevant when
-               evaluation has started but has not finished
+               evaluation has started but has not finished</p>
+            </li>
+         <li>
             
-         
             
-            
-            A reservoir: a list containing the
-               items delivered by the InputIterator so far.
-            
-      
-      Many variable references, for example
-         count($v), or
-         index-of($v, 'z')
+            <p>A reservoir: a list containing the
+               items delivered by the InputIterator so far.</p>
+            </li>
+      </ul>
+      <p>Many variable references, for example
+         <code>count($v)</code>, or
+         <code>index-of($v, 'z')</code>
          result in the variable being evaluated in full. If this is the first
          reference to the variable, that is if the state is UNREAD, the logic
-         is essentially
-      inputIterator = expression.iterate(savedContext);
+         is essentially</p>
+      <pre>inputIterator = expression.iterate(savedContext);
 
 for item in inputIterator {
   reservoir.add(item);
 }
 state = ALL_READ;
-return new SequenceExtent(reservoir);
-      (However, Saxon doesn't optimize this
-         case, and it occurs to me on writing this that it could.)
-      Other variable references, such as
+return new SequenceExtent(reservoir);</pre>
+      <p>(However, Saxon doesn't optimize this
+         case, and it occurs to me on writing this that it could.)</p>
+      <p>Other variable references, such as
          head($v), or
          $v[1], or
          subsequence($v, 1, 5),
@@ -249,8 +249,8 @@ return new SequenceExtent(reservoir);
          exhaustion of the reservoir, they then attempt to fetch items from
          the InputIterator until either enough items are available, or the
          InputIterator is exhausted. Items delivered from the InputIterator
-         are copied to the reservoir as they are found.
-      So far so good. This has all been in
+         are copied to the reservoir as they are found.</p>
+      <p>So far so good. This has all been in
          place for years, and works well. We have no evidence that it is in
          any way optimal, but it has been carefully tweaked over the years to
          deal with particular cases where it was performing badly. What has
@@ -261,8 +261,8 @@ return new SequenceExtent(reservoir);
          thread; and when the extension attribute saxon:threads
          is used on xsl:for-each,
          the items selected by the xsl:for-each
-         are processed in parallel rather than sequentially.
-      The effect of this is that the
+         are processed in parallel rather than sequentially.</p>
+      <p>The effect of this is that the
          MemoClosure object needs to be thread-safe: multiple requests to
          access the variable can come simultaneously from different threads.
          To achieve this a number of methods are synchronized. One of these is
@@ -272,9 +272,9 @@ return new SequenceExtent(reservoir);
          own ProgressiveIterator,
          and the next()
          method on one of these iterators is forced to wait until the other
-         has finished.
-      This works, but it is risky. Brian
-         Goetz in his excellent book Java Concurrency in Practice
+         has finished.</p>
+      <p>This works, but it is risky. Brian
+         Goetz in his excellent book <i>Java Concurrency in Practice</i>
          recommends that a method should not be synchronized unless (a) its
          execution time is short, and (b) as the author of the method, you
          know exactly what code will execute while it is active. In this case
@@ -291,63 +291,63 @@ return new SequenceExtent(reservoir);
          cycle of variable references) but it is practically impossible to
          prove that it can't deadlock with other subsystems that use
          synchronization, and in the face of maliciously-written used code,
-         it's probably safe to assume that deadlock can occur. We
+         it's probably safe to assume that deadlock <b>can</b> occur. We
          haven't seen deadlock happen in practice, but it's unsatisfactory
-         that we can't prove its impossibility.
-      So what should we do about it?
-      I think the answer is, add yet another
+         that we can't prove its impossibility.</p>
+      <p>So what should we do about it?</p>
+      <p>I think the answer is, add yet another
          exception to the list of cases where lazy evaluation is used:
          specifically, don't use it for a variable that can be referenced from
          a different thread. I'm pretty sure it's possible to detect such
          cases statically, and they won't be very common. In such cases, use
-         eager evaluation instead.
-      We must be careful not to do this in
+         eager evaluation instead.</p>
+      <p>We must be careful not to do this in
          the case of a loop-lifted variable, where the correct error semantics
          depend on lazy evaluation. So another tweak to the rules is, don't
-         loop-lift code out of a multithreaded execution block.
-      This investigation also suggests a few
-         other refinements we might make.
-      
-         
+         loop-lift code out of a multithreaded execution block.</p>
+      <p>This investigation also suggests a few
+         other refinements we might make.</p>
+      <ul>
+         <li>
             
             
-            It seems worth optimizing for the
+            <p>It seems worth optimizing for the
                case where the entire value of a variable is needed, since this case
                is so common. The problem is, it's not easy to detect this case: a
                calling expression such as count($v)
                will ask for an iterator over the variable value, without giving any
-               indication that it intends to read the iterator to completion.
-            
-         
-            
-            
-            We need to reassess the rule that
-               singleton local variables are evaluated eagerly.
-            
-         
+               indication that it intends to read the iterator to completion.</p>
+            </li>
+         <li>
             
             
-            We currently avoid using lazy
+            <p>We need to reassess the rule that
+               singleton local variables are evaluated eagerly.</p>
+            </li>
+         <li>
+            
+            
+            <p>We currently avoid using lazy
                evaluation for expressions with certain dependencies on the dynamic
                context (for example, position()
                and last()). But
                in the course of implementing higher-order functions, we have
                acquired the capability to hold such values in a saved copy of the
-               dynamic context.
+               dynamic context.</p>
+            </li>
+         <li>
             
-         
             
-            
-            We could look at a complete
+            <p>We could look at a complete
                redesign that takes advantage of higher-order functions and their
                closures. This might be much simpler than the current design; but it
                would discard the benefits of years of fine-tuning of the current
-               design.
+               design.</p>
+            </li>
+         <li>
             
-         
             
-            
-            I'm not convinced that it makes
+            <p>I'm not convinced that it makes
                sense for a MemoClosure
                to defer creation of the InputIterator
                until the first request for the variable value. It would be a lot
@@ -358,7 +358,8 @@ return new SequenceExtent(reservoir);
                cost of the elaborate code to save the necessary parts of the
                dynamic context. It's worth trying the other approach and making
                some performance measurements.
-               
-            
-      
-   
+               </p>
+            </li>
+      </ul>
+   </main><footer><div class="prev-uri"><a href="/mike/2015/06/a-redesign-of-the-namepool.html">A redesign of the NamePool</a></div><div class="next-uri"><a href="/mike/2015/09/parent-pointers-in-the-saxon-expression-tree.html">Parent pointers in the Saxon expression tree</a></div></footer></body>
+</html>
