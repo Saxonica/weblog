@@ -122,7 +122,7 @@ for ((author, name) in weblogAuthors) {
         dependsOn("updateNavigation")
         classpath(configurations["saxonee"])
         input(file.getAbsolutePath())
-        stylesheet("${layout.projectDirectory.file("xslt/format.xsl")}")
+        stylesheet("${layout.projectDirectory.file("xslt/post.xsl")}")
         output("${layout.buildDirectory.file("docs/${key}").get().asFile}")
       }
       publishHtml { dependsOn(t) }
