@@ -1,24 +1,24 @@
-<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
-   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<?xml version="1.0" encoding="UTF-8"?>
+   
       
-      <title>Compiling Saxon using GWT</title>
-      <meta name="id" content="183">
-      <meta name="author" content="Michael Kay">
-      <meta name="pubdate" content="2010-11-16T14:18:47">
-      <meta name="basename" content="compiling_saxon_using_gwt">
-      <meta name="blog-id" content="3">
-   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Compiling Saxon using GWT" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Compiling Saxon using GWT</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2010-11"><span class="date" time="2010-11-16T14:18:47">November&nbsp;16, 2010 at 02:18p.m.</span></a></div></header><main>
+      Compiling Saxon using GWT
       
-      <p>After my TPAC rant a couple of weeks ago (see http://localhost:8126/mike/2010/11/tpac-the-morning-after.html),
+      
+      
+      
+      
+   
+   
+      Compiling Saxon using GWT
+      After my TPAC rant a couple of weeks ago (see http://localhost:8126/mike/2010/11/tpac-the-morning-after.html),
          a number of people whom I respect said, in effect, "don't dismiss Javascript". So
          I decided to do some experiments that I've had in mind for quite a while, attempting
          to compile Saxon's Java source code using the Google Web Toolkit (GWT), which produces
          Javascript output capable of running in the browser. After much hacking, I've managed
          to get it to compile. The next stage is to try and get it to run, and after that,
          to see if it will perform. But meanwhile I thought I would try and report on what
-         I've been doing.</p>
-      <p>My first step was to take the Saxon-HE 9.3 source code and cut away whatever wasn't
+         I've been doing.
+      My first step was to take the Saxon-HE 9.3 source code and cut away whatever wasn't
          needed for a minimally-conforming XSLT 2.0 processor on the browser. The code base
          I started from was about 143K ncloc (non-comment lines of code). I reckoned 80K might
          be a reasonable target to aim for. As with incoming governments slashing overblown
@@ -32,17 +32,17 @@
          product will operate directly on the DOM, though I retained the linked tree because
          it's needed for stylesheets. I also threw out the serializer - the aim is to deliver
          the result tree as a DOM. (We'll talk later about how to deliver secondary result
-         trees).</p>
-      <p>This exercise got the size down to about 100K ncloc, and also got rid of a lot of
+         trees).
+      This exercise got the size down to about 100K ncloc, and also got rid of a lot of
          the dependencies that would prevent the code running under GWT. The next phase was
          driven by the error messages obtained when compiling under GWT. These errors fell
-         into a number of categories:</p>
-      <ul>
-         <li>dependencies on classes not supported by GWT: Properties, URI, BitSet, WeakReference,
+         into a number of categories:
+      
+         dependencies on classes not supported by GWT: Properties, URI, BitSet, WeakReference,
             Thread, StringTokenizer, File, ByteOutputStream. In many cases it was possible to
             rewrite the code to avoid the dependency; in other cases it was easy to produce a
-            replacement for the class either from scratch or by borrowing from OpenJDK.</li>
-         <li>regular expressions. This falls into two groups: Saxon makes some internal use of
+            replacement for the class either from scratch or by borrowing from OpenJDK.
+         regular expressions. This falls into two groups: Saxon makes some internal use of
             regular expressions for things such as parsing dates and durations; these uses were
             easily replaced using String.matches(), which GWT supports. The more complex use of
             regexes is to support XSLT/XPath functionality like analyze-string. So far I have
@@ -53,8 +53,8 @@
             UTF16 code units rather than Unicode code points. Alternatively, I could consider
             throwing conformance out of the window and simply supporting JS regular expressions
             instead of XPath regular expressions - I expect a lot of users would thank me for
-            this.</li>
-         <li>document input and output. All the functionality that handles principal and secondary
+            this.
+         document input and output. All the functionality that handles principal and secondary
             input and output documents needed to be rewritten. The basic model is to use the Javascript
             DOM, as exposed by GWT, for both input and output. Fortunately the existing Saxon
             DOM wrapper code can be used almost without change. There are a few things that may
@@ -74,21 +74,21 @@
             when the transfer is complete). That really won't work for calls on doc() and document():
             fortunately Vojtech Toman (who wrote about his GWT port of the Calumet XProc engine
             at Balisage last year) showed me how to do synchronous access by making native calls
-            on the underlying XmlHttpRequest object.</li>
-         <li>dynamic loading. GWT can't do dynamic instantiation of classes. So I scrapped all
+            on the underlying XmlHttpRequest object.
+         dynamic loading. GWT can't do dynamic instantiation of classes. So I scrapped all
             the interfaces where Saxon dynamically instantiates user-supplied classes (such as
             URIResolvers and ErrorListeners), and I rewrote all the places where Saxon dynamically
-            instantiates its own classes (such as system function calls).</li>
-      </ul>
-      <p>The code is now about 83K ncloc, still a little above my first
+            instantiates its own classes (such as system function calls).
+      
+      The code is now about 83K ncloc, still a little above my first
          target, but comfortably close. It compiles, and the compiler generates
          5 files of Javascript (packaged in HTML for reasons I haven't fully
          understood) each around 1Mb in size. I think the files are variants of
          each other, one per supported browser, so you're basically faced with
          a 1Mb download the first time you use a page that invokes an XSLT 2.0
          stylesheet. That's big, but not impossibly so; it would be nice to get
-         it down further.</p>
-      <p>The next stage is to design and implement an API suitable for the
+         it down further.
+      The next stage is to design and implement an API suitable for the
          client-side developer, and then to test that it works. Then comes
          performance work. Then, before we release, we'll have to think about
          such matters as licensing and pricing. My initial thought is some kind
@@ -96,26 +96,74 @@
          per-domain basis for large enterprises. But we don't have total
          freedom on licensing terms: we're constrained by the fact that there
          is some code in the product for which Saxonica does not own the
-         copyright.</p>
-      <p>Watch this space for further developments.</p>
-      <p>======</p>
-      <p>Two further points:</p>
-      <p>(a) the only thing I changed that explicitly causes a
+         copyright.
+      Watch this space for further developments.
+      ======
+      Two further points:
+      (a) the only thing I changed that explicitly causes a
          non-conformance is to remove the code for converting floating-point
          numbers to strings, using the underlying platform code instead. The
          existing code requires bit-twiddling on the internal representation of
          floating point, which isn't possible under GWT. What we lose is the
          precise rules for output of floating point - which given that GWT
          arithmetic isn't going to follow the XPath rules anyway, isn't a big
-         loss.</p>
-      <p>(b) I've done some compile reports on the size of the generated
+         loss.
+      (b) I've done some compile reports on the size of the generated
          code. As one might expect, a large proportion of the code comes from
          the classes that are data-intensive, in particular those holding
          information about character properties. The class CaseVariants which
          holds upper/lower-case mappings is particularly heavy, and could
          probably be thrown out entirely, relying instead on whatever JS
-         provides us with.</p>
+         provides us with.
+      COMMENTS
       
+            
+               Re: Compiling Saxon using GWT
+               by Vyacheslav Zholudev on Tue 16 Nov 2010 13:28 GMT |  Profile |  Permanent Link
+               Sounds promising. Good luck! Would you be able to elaborate on this: "fortunately Vojtech Toman (who wrote about his GWT port of the Calumet XProc engine
+                  at Balisage last year) showed me how to do synchronous access by making native calls
+                  on the underlying XmlHttpRequest object." ¶Thanks
+            
+         
+            
+               Re: Re: Compiling Saxon using GWT
+               by Michael Kay on Tue 16 Nov 2010 17:54 GMT |  Profile |  Permanent Link
+               Vojtech's recommendation was to fetch documents by making a native call on XMLHttpRequest
+                  with a synchronous request. The mechanisms packaged in GWT are all asynchronous -
+                  which would be nice in theory, but the callback mechanism used to notify completion
+                  means you have to turn your code inside out to make it work.
+            
+         
+            
+               Re: Compiling Saxon using GWT
+               by John Cowan on Tue 16 Nov 2010 16:40 GMT |  Profile |  Permanent Link
+               Well, now that you've nicely told us how to do it, I daresay someone else can release
+                  Saxon-GWT under the MPL (or any other license).
+            
+         
+            
+               Re: Re: Compiling Saxon using GWT
+               by Michael Kay on Tue 16 Nov 2010 17:51 GMT |  Profile |  Permanent Link
+               It's always been possible in theory. They just have two minor problems: (a) testing
+                  it, and (b) persuading the world they are capable of supporting it.
+            
+         
+            
+               Re: Compiling Saxon using GWT
+               by Vladimir Nesterovsky on Thu 18 Nov 2010 18:02 GMT |  Profile |  Permanent Link
+               I thought lately, that you could generate javascript from xslt the way you're doing
+                  with xquery to java. ¶This would probably require some runtime but of much lesser
+                  size.
+            
+         
+            
+               Re: Compiling Saxon using GWT
+               by Evan Lenz on Fri 19 Nov 2010 17:29 GMT |  Profile |  Permanent Link
+               Michael, this sounds way cool. I encourage you to keep working on it, and I look forward
+                  to reading further updates about it. ¶Who knows, maybe someday you'll grow to love
+                  JavaScript and end up removing the GWT
+                  step. You already appear to be able to clone yourself anyway. :-)
+            
+         
       
-   </main><footer><div class="prev-uri"><a href="/mike/2010/11/peer-to-patent-should-i-take-part.html">Peer-to-Patent: should I take part?</a></div><div class="next-uri"><a href="/mike/2010/11/cutting-saxon-down-to-size.html">Cutting Saxon down to size</a></div></footer></body>
-</html>
+   

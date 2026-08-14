@@ -1,54 +1,54 @@
-<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
-   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<?xml version="1.0" encoding="UTF-8"?>
+   
       
-      <title>The ten most common XSLT programming mistakes</title>
-      <meta name="id" content="179">
-      <meta name="author" content="Michael Kay">
-      <meta name="pubdate" content="2010-06-11T14:18:47">
-      <meta name="basename" content="the_ten_most_common_xslt_programming_mistakes">
-      <meta name="blog-id" content="3">
-   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="The ten most common XSLT programming mistakes" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>The ten most common XSLT programming mistakes</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2010-06"><span class="date" time="2010-06-11T14:18:47">June&nbsp;11, 2010 at 02:18p.m.</span></a></div></header><main>
+      The ten most common XSLT programming mistakes
       
-      <p>
+      
+      
+      
+      
+   
+   
+      The ten most common XSLT programming mistakes
+      
          
          In response to a user recently, I told him he had fallen into the most common elephant
          trap for XSLT users. Rather than being annoyed, which I half expected, he thanked
          me and asked me if I could tell him what the next most common elephant traps were.
          Although some of us have been helping users avoid these traps for many years, I don't
          recall seeing a list of them, so I thought I would spend half an hour compiling my
-         own list.&nbsp;</p>
-      <p>1. Matching elements in the default namespace. If the source document contains a default
+         own list. 
+      1. Matching elements in the default namespace. If the source document contains a default
          namespace declaration xmlns="something", then every time you refer to an element name
          in an XPath expression or match pattern, you have to make it clear you are talking
          about names in that namespace. In XSLT 1.0 you have to bind a prefix to this namespace
          (for example xmlns:p="something" on the xsl:stylesheet element) and then use this
          prefix throughout, for example match="p:chapter/p:section". In XSLT 2.0 an alternative
-         is to declare default-xpath-namespace="something" on the xsl:stylesheet element.&nbsp;</p>
-      <p>2. Using relative paths. xsl:apply-templates and xsl:for-each set the context node;
+         is to declare default-xpath-namespace="something" on the xsl:stylesheet element. 
+      2. Using relative paths. xsl:apply-templates and xsl:for-each set the context node;
          within the "loop", paths should be written to start from this context node. For example,
          &lt;xsl:for-each select="chapter"&gt;&lt;xsl:value-of select="title"/&gt;&lt;/xsl:for-each&gt;. Common
          mistakes are to use an absolute path within the loop (for example select="//title"),
-         or to repeat the name of the context node in the relative path (select="chapter/title").&nbsp;</p>
-      <p>3. Variables hold values, not fragments of expression syntax. Some people imagine
+         or to repeat the name of the context node in the relative path (select="chapter/title"). 
+      3. Variables hold values, not fragments of expression syntax. Some people imagine
          that a variable reference $x is like a macro, expanded into the syntax of an XPath
          expression by textual substitution - rather like variables in shell script languages.
          It isn't: you can only use a variable where you could use a value. For example, if
          $N holds the string 'para', then the path expression chapter/$N does not mean the
          same as chapter/para. Instead, you need chapter/*[name()=$N]. If a variable holds
          something more complex than a simple name (for example, a full path expression) then
-         you need an extension like saxon:evaluate() to evaluate it.&nbsp;</p>
-      <p>4. Template rules and xsl:apply-templates are not an advanced feature to be used only
+         you need an extension like saxon:evaluate() to evaluate it. 
+      4. Template rules and xsl:apply-templates are not an advanced feature to be used only
          by advanced users. They are the most basic fundamental construct in the XSLT language.
          Don't keep putting off the day when you start to use them. If you aren't using them,
-         you are making your life unnecessarily difficult.&nbsp;</p>
-      <p>5. XSLT takes a tree as input, and produces a tree as output. Failure to understand
+         you are making your life unnecessarily difficult. 
+      5. XSLT takes a tree as input, and produces a tree as output. Failure to understand
          this accounts for many of the frustrations beginners have with XSLT. XSLT can't process
          things that aren't represented in the tree produced by the XML parser (CDATA sections,
          entity references, the XML declaration) and it can't generate these things in the
          output either. If you think you need to do this, ask why: there's probably something
-         wrong with your requirements or your design.&nbsp;</p>
-      <p>6. Namespaces are difficult. There are no easy answers to getting them right: this
+         wrong with your requirements or your design. 
+      6. Namespaces are difficult. There are no easy answers to getting them right: this
          probably needs another article of its own. The key is to understand the data model
          for namespaces. Namespaces appear in two guises: (a) every element and attribute has
          a name comprising a prefix, local name, and URI; and (b) elements own namespace nodes
@@ -56,28 +56,159 @@
          this, you can understand the specifications for different instructions and their effect
          on namespaces in the result tree. Most of the time, all you need to do is to ensure
          that the elements you create are in the right namespace, and everything else will
-         take care of itself.&nbsp;</p>
-      <p>7. Don't use disable-output-escaping. Some people use it as magic fairy dust; they
+         take care of itself. 
+      7. Don't use disable-output-escaping. Some people use it as magic fairy dust; they
          don't know what it does, but they hope it might make things work better. This attribute
          is for experts only, and experts will only use it as an absolute last resort. 95%
          of the time, if you see disable-output-escaping in a stylesheet, it tells you that
-         the author was a novice who didn't know what s/he was doing.&nbsp;</p>
-      <p>8. The &lt;xsl:copy-of&gt; instruction creates an exact copy of a source tree, namespaces
+         the author was a novice who didn't know what s/he was doing. 
+      8. The &lt;xsl:copy-of&gt; instruction creates an exact copy of a source tree, namespaces
          and all. (Well, there's one exception, in XSLT 2.0 you can say copy-namespaces="no").
          If you want to copy a tree with changes, then you can't use xsl:copy-of. Instead,
          use the identity-template coding pattern: a template rule that uses &lt;xsl:copy&gt; to
          make a shallow copy of an element and applies-templates to its children, supplemented
-         by template rules that override this behaviour for particular elements.&nbsp;</p>
-      <p>9. Don't use &lt;xsl:variable name="x"&gt;&lt;xsl:value-of select="y"/&gt;&lt;/xsl:variable&gt;. Instead
+         by template rules that override this behaviour for particular elements. 
+      9. Don't use &lt;xsl:variable name="x"&gt;&lt;xsl:value-of select="y"/&gt;&lt;/xsl:variable&gt;. Instead
          use &lt;xsl:variable name="x" select="y"/&gt;. The latter is shorter to write, and much
-         more efficient to execute, and in many cases it's correct where the former is incorrect.&nbsp;</p>
-      <p>10. When you need to search for data, use keys. As with template rules, don't put
+         more efficient to execute, and in many cases it's correct where the former is incorrect. 
+      10. When you need to search for data, use keys. As with template rules, don't put
          off learning how to use keys or dismiss them as an advanced feature. They are an essential
          tool of the trade. Searching for data without using keys is like using a screwdriver
          to hammer nails.
          
-         </p>
+         
+      COMMENTS
       
+            
+               Re: The ten most common XSLT programming mistakes
+               by garymlewis on Fri 11 Jun 2010 14:55 BST |  Profile |  Permanent Link
+               Very cool. Thank you.
+                  I wish there were web sites for XSLT and XQuery like those for Perl (http://learn.perl.org/
+                  and http://perldoc.perl.org/). It would make learning these X tools a whole lot easier.
+                  Regards, Gary
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by John Cowan on Fri 11 Jun 2010 15:29 BST |  Profile |  Permanent Link
+               0. Misspell a namespace name, causing nothing to match; specifically, misspell the
+                  XSLT namespace name, causing nothing to work.
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by Roland Bouman on Fri 11 Jun 2010 21:56 BST |  Profile |  Permanent Link
+               11. Forgetting a dollar when referencing a variable, like in &lt;xsl:variable name="x"
+                  select="y"/&gt; :p¶(no harm intended - I enjoyed this post a lot, and I'm a big admirer
+                  of your work.
+                  But I couldn't resist posting after reading elephant trap #9)
+            
+         
+            
+               Re: Re: The ten most common XSLT programming mistakes
+               by Roland Bouman on Fri 11 Jun 2010 21:57 BST |  Profile |  Permanent Link
+               uh oh, seems I misread the article initially :(
+                  please disregard my previous comment.
+            
+         
+            
+               Re: Re: The ten most common XSLT programming mistakes
+               by Michael Kay on Fri 11 Jun 2010 22:52 BST |  Profile |  Permanent Link
+               You're right that omitting a dollar is a very common mistake. But on this occasion,
+                  I meant what I wrote!
+            
+         
+            
+               Re: Re: The ten most common XSLT programming mistakes
+               by khanrashed110 on Thu 03 Feb 2011 15:20 GMT |  Profile |  Permanent Link
+               haha how many times have I made this mistake but I don't think it should be classed
+                  as a programming mistake just a casual mistake if you know what I mean.
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by Kim on Tue 15 Jun 2010 05:42 BST |  Profile |  Permanent Link
+               If I had to add an eleventh one that would be improper use of abbreviated syntax in XPath expressions. I have seen countless stylesheets using things like: .//a[1]
+                  to return the first 'a' below the context node which does not work if your DTD allows
+                  an 'a' to occur below another 'a'. E.g. //a[1] applied to &lt;a&gt;&lt;a&gt;&lt;a/&gt;&lt;/a&gt;&lt;/a&gt; returns the three 'a' nodes. (Happens in practice when you have mixed contents stuff). I have also seen people writing stuf like /descendant::*[ 1 and (self::a or self::b)]
+                  to mean the first 'a' or 'b' in pre-order. (the path before being wrong in two places
+                  [ 1 and ... ] is like [ true and ... ] and not [ position() = 1 and ... ] and then
+                  even with position() = 1, it selects the first node in pre-order if its label is a
+                  or b. correct XPath would be /descendant::*[ self::a or self::b][position() = 1]
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by Lars on Wed 16 Jun 2010 12:24 BST |  Profile |  Permanent Link
+               How about the mistake of confusing test="foo != bar" with test="not(foo = bar)"
+                  I.e. not realizing that the comparison operators operate on sets. This is one you
+                  have written about in the past I believe. It has tripped up me and my colleagues more
+                  than once.
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by Lapinski on Sun 08 Aug 2010 09:58 BST |  Profile |  Permanent Link
+               I am confused. Matching elements WITH default namespace is the #1 most common mistake
+                  in XSLT? I have been seeing a lot of stylesheets matching default namespace... so
+                  they are all wrong? So is it possible to change the default namespace of the stylesheet
+                  on the fly (say, before it is run on the command line) if that's the case?
+            
+         
+            
+               Re: Re: The ten most common XSLT programming mistakes
+               by Densil on Thu 19 Aug 2010 09:25 BST |  Profile |  Permanent Link
+               Hi there, I am trying to write a generic XSLT file which takes an XML as input and generates
+                  its XSD schema. Is it a valid approach to use XSLT ? are there any examples of such
+                  generation ? did anyone do such transformations ? thanks Den
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by Michael Kay on Thu 19 Aug 2010 14:18 BST |  Profile |  Permanent Link
+               Densil, a good place to ask that question would be the xsl-list at mulberrytech.com.
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by pvallone on Mon 30 Aug 2010 19:32 BST |  Profile |  Permanent Link
+               Great Blog. I have a question in regards to:
+                  7. Don't use disable-output-escaping.
+                  I use it to output a new doc type declaration in the resulting xml:
+                  &lt;xsl:text disable-output-escaping="yes"&gt;&lt;![CDATA[ &lt;!DOCTYPE root SYSTEM "root.dtd"&gt; ]]&gt;&lt;/xsl:text&gt;
+                  Is this correct?
+            
+         
+            
+               Re: Re: The ten most common XSLT programming mistakes
+               by Michael Kay on Mon 30 Aug 2010 19:51 BST |  Profile |  Permanent Link
+               It's much better to do this using &lt;xsl:output doctype-system="root.dtd"/&gt;.
+            
+         
+            
+               Re: Re: Re: The ten most common XSLT programming mistakes
+               by pvallone on Mon 30 Aug 2010 20:13 BST |  Profile |  Permanent Link
+               Thanks
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by Andriy Gerasika on Thu 02 Dec 2010 16:54 GMT |  Profile |  Permanent Link
+               using name() function at all.
+                  for example, very often people write: &lt;xsl:apply-templates select="*[name()!='a:b']"/&gt;
+                  instead of &lt;xsl:apply-templates select="*[not(self::a:b)]"/&gt;
+                  or XSLT 2.0 &lt;xsl:apply-templates select="* exclude a:b"/&gt;
+                  Bespoke undeterministic behaviour w/ namespaces, name() also creates problems w/ performance.
+            
+         
+            
+               Re: The ten most common XSLT programming mistakes
+               by Tom Wilson on Thu 05 Jan 2012 12:00 GMT |  Profile |  Permanent Link
+               I struggled with no.3 for a few days and scoured various sites without much help.
+                  I now understand path expressions more clearly. I should also return to read more
+                  of your book, XSLT Programmer's Reference now that I have some experience of using
+                  XSLT, XPath and XQuery. Thanks.
+            
+         
       
-   </main><footer><div class="prev-uri"><a href="/mike/2010/05/the-first-saxon-deadlock.html">The first Saxon deadlock</a></div><div class="next-uri"><a href="/mike/2010/06/parameterized-validation.html">Parameterized validation</a></div></footer></body>
-</html>
+   

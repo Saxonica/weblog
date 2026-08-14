@@ -1,102 +1,102 @@
-<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
-<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<?xml version="1.0" encoding="UTF-8"?>
+
   
-  <title>Sign, sealed, and delivered</title>
-  <meta name="author" content="Norm Tovey-Walsh">
-  <meta name="pubdate" content="2022-12-21T13:19:00">
-  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png">
-  <style>
+  Sign, sealed, and delivered
+  
+  
+  
+  
     figure { width: 100%; }
     img { max-width: 100%; display: block; margin-left: auto; margin-right: auto; }
     pre { background-color: rgb(235, 235, 235);
           padding-top: 0.5em; padding-bottom: 0.5em;
         }
     code { font-size: 85%; }
-  </style>
-<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/norm-tovey-walsh.css"><meta content="Saxon Chronicles (in a Norman style)" property="og:site_name"><meta content="https://blog.saxonica.com/img/sccard.png" property="og:image"><meta content="Norm Tovey-Walsh's Saxonica weblog." property="og:description"><meta content="https://blog.saxonica.com/norm" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Sign, sealed, and delivered" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/norm/">Saxon Chronicles</a></h1><div class="tagline">( in a Norman style )</div></div><h2>Signed, sealed, and delivered</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2022-12"><span class="date" time="2022-12-21T13:19:00">December&nbsp;21, 2022 at 01:19p.m.</span></a></div></header><main>
+  
 
 
-<p>I have been trying to build SaxonCS for .NET such that I could deliver it
+Signed, sealed, and delivered
+
+I have been trying to build SaxonCS for .NET such that I could deliver it
 on MacOS without warning messages for
-<a href="https://github.com/dotnet/sdk/issues/24337">a long time</a>.
+a long time.
 It has not been an easy or enjoyable adventure. Here are some
-breadcrumbs for the next poor soul forced to tread down this path.</p>
+breadcrumbs for the next poor soul forced to tread down this path.
 
-<p>You can’t do this with .NET 5. That’s probably less important today
+You can’t do this with .NET 5. That’s probably less important today
 than it was when I started. I don’t understand the details, but something has
 been fixed in .NET 6 that isn’t going to be backported to .NET 5. (There’s
-a comment to that effect in an issue, but I can’t now locate that issue.)</p>
+a comment to that effect in an issue, but I can’t now locate that issue.)
 
-<p>There are several problems that have to be solved. The application
+There are several problems that have to be solved. The application
 has to be built such that it will run when signed. All of the various pieces
 have to be (correctly) signed. A DMG must be constructed to distribute
-the application (maybe I don’t <em>have</em> to do this step, but it’s
-reasonably what users expect). The <em>DMG</em> has to be signed.
-<em>And</em> the whole thing has to be notarized by Apple so that
-it will open without warnings.</p>
+the application (maybe I don’t have to do this step, but it’s
+reasonably what users expect). The DMG has to be signed.
+And the whole thing has to be notarized by Apple so that
+it will open without warnings.
 
-<div>
-<h2>The objective</h2>
-<p>A complete, hands off, CI-driven build of a C# application to produce
+
+The objective
+A complete, hands off, CI-driven build of a C# application to produce
 a MacOS DMG file that a user can open and use without any warnings about
-unsigned code or potentially malicious applications.</p>
-</div>
+unsigned code or potentially malicious applications.
 
-<div>
-<h2>Prerequisites</h2>
 
-<p>Before you begin, there are some things you have to have setup.</p>
 
-<ul>
-<li><p>You need <a href="https://dotnet.microsoft.com/en-us/">dotnet</a> 6
+Prerequisites
+
+Before you begin, there are some things you have to have setup.
+
+
+You need dotnet 6
 (or later, I assume, but we’re planning to ship Saxon 12 with .NET 6
-so that’s what I’m using).</p></li>
-<li><p>You need the
-<a href="https://learn.microsoft.com/en-us/nuget/install-nuget-client-tools">nuget</a>
-command line tool. This is distinct from the <em>nuget</em> subcommand
-of the <em>dotnet</em> tool. As far as I can tell, only the former
-can actually install packages.</p>
-<p>On a Mac, you need the Mono framework and some
+so that’s what I’m using).
+You need the
+nuget
+command line tool. This is distinct from the nuget subcommand
+of the dotnet tool. As far as I can tell, only the former
+can actually install packages.
+On a Mac, you need the Mono framework and some
 other fiddling to make it work. Because that’s the way it is. The details
-are outlined on the tools page linked above.</p>
-</li>
-<li><p>You’ll need
-<a href="https://developer.apple.com/xcode/">XCode</a>. I’m using version 14.2.
+are outlined on the tools page linked above.
+
+You’ll need
+XCode. I’m using version 14.2.
 I think you need to install the XCode command line tools and you need to run
 XCode at least once, it does a bunch of initialization the first time it runs.
-</p></li>
-<li><p>You need an Apple developer account and you have to go through
+
+You need an Apple developer account and you have to go through
 the dance necessary to create a developer ID certificate. The certificate
 and (at least some of) the certificate chain need to be downloaded and
 installed in your keychain. I don’t remember the exact details, but I seem
-to recall that it was spelled out <em>reasonably</em> well in the Apple developer
-documentation.</p>
-</li>
-<li><p>I decided to use
-<a href="https://www.araelium.com/dmgcanvas">DMG Canvas</a> to build the
+to recall that it was spelled out reasonably well in the Apple developer
+documentation.
+
+I decided to use
+DMG Canvas to build the
 DMG. In addition to building the DMG, this application does the sign
 and notarize dance with Apple for me. $20 well spent, I think. I
 assume these steps can be done manually, but I’m not inspired to try
-to figure out how just at the moment.</p>
-</li>
-</ul>
+to figure out how just at the moment.
 
-<p>Use the <em>nuget</em> command to install <code>Dotnet.Bundle</code>:</p>
 
-<pre><code>$ nuget install Dotnet.Bundle</code></pre>
 
-<p>This package constructs the “bundle” of files that MacOS expects
-for an application. (That’s the <code><em>application</em>.app</code> directory
-and its descendants.)</p>
-</div>
+Use the nuget command to install Dotnet.Bundle:
 
-<div>
-<h2>Application files</h2>
+$ nuget install Dotnet.Bundle
 
-<p>Start with your application. In our case, this complex beast:</p>
+This package constructs the “bundle” of files that MacOS expects
+for an application. (That’s the application.app directory
+and its descendants.)
 
-<pre><code>using System;
+
+
+Application files
+
+Start with your application. In our case, this complex beast:
+
+using System;
 
 namespace HelloWorld
 {
@@ -107,12 +107,12 @@ namespace HelloWorld
             Console.WriteLine("Hello, World!");
         }
     }
-}</code></pre>
+}
 
-<p>You will also need a <code>.csproj</code> file. Here’s one that works
-for me:</p>
+You will also need a .csproj file. Here’s one that works
+for me:
 
-<pre><code>&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
 
   &lt;PropertyGroup&gt;
     &lt;PlatformTarget&gt;AnyCPU&lt;/PlatformTarget&gt;
@@ -148,51 +148,51 @@ for me:</p>
     &lt;PackageReference Include="DotNet.Bundle" Version="0.9.13" /&gt;
   &lt;/ItemGroup&gt;
 
-&lt;/Project&gt;</code></pre>
+&lt;/Project&gt;
 
-<p>The first property group specifies properties of the build, the second
+The first property group specifies properties of the build, the second
 defines how the application will be bundled, and the last item group is
-necessary to make the bundler part of the build.</p>
+necessary to make the bundler part of the build.
 
-<p>Notes:</p>
+Notes:
 
-<ol>
-<li>You must specify <code>net6</code> for the framework and create
-a single file, self-contained application.</li>
-<li>You must use the hardened runtime.</li>
-<li>You must include native libraries for self extraction.</li>
-<li>You must <em>not</em> include symbols in the single file, that’s an option that
-apparently stopped working in .NET 5.</li>
-<li>I created <code>HelloWorld.icns</code> from a PNG with ImageMagick.</li>
-</ol>
-</div>
 
-<div>
-<h2>Building the application</h2>
+You must specify net6 for the framework and create
+a single file, self-contained application.
+You must use the hardened runtime.
+You must include native libraries for self extraction.
+You must not include symbols in the single file, that’s an option that
+apparently stopped working in .NET 5.
+I created HelloWorld.icns from a PNG with ImageMagick.
 
-<p>Add <code>Dotnet.Bundle</code> to the project:</p>
 
-<pre><code>$ dotnet add package Dotnet.Bundle</code></pre>
 
-<p>(You only have to do this once.)</p>
 
-<p>Build the application:</p>
+Building the application
 
-<pre><code>$ dotnet msbuild -t:BundleApp -p:RuntimeIdentifier=osx-x64 -p:Configuration=Release</code></pre>
+Add Dotnet.Bundle to the project:
 
-<p>You can run the bundled application to make sure it works:</p>
+$ dotnet add package Dotnet.Bundle
 
-<pre><code>$ bin/Release/net6.0/osx-x64/publish/HelloWorld.app/Contents/MacOS/HelloWorld
-Hello, World!</code></pre>
-</div>
+(You only have to do this once.)
 
-<div>
-<h2>Sign the application</h2>
+Build the application:
 
-<p>Next we have to sign the application. But before we can do that, we have
-to make an entitlements plist file. I called mine <code>entitlements.plist</code>:</p>
+$ dotnet msbuild -t:BundleApp -p:RuntimeIdentifier=osx-x64 -p:Configuration=Release
 
-<pre><code>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+You can run the bundled application to make sure it works:
+
+$ bin/Release/net6.0/osx-x64/publish/HelloWorld.app/Contents/MacOS/HelloWorld
+Hello, World!
+
+
+
+Sign the application
+
+Next we have to sign the application. But before we can do that, we have
+to make an entitlements plist file. I called mine entitlements.plist:
+
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
           "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;
 &lt;plist version="1.0"&gt;
@@ -206,71 +206,70 @@ to make an entitlements plist file. I called mine <code>entitlements.plist</code
     &lt;key&gt;com.apple.security.cs.disable-executable-page-protection&lt;/key&gt;
     &lt;true/&gt;
 &lt;/dict&gt;
-&lt;/plist&gt;</code></pre>
+&lt;/plist&gt;
 
-<p>Now we can sign it:</p>
+Now we can sign it:
 
-<pre><code>$ codesign --force --options runtime --entitlements ./entitlements.plist --deep \
+$ codesign --force --options runtime --entitlements ./entitlements.plist --deep \
   --sign "Developer ID Application: YOUR DEVELOPER ID GOES HERE" \
-  --timestamp bin/Release/net6.0/osx-x64/publish/HelloWorld.app</code></pre>
+  --timestamp bin/Release/net6.0/osx-x64/publish/HelloWorld.app
 
-<p>You must use the entitlements option and the timestamp option. (You probably
+You must use the entitlements option and the timestamp option. (You probably
 need all the other options too, but those were the ones that I initially 
-overlooked.)</p>
+overlooked.)
 
-<p>You can run it again to make sure it still works:</p>
+You can run it again to make sure it still works:
 
-<pre><code>$ bin/Release/net6.0/osx-x64/publish/HelloWorld.app/Contents/MacOS/HelloWorld
-Hello, World!</code></pre>
+$ bin/Release/net6.0/osx-x64/publish/HelloWorld.app/Contents/MacOS/HelloWorld
+Hello, World!
 
-<p>(It didn’t for me for the longest time!)</p>
-</div>
+(It didn’t for me for the longest time!)
 
-<div>
-<h2>Construct the DMG</h2>
 
-<p>Fire up the <em>DMG Canvas</em> application. (Yes, I know, I said I wanted this to
-be a hands-off process. I believe <em>DMG Canvas</em> can be automated, but I haven’t
-tried to figure out exactly how yet.)</p>
 
-<p>The first time you open it up, go to the Preferences dialog and add your Apple ID
-and a one-time password on the Notarization tab:</p>
+Construct the DMG
 
-<figure>
-<img src="img/app-password.png" alt="Screen capture of the DMG Canvas notarization preferences tab.">
-</figure>
+Fire up the DMG Canvas application. (Yes, I know, I said I wanted this to
+be a hands-off process. I believe DMG Canvas can be automated, but I haven’t
+tried to figure out exactly how yet.)
 
-<p>This will enable signing and notarizing the DMG later.</p>
+The first time you open it up, go to the Preferences dialog and add your Apple ID
+and a one-time password on the Notarization tab:
 
-<p>On the main screen, add the application to the canvas. On the right hand
+
+
+
+
+This will enable signing and notarizing the DMG later.
+
+On the main screen, add the application to the canvas. On the right hand
 side, choose the second tab and select “Code Sign and Notarize” in the drop down.
 You’ll have to specify the certificate you want to use, your Apple ID, and the primary
 bundle ID. (I have no idea what that means in this context, but you have to put
-something in there.)</p>
+something in there.)
 
-<figure>
-<img src="img/app-main.png" alt="Screen capture of the DMG Canvas main screen with the notarization dialog shown on the right.">
-</figure>
 
-<p>Click the “Build” button in the upper right corner, fill in the details,</p>
 
-<figure>
-<img src="img/app-build.png" alt="Screen capture of the DMG Canvas build dialog.">
-</figure>
 
-<p>Hit Save and wait (nervously, and for quite a while) for the results!</p>
 
-<figure>
-<img src="img/app-wait.png" alt="Screen capture of the DMG Canvas modal dialog while it's building and notarizing the DMG file.">
-</figure>
+Click the “Build” button in the upper right corner, fill in the details,
 
-<p>With luck, it all goes smoothly and you get back a signed, notarized DMG file.</p>
 
-<p>There’s obviously more to be done in the DMG: it needs a background image, the
-standard symlink to <code>/Applications</code> should be present, etc. But
-I got a <a href="HelloWorld.dmg">working DMG</a> file out of it so, I’m
-declaring victory for the moment.</p>
 
-</div>
-</main><footer><div class="prev-uri"><a href="/norm/2022/08/09-net6.html">SaxonCS for .NET 6</a></div><div class="next-uri"><a href="/norm/2022/12/23-saxon-c.html">SaxonC HE “11.99” pre-release</a></div></footer></body>
-</html>
+
+
+Hit Save and wait (nervously, and for quite a while) for the results!
+
+
+
+
+
+With luck, it all goes smoothly and you get back a signed, notarized DMG file.
+
+There’s obviously more to be done in the DMG: it needs a background image, the
+standard symlink to /Applications should be present, etc. But
+I got a working DMG file out of it so, I’m
+declaring victory for the moment.
+
+
+

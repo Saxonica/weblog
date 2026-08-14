@@ -1,33 +1,33 @@
-<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
-   <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<?xml version="1.0" encoding="UTF-8"?>
+   
       
-      <title>Result documents: validation and multi-threading</title>
-      <meta name="id" content="199">
-      <meta name="author" content="Michael Kay">
-      <meta name="pubdate" content="2013-03-15T17:35:05">
-      <meta name="basename" content="result_documents_validation_and_multi-threading">
-      <meta name="blog-id" content="3">
-   <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Result documents: validation and multi-threading" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-   <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>Result documents: validation and multi-threading</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2013-03"><span class="date" time="2013-03-15T17:35:05">March&nbsp;15, 2013 at 05:35p.m.</span></a></div></header><main>
+      Result documents: validation and multi-threading
       
-      <p>I've been working on a stylesheet that converts the W3C XQuery/XPath 3.0 test suite
+      
+      
+      
+      
+   
+   
+      Result documents: validation and multi-threading
+      I've been working on a stylesheet that converts the W3C XQuery/XPath 3.0 test suite
          into an XSLT 3.0 test suite. The idea is that all the XPath tests only need to be
          written once, allowing them to form XSLT tests and thus avoiding the duplication of
          effort that arises if separate test suites are written.
-         </p>
-      <p>
+         
+      
          The stylesheet generates 19,700 output files (38Mb) from 1,863 input files (122Mb)
          so it's a good test in its own right. I'm therefore running it using the almost-ready
          Saxon 9.5 as part of the system testing before we ship the product. Here are a few
          points I'd like to highlight.
-         </p>
-      <p>
+         
+      
          Firstly, some files are copied unchanged. For this purpose the extension function
          file:copy(), which is part of the EXPath file module, comes in very handy. This llibrary
          will be included as standard with Saxon 9.5 (like all extensions, it will be in the
          PE and EE editions only).
-         </p>
-      <p>
+         
+      
          Secondly, I followed a development approach which I've found very useful and would
          like to share. There's a schema for the target document vocabulary (the XSLT 3 test
          suite metadata), so it makes sense to use a schema-aware stylesheet that validates
@@ -39,8 +39,8 @@
          all the input that you need to start checking that the output is correct, and at this
          stage adding an xsl:import-schema declaration for the output schema, plus the attribute
          validation='strict" on the xsl:result-document instruction, is absolutely invaluable.
-         </p>
-      <p>
+         
+      
          Except, I found it could be improved. The validation error messages tell you what's
          wrong (for example, you've output an attribute value which isn't allowed for that
          attribute), and they tell you where the code is in the stylesheet that caused the
@@ -60,39 +60,39 @@
          a small performance hit for maintaining this stack, but I'm confident it's very small,
          and I always reckon that a small amount of machine time to save a large amount of
          programmer time is a good trade-off.
-         </p>
-      <p>
+         
+      
          The third thing I wanted to mention in this article is asynchronous processing of
          xsl:result-document. This is a new feature for Saxon-EE 9.5. By default, an xsl:result-document
          instruction executes in its own thread, independently of the rest of the stylesheet.
          Threads are allocated from a pool, whose size defaults to the number of processors
          available (on my Mac laptop, that's 8). If no free threads are available, the instruction
          executes in the current thread.
-         </p>
-      <p>
+         
+      
          I did some experiments on the performance as the number of available threads is increased:
-         </p>
-      <p>
+         
+      
          1 - 14.3s
          4 - 8.52s
          8 - 8.92s
          12 - 9.81s
          16 - 10.6s
-         </p>
-      <p>
+         
+      
          so the default of 8 appears to be a reasonable choice. The saving in elapsed time
          by using multi-threading seems to be well worth having, though frankly, for a task
          like this, 14s is already fantastically good performance and any improvement is simply
          icing on the cake. It's becoming quite hard to find workloads where performance improvements
          are genuinely needed.
-         </p>
-      <p>
+         
+      
          Incidentally, switching bytecode generation off has almost no noticeable effect on
          this transformation, and the same is true when optimization is switched off. That's
          because it's a very simple transformation that happens to be processing a large amount
          of data.
-         </p>
-      <p>
+         
+      
          The xsl:result-document instruction is a good candidate for parallel processing because
          there's no need to combine its results with those of any other instruction, which
          minimizes the synchronization overheads that usually come with parallel processing.
@@ -104,6 +104,5 @@
          release. So we've been careful to make sure the feature can be disabled - that's proved
          very useful with bytecode generation, which is another area where it inevitably took
          a few months of field exposure to iron out the last bugs.
-         </p>
-   </main><footer><div class="prev-uri"><a href="/oneil/2013/03/experiences-with-client-side-xsltforms-and-server-side-servlex.html">Experiences with XSLTForms and Servlex</a></div><div class="next-uri"><a href="/mike/2013/03/whats-new-in-saxon-95.html">What's new in Saxon 9.5?</a></div></footer></body>
-</html>
+         
+   

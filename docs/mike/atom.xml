@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2026-08-14T09:53:11.630879073Z</updated><author><name>Michael Kay</name></author><entry><title>Validating Linked Documents</title><link href="https://blog.saxonica.com/mike/2026/08/validating-linked-documents.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2026/08/validating-linked-documents.html</id><published>2026-08-13T21:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2026/08/validating-linked-documents.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon diaries</title><subtitle>Michael Kay’s blog</subtitle><link href="https://blog.saxonica.com/mike/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/mike.xml" rel="self"/><id>https://blog.saxonica.com/mike/atom.xml</id><updated>2026-08-14T12:33:03.236204538Z</updated><author><name>Michael Kay</name></author><entry><title>Validating Linked Documents</title><link href="https://blog.saxonica.com/mike/2026/08/validating-linked-documents.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/mike/2026/08/validating-linked-documents.html</id><published>2026-08-13T21:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/mike/2026/08/validating-linked-documents.html"><div xmlns="http://www.w3.org/1999/xhtml">
         
         
         <p>A chance remark at Balisage 2026 (RIP) led me to consider the question:
@@ -27,7 +27,7 @@
         <p>I'll give you the answer first, before describing the journey to get there. I've made it work
         like this</p>
         
-        <xmp>
+        <pre><code>
             
 &lt;xs:annotation&gt;
    &lt;xs:appinfo&gt;
@@ -54,7 +54,7 @@
       &lt;/xs:extension&gt;
     &lt;/xs:complexContent&gt;                        
   &lt;/xs:complexType&gt;
-&lt;/xs:element&gt;</xmp>
+&lt;/xs:element&gt;</code></pre>
         
         <p>This won't run out-of-the-box in Saxon 13.0: though most of the ingredients are present
         I had to make some tweaks to make it all hang together, which I'll describe as I go along.

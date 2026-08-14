@@ -1,445 +1,444 @@
-<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="UTF-8"?>
     
-    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <title>101 Fun things to do with QT4</title>
+    
+        101 Fun things to do with QT4
         
-        <meta name="author" content="Michael Kay">
-        <meta name="pubdate" content="2026-05-26T18:00:00">
+        
+        
 
-    <link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/michael-kay.css"><meta content="Saxon diaries" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="Michael Kay's blog." property="og:description"><meta content="https://blog.saxonica.com/mike/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="101 Fun things to do with QT4" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-    <body class="michael-kay"><header><div class="banner"><h1><a href="/mike/">Saxon diaries</a></h1><div class="tagline">Michael Kay’s blog</div></div><h2>101 Fun things to do with QT4</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#michael-kay">Michael Kay</a></span><span class="on"> on </span><a href="/authors.html#michael-kay-D2026-05"><span class="date" time="2026-05-26T18:00:00">May&nbsp;26, 2026 at 06:00p.m.</span></a></div></header><main>
+    
+    
+        101 Fun things to do with QT4
+        
+        Here's a fun list of new features in the XPath 4.0, XQuery 4.0, and XSLT 4.0,
+        that are available to play with in Saxon 13.
         
         
-        <p>Here's a fun list of new features in the XPath 4.0, XQuery 4.0, and XSLT 4.0,
-        that are available to play with in Saxon 13.</p>
+            
+            
+                Select an attribute, using a default value if absent
+                @discount otherwise 0
+            
+            
+                Use a conditional with no else branch
+                if (@discount) { " (reduced!)" }
+            
+            
+                Shorten function to fn
+                for-each(//employee, fn($e){$e/@ssn})
+            
+            
+                Use the context item to simplify arity-1 functions
+                for-each(//employee, fn{@ssn})
+            
+            
+                Drop the map keyword from map constructors
+                let $map := {'x':1, 'y':2}
+            
+            
+                Include conditional entries in a map constructor
+                {'x': +@x, 'y': +@y, if (@z) {{'z': +@z}}} 
+            
+            
+                Include multiple entries in a map constructor
+                {//data ! {@key : string(@value)}}
+            
+            
+                Build a map from a sequence
+                map:build(//employee, fn{@ssn})
+            
+            
+                Select a range of entries from a sequence
+                $input[1 to 5]
+            
+            
+                Start talking about atomic items rather than atomic values
+            
+            
+            
+            
+                Use QName literals
+                node-name($node) = #xml:space
+            
+            
+                Use underscore in numeric literals
+                let $million := 1_000_000
+            
+            
+                Use hex literals
+                let $mask := 0xffff
+            
+            
+                Use alternative names in an element test
+                //element(chapter|appendix)
+            
+            
+                Declare namespaces in XPath
+                declare namespace p = "http:/my.ns"; //p:table
+            
+            
+                Declare a default namespace in XPath
+                declare default element namespace "http:/my.ns"; //table
+            
+            
+                Use ##any to match elements by local name, ignoring namespace
+                declare default element namespace "##any"; //table
+            
+            
+                Use string templates
+                `{$firstname} {$lastname}`
+            
+            
+                Use × and ÷ for multiplication and division
+                @price × 1.2
+            
+            
+                Convert untyped atomic values implicitly to decimal where appropriate
+                &lt;a&gt;1.1&lt;/a&gt; = 1.1
+            
+            
+            
+            
+                Write &lt;&lt; and &gt;&gt; as precedes and follows
+                para[. precedes $first-heading]
+            
+            
+                Compare nodes using is-not
+                *[. is-not $first-heading]
+            
+            
+                Use the =!&gt; operator to apply a function to all items in a sequence
+                tokenize($str) =!&gt; upper-case()
+            
+            
+                Use the pipeline operator -&gt; to set the context item for an expression
+                $employee -&gt; `First name: {@first} Last name: {@last}`
+            
+            
+                Use a multi-character representation of "percent" in a decimal format
+                percent = "%:pc"
+            
+            
+                Start talking about coercion rules rather than function conversion rules
+            
+            
+                Take advantage of down-casting in the coercion rules:
+                declare function my:f($x as xs:positiveInteger){$x + 1}; my:f(3)
+            
+            
+                Check that you always have a space after "{#" in a pragma
+                {# saxon:extension xxx #}
+            
+            
+                Take advantage of coercion in variable declarations
+                let $x as xs:decimal := @price
+            
+            
+                Declare functions with optional parameters
+                declare function my:f($x as xs:integer := 0)
+            
+            
+            
+            
+                Use keywords in function calls
+                substring($value, start := 3)
+            
+            
+                Declare functions with no namespace prefix
+                declare function increment($x) {$x+1}; increment(42)
+            
+            
+                Serialize output as canonical XML
+                serialize($output, {'method': 'xml', canonical': true()})
+            
+            
+                Take advantage of the functions in the bin and file namespaces.
+                Previously defined in EXPath, these are now integrated into the specs.
+            
+            
+                Watch out for decimal=double comparisons. These are now compared as decimals, not as doubles
+                1.1e0 != 1.1
+            
+            
+                Convert arbitrary XML to JSON using the element-to-map function
+                element-to-map(doc('books.xml')/*)
+            
+            
+                Process CSV input files using the new csv-doc and parse-csv functions
+                csv-doc('data.csv')
+            
+            
+                Process HTML input files
+                parse-html('index.html')
+            
+            
+                Use higher-order functions knowing they will be there in all implementations. Higher-order
+                functions are no longer an optional feature.
+            
+            
+                Use the second argument of callback functions to get the position of an item in a sequence
+                filter($input, fn{$item, $pos){$pos gt 5})
+            
+            
+            
+            
+                Get the last item of a sequence using foot()
+                foot($input)
+            
+            
+                Get selected items in a sequence using slice()
+                slice($in, start := 5, end := 2, step := -2)
+            
+            
+                Use the deep-equal() function with options to control the comparison
+                deep-equal($p1, $p2, {'whitespace': 'normalize'})
+            
+            
+                Use the all-different() function to check uniqueness of values
+                all-different(//test-case/@name)
+            
+            
+                Use the highest() and lowest() functions to find
+                the items with the minimum or maximum value of some property
+                highest(//employee, fn{@salary})
+            
+            
+                Use the index-where() function to find the positions of all
+                items with some property
+                index-where(*, fn{exists(self::h2)})
+            
+            
+                Use the partition() function to perform positional grouping
+                partition(*, fn($group, $next){exists($next[self::h2])})
+            
+            
+                Use the sort-by() function to sort a sequence using multiple sort keys
+                sort-by(//person, ({'key': fn{@last}}, {'key': fn{@date-of-birth}, 'order': 'descending'}))
+            
+            
+                Use the sort-with() function to sort using a comparator
+                sort-with($input, compare#2), 
+            
+            
+                Use take-while to select items from a sequence until some condition is false
+                take-while(*, fn{not(self::h2)})
+            
+            
+            
+            
+                Use is-NaN to check whether an input item is NaN
+                *[not(is-NaN(.))]
+            
+            
+                Use round() with an explicit rounding mode
+                round($value, precision := '2', mode := 'half-toward-zero')
+            
+            
+                Read integers in hexadecimal notation
+                parse-integer("feff", 16)
+            
+            
+                Format integers in hexadecimal notation
+                format-integer($value, '16^xxxxxxxx')
+            
+            
+                Supply inline options to format-number()
+                format-number($value, {'decimal-separator': ',', 'grouping-separator': '.'})
+            
+            
+                Use new mathematical functions math:e(), math:sinh(), etc.
+                math:cosh(1)
+            
+            
+                Use the new collation for Unicode case-blind comparison
+                compare($a, $b, "http://www.w3.org/2005/xpath-functions/collation/unicode-case-insensitive")
+            
+            
+                Construct a collation with desired properties
+                compare($a, $b, collation({'lang': 'se', 'numeric': true()}))
+            
+            
+                Get the character with a given codepoint
+                char(0xA0)
+            
+            
+                Get the character with a given HTML entity name
+                char("nbsp")
+            
+            
+            
+            
+                Get all the characters in a string
+                characters($input)
+            
+            
+                Use lookahead and lookbehind in regular expressions
+                matches($input, "Chapter(?=\s+[1-9])")
+            
+            
+                Match word boundaries in a string
+                matches($input, "\bthe\b")
+            
+            
+                Compute replacement values for matching substrings
+                replace($input, "(0-9)+", fn{.+1})
+            
+            
+                Split a URI into its parts, and recombine them
+                parse-uri(@href) =&gt; map:put('scheme', 'https') =&gt; build-uri()
+            
+            
+                Build a date or time from its components
+                build-dateTime({'year': $year, 'month': $month, 'day': $day})
+            
+            
+                Get the civil timezone offset at a given time and place
+                civil-timezone(current-dateTime(), 'Europe/London')
+            
+            
+                Use @then and @else on xsl:if
+                &lt;xsl:if test="@type=1" then="@full-name" else="@abbreviation"/&gt;
+            
+            
+                Use @select on xsl:when and xsl:otherwise
+                &lt;xsl:choose&gt;&lt;xsl:when test="@type=1" select="'gasket'"/&gt;&lt;/xsl:choose&gt;
+            
+            
+                Select options using the new xsl:switch instruction
+                &lt;xsl:switch select="@type"&gt;&lt;xsl:when test="1" select="'gasket'"/&gt;&lt;/xsl:switch&gt;
+            
+            
+            
+            
+                Provide default values for XSLT function parameters
+                &lt;xsl:param name="options" as="map(*)" required="no" select="{}"/&gt;
+            
+            
+                Use XSLT functions in no namespace
+                &lt;xsl:function name="f"&gt;...&lt;/xsl:function&gt;
+            
+            
+                Use xsl:text in preference to xsl:value-of
+                &lt;xsl:text&gt;{position()} of {last()}&lt;/xsl:text&gt;
+            
+            
+                Construct CDATA sections selectively in serialized output
+                &lt;xsl:text cdata="true" select="$example"/&gt;
+            
+            
+                Use capturing accumulators to capture a snapshot of an element as an accumulator value
+                &lt;xsl:accumulator-rule match="heading" phase="end" capture="yes" select="."/&gt;
+            
+            
+                Use explicit options to control XML parsing in the doc() and document() functions
+                doc("input.xml", {'dtd-validation': true()})
+            
+            
+                Build arrays in XSLT using xsl:array and xsl:array-member
+                &lt;xsl:array select="1 to 5"/&gt;
+            
+            
+                Control the handling of duplicate keys in xsl:map with the new duplicates option
+                &lt;xsl:map duplicates="'use-last'"&gt;...&lt;/xsl:map&gt;
+            
+            
+                Stop JSON output displaying / as \/
+                escape-solidus="no"
+            
+            
+                Serialize a sequence of maps in json-lines format (one JSON object per line, newline separated)
+                json-lines="yes"
+            
+            
+            
+            
+                Use different XSD schemas for validating the input and output of a transformation
+                &lt;xsl:import-schema role="output"/&gt;, &lt;xsl:result-document schema-role="output"/&gt;
+            
+            
+                Write all the template rules for a given mode as children of the xsl:mode element
+                &lt;xsl:mode name="M"&gt;&lt;xsl:template match="A"/&gt;&lt;/xsl:mode&gt;
+            
+            
+                In an XSLT module, link to the main module to help IDEs locate all the variable and function declarations
+                &lt;xsl:transform main-module="main.xsl"&gt;...&lt;/xsl:transform&gt;
+            
+            
+                Use xsl:note elements for structured XSLT documentation
+                &lt;xsl:note&gt;This is a comment&lt;/xsl:note&gt;
+            
+            
+                Use fixed-namespaces to reduce the amount of boilerplate on the xsl:transform element
+                &lt;xsl:transform fixed-namespaces="#standard"&gt;...&lt;/xsl:transform&gt;
+            
+            
+                Take advantage of new features for simplified stylesheets. The outermost element
+                can now be any instruction, for example xsl:result-document or xsl:map.    
+            
+            
+                Make unprefixed name tests match elements in any namespace
+                xpath-default-namespace="##any"
+            
+            
+                Declare named item types
+                &lt;xsl:item-type name="binary" select="(xs:hexBinary | xs:base64Binary)"/&gt;
+            
+            
+                Use types in match patterns
+                match="~map(xs:string, xs:integer)
+            
+            
+                Use the separator attribute in xsl:for-each
+                &lt;xsl:for-each select="$input" separator=","&gt;...&lt;/xsl:for-each&gt;
+            
+            
+            
+            
+                Use record types to declare maps with statically known fields
+                as record(first as xs:string, middle as xs:string*, last as xs:string)
+            
+            
+                Declare function parameters using choice types
+                as (xs:date | xs:time | xs:dateTime)
+            
+            
+                Declare function parameters using enumeration types
+                as enum("red", "green", "blue")
+            
+            
+                Use path expressions to navigate trees of maps and arrays (JNodes)
+                $map/authors/*[1]/name/first ! string()
+            
+            
+                Iterate over arrays with an enhanced FLWOR expression
+                for member $m in $array ... return count($m)
+            
+            
+                Iterate over maps with an enhanced FLWOR expression
+                for key $key value $value in $map return `{$key} = {$value}`
+            
+            
+                Use computed node constructors in XPath
+                attribute #xlink:href {$target}
+            
+            
+                Use enhanced for and let expressions in XPath
+                for $x as xs:string at $pos in $X let $r := string-length($x) + $pos return $r + 1
+            
+            
+                Use destructuring map assignments
+                let {$height, $width} := $rectangle return $height × $width
+            
+            
+                Use destructuring array assignments
+                let [$first, $second, $third] := $array return ($first, $second, $third)
+            
+            
+            
+            
+                Read the specifications at http://qt4cg.org/,
+                and provide feedback at https://github.com/qt4cg/qtspecs
+            
         
-        <ol>
-            <!-- 1 to 10 -->
-            <li>
-                <p>Select an attribute, using a default value if absent</p>
-                <p><code>@discount otherwise 0</code></p>
-            </li>
-            <li>
-                <p>Use a conditional with no else branch</p>
-                <p><code>if (@discount) { " (reduced!)" }</code></p>
-            </li>
-            <li>
-                <p>Shorten <code>function</code> to <code>fn</code></p>
-                <p><code>for-each(//employee, fn($e){$e/@ssn})</code></p>
-            </li>
-            <li>
-                <p>Use the context item to simplify arity-1 functions</p>
-                <p><code>for-each(//employee, fn{@ssn})</code></p>
-            </li>
-            <li>
-                <p>Drop the <code>map</code> keyword from map constructors</p>
-                <p><code>let $map := {'x':1, 'y':2}</code></p>
-            </li>
-            <li>
-                <p>Include conditional entries in a map constructor</p>
-                <p><code>{'x': +@x, 'y': +@y, if (@z) {{'z': +@z}}} </code></p>
-            </li>
-            <li>
-                <p>Include multiple entries in a map constructor</p>
-                <p><code>{//data ! {@key : string(@value)}}</code></p>
-            </li>
-            <li>
-                <p>Build a map from a sequence</p>
-                <p><code>map:build(//employee, fn{@ssn})</code></p>
-            </li>
-            <li>
-                <p>Select a range of entries from a sequence</p>
-                <p><code>$input[1 to 5]</code></p>
-            </li>
-            <li>
-                <p>Start talking about <i>atomic items</i> rather than <i>atomic values</i></p>
-            </li>
-            
-            <!-- 11 to 20 -->
-            <li>
-                <p>Use QName literals</p>
-                <p><code>node-name($node) = #xml:space</code></p>
-            </li>
-            <li>
-                <p>Use underscore in numeric literals</p>
-                <p><code>let $million := 1_000_000</code></p>
-            </li>
-            <li>
-                <p>Use hex literals</p>
-                <p><code>let $mask := 0xffff</code></p>
-            </li>
-            <li>
-                <p>Use alternative names in an element test</p>
-                <p><code>//element(chapter|appendix)</code></p>
-            </li>
-            <li>
-                <p>Declare namespaces in XPath</p>
-                <p><code>declare namespace p = "http:/my.ns"; //p:table</code></p>
-            </li>
-            <li>
-                <p>Declare a default namespace in XPath</p>
-                <p><code>declare default element namespace "http:/my.ns"; //table</code></p>
-            </li>
-            <li>
-                <p>Use <code>##any</code> to match elements by local name, ignoring namespace</p>
-                <p><code>declare default element namespace "##any"; //table</code></p>
-            </li>
-            <li>
-                <p>Use string templates</p>
-                <p><code>`{$firstname} {$lastname}`</code></p>
-            </li>
-            <li>
-                <p>Use × and ÷ for multiplication and division</p>
-                <p><code>@price × 1.2</code></p>
-            </li>
-            <li>
-                <p>Convert untyped atomic values implicitly to decimal where appropriate</p>
-                <p><code>&lt;a&gt;1.1&lt;/a&gt; = 1.1</code></p>
-            </li>
-            
-            <!-- 21 to 30 -->
-            <li>
-                <p>Write <code>&lt;&lt;</code> and <code>&gt;&gt;</code> as <code>precedes</code> and <code>follows</code></p>
-                <p><code>para[. precedes $first-heading]</code></p>
-            </li>
-            <li>
-                <p>Compare nodes using <code>is-not</code></p>
-                <p><code>*[. is-not $first-heading]</code></p>
-            </li>
-            <li>
-                <p>Use the <code>=!&gt;</code> operator to apply a function to all items in a sequence</p>
-                <p><code>tokenize($str) =!&gt; upper-case()</code></p>
-            </li>
-            <li>
-                <p>Use the pipeline operator <code>-&gt;</code> to set the context item for an expression</p>
-                <p><code>$employee -&gt; `First name: {@first} Last name: {@last}`</code></p>
-            </li>
-            <li>
-                <p>Use a multi-character representation of "percent" in a decimal format</p>
-                <p><code>percent = "%:pc"</code></p>
-            </li>
-            <li>
-                <p>Start talking about <i>coercion rules</i> rather than <i>function conversion rules</i></p>
-            </li>
-            <li>
-                <p>Take advantage of down-casting in the coercion rules:</p>
-                <p><code>declare function my:f($x as xs:positiveInteger){$x + 1}; my:f(3)</code></p>
-            </li>
-            <li>
-                <p>Check that you always have a space after <code>"{#"</code> in a pragma</p>
-                <p><code>{# saxon:extension xxx #}</code></p>
-            </li>
-            <li>
-                <p>Take advantage of coercion in variable declarations</p>
-                <p><code>let $x as xs:decimal := @price</code></p>
-            </li>
-            <li>
-                <p>Declare functions with optional parameters</p>
-                <p><code>declare function my:f($x as xs:integer := 0)</code></p>
-            </li>
-            
-            <!-- 31 to 40 -->
-            <li>
-                <p>Use keywords in function calls</p>
-                <p><code>substring($value, start := 3)</code></p>
-            </li>
-            <li>
-                <p>Declare functions with no namespace prefix</p>
-                <p><code>declare function increment($x) {$x+1}; increment(42)</code></p>
-            </li>
-            <li>
-                <p>Serialize output as canonical XML</p>
-                <p><code>serialize($output, {'method': 'xml', canonical': true()})</code></p>
-            </li>
-            <li>
-                <p>Take advantage of the functions in the <b>bin</b> and <b>file</b> namespaces.
-                Previously defined in EXPath, these are now integrated into the specs.</p>
-            </li>
-            <li>
-                <p>Watch out for decimal=double comparisons. These are now compared as decimals, not as doubles</p>
-                <p><code>1.1e0 != 1.1</code></p>
-            </li>
-            <li>
-                <p>Convert arbitrary XML to JSON using the element-to-map function</p>
-                <p><code>element-to-map(doc('books.xml')/*)</code></p>
-            </li>
-            <li>
-                <p>Process CSV input files using the new <code>csv-doc</code> and <code>parse-csv</code> functions</p>
-                <p><code>csv-doc('data.csv')</code></p>
-            </li>
-            <li>
-                <p>Process HTML input files</p>
-                <p><code>parse-html('index.html')</code></p>
-            </li>
-            <li>
-                <p>Use higher-order functions knowing they will be there in all implementations. Higher-order
-                functions are no longer an optional feature.</p>
-            </li>
-            <li>
-                <p>Use the second argument of callback functions to get the position of an item in a sequence</p>
-                <p><code>filter($input, fn{$item, $pos){$pos gt 5})</code></p>
-            </li>
-            
-            <!-- 41 to 50 -->
-            <li>
-                <p>Get the last item of a sequence using foot()</p>
-                <p><code>foot($input)</code></p>
-            </li>
-            <li>
-                <p>Get selected items in a sequence using slice()</p>
-                <p><code>slice($in, start := 5, end := 2, step := -2)</code></p>
-            </li>
-            <li>
-                <p>Use the <code>deep-equal()</code> function with options to control the comparison</p>
-                <p><code>deep-equal($p1, $p2, {'whitespace': 'normalize'})</code></p>
-            </li>
-            <li>
-                <p>Use the <code>all-different()</code> function to check uniqueness of values</p>
-                <p><code>all-different(//test-case/@name)</code></p>
-            </li>
-            <li>
-                <p>Use the <code>highest()</code> and <code>lowest()</code> functions to find
-                the items with the minimum or maximum value of some property</p>
-                <p><code>highest(//employee, fn{@salary})</code></p>
-            </li>
-            <li>
-                <p>Use the <code>index-where()</code> function to find the positions of all
-                items with some property</p>
-                <p><code>index-where(*, fn{exists(self::h2)})</code></p>
-            </li>
-            <li>
-                <p>Use the <code>partition()</code> function to perform positional grouping</p>
-                <p><code>partition(*, fn($group, $next){exists($next[self::h2])})</code></p>
-            </li>
-            <li>
-                <p>Use the <code>sort-by()</code> function to sort a sequence using multiple sort keys</p>
-                <p><code>sort-by(//person, ({'key': fn{@last}}, {'key': fn{@date-of-birth}, 'order': 'descending'}))</code></p>
-            </li>
-            <li>
-                <p>Use the <code>sort-with()</code> function to sort using a comparator</p>
-                <p><code>sort-with($input, compare#2), </code></p>
-            </li>
-            <li>
-                <p>Use <code>take-while</code> to select items from a sequence until some condition is false</p>
-                <p><code>take-while(*, fn{not(self::h2)})</code></p>
-            </li>
-            
-            <!-- 51 to 60 -->
-            <li>
-                <p>Use <code>is-NaN</code> to check whether an input item is NaN</p>
-                <p><code>*[not(is-NaN(.))]</code></p>
-            </li>
-            <li>
-                <p>Use <code>round()</code> with an explicit rounding mode</p>
-                <p><code>round($value, precision := '2', mode := 'half-toward-zero')</code></p>
-            </li>
-            <li>
-                <p>Read integers in hexadecimal notation</p>
-                <p><code>parse-integer("feff", 16)</code></p>
-            </li>
-            <li>
-                <p>Format integers in hexadecimal notation</p>
-                <p><code>format-integer($value, '16^xxxxxxxx')</code></p>
-            </li>
-            <li>
-                <p>Supply inline options to <code>format-number()</code></p>
-                <p><code>format-number($value, {'decimal-separator': ',', 'grouping-separator': '.'})</code></p>
-            </li>
-            <li>
-                <p>Use new mathematical functions <code>math:e()</code>, <code>math:sinh()</code>, etc.</p>
-                <p><code>math:cosh(1)</code></p>
-            </li>
-            <li>
-                <p>Use the new collation for Unicode case-blind comparison</p>
-                <p><code>compare($a, $b, "http://www.w3.org/2005/xpath-functions/collation/unicode-case-insensitive")</code></p>
-            </li>
-            <li>
-                <p>Construct a collation with desired properties</p>
-                <p><code>compare($a, $b, collation({'lang': 'se', 'numeric': true()}))</code></p>
-            </li>
-            <li>
-                <p>Get the character with a given codepoint</p>
-                <p><code>char(0xA0)</code></p>
-            </li>
-            <li>
-                <p>Get the character with a given HTML entity name</p>
-                <p><code>char("nbsp")</code></p>
-            </li>
-            
-            <!-- 61 to 70 -->
-            <li>
-                <p>Get all the characters in a string</p>
-                <p><code>characters($input)</code></p>
-            </li>
-            <li>
-                <p>Use lookahead and lookbehind in regular expressions</p>
-                <p><code>matches($input, "Chapter(?=\s+[1-9])")</code></p>
-            </li>
-            <li>
-                <p>Match word boundaries in a string</p>
-                <p><code>matches($input, "\bthe\b")</code></p>
-            </li>
-            <li>
-                <p>Compute replacement values for matching substrings</p>
-                <p><code>replace($input, "(0-9)+", fn{.+1})</code></p>
-            </li>
-            <li>
-                <p>Split a URI into its parts, and recombine them</p>
-                <p><code>parse-uri(@href) =&gt; map:put('scheme', 'https') =&gt; build-uri()</code></p>
-            </li>
-            <li>
-                <p>Build a date or time from its components</p>
-                <p><code>build-dateTime({'year': $year, 'month': $month, 'day': $day})</code></p>
-            </li>
-            <li>
-                <p>Get the civil timezone offset at a given time and place</p>
-                <p><code>civil-timezone(current-dateTime(), 'Europe/London')</code></p>
-            </li>
-            <li>
-                <p>Use <code>@then</code> and <code>@else</code> on <code>xsl:if</code></p>
-                <p><code>&lt;xsl:if test="@type=1" then="@full-name" else="@abbreviation"/&gt;</code></p>
-            </li>
-            <li>
-                <p>Use <code>@select</code> on <code>xsl:when</code> and <code>xsl:otherwise</code></p>
-                <p><code>&lt;xsl:choose&gt;&lt;xsl:when test="@type=1" select="'gasket'"/&gt;&lt;/xsl:choose&gt;</code></p>
-            </li>
-            <li>
-                <p>Select options using the new <code>xsl:switch</code> instruction</p>
-                <p><code>&lt;xsl:switch select="@type"&gt;&lt;xsl:when test="1" select="'gasket'"/&gt;&lt;/xsl:switch&gt;</code></p>
-            </li>
-            
-            <!-- 71 to 80 -->
-            <li>
-                <p>Provide default values for XSLT function parameters</p>
-                <p><code>&lt;xsl:param name="options" as="map(*)" required="no" select="{}"/&gt;</code></p>
-            </li>
-            <li>
-                <p>Use XSLT functions in no namespace</p>
-                <p><code>&lt;xsl:function name="f"&gt;...&lt;/xsl:function&gt;</code></p>
-            </li>
-            <li>
-                <p>Use <code>xsl:text</code> in preference to <code>xsl:value-of</code></p>
-                <p><code>&lt;xsl:text&gt;{position()} of {last()}&lt;/xsl:text&gt;</code></p>
-            </li>
-            <li>
-                <p>Construct CDATA sections selectively in serialized output</p>
-                <p><code>&lt;xsl:text cdata="true" select="$example"/&gt;</code></p>
-            </li>
-            <li>
-                <p>Use capturing accumulators to capture a snapshot of an element as an accumulator value</p>
-                <p><code>&lt;xsl:accumulator-rule match="heading" phase="end" capture="yes" select="."/&gt;</code></p>
-            </li>
-            <li>
-                <p>Use explicit options to control XML parsing in the <code>doc()</code> and <code>document()</code> functions</p>
-                <p><code>doc("input.xml", {'dtd-validation': true()})</code></p>
-            </li>
-            <li>
-                <p>Build arrays in XSLT using <code>xsl:array</code> and <code>xsl:array-member</code></p>
-                <p><code>&lt;xsl:array select="1 to 5"/&gt;</code></p>
-            </li>
-            <li>
-                <p>Control the handling of duplicate keys in <code>xsl:map</code> with the new <code>duplicates</code> option</p>
-                <p><code>&lt;xsl:map duplicates="'use-last'"&gt;...&lt;/xsl:map&gt;</code></p>
-            </li>
-            <li>
-                <p>Stop JSON output displaying <code>/</code> as <code>\/</code></p>
-                <p><code>escape-solidus="no"</code></p>
-            </li>
-            <li>
-                <p>Serialize a sequence of maps in json-lines format (one JSON object per line, newline separated)</p>
-                <p><code>json-lines="yes"</code></p>
-            </li>
-            
-            <!-- 81 to 90 -->
-            <li>
-                <p>Use different XSD schemas for validating the input and output of a transformation</p>
-                <p><code>&lt;xsl:import-schema role="output"/&gt;, &lt;xsl:result-document schema-role="output"/&gt;</code></p>
-            </li>
-            <li>
-                <p>Write all the template rules for a given mode as children of the <code>xsl:mode</code> element</p>
-                <p><code>&lt;xsl:mode name="M"&gt;&lt;xsl:template match="A"/&gt;&lt;/xsl:mode&gt;</code></p>
-            </li>
-            <li>
-                <p>In an XSLT module, link to the main module to help IDEs locate all the variable and function declarations</p>
-                <p><code>&lt;xsl:transform main-module="main.xsl"&gt;...&lt;/xsl:transform&gt;</code></p>
-            </li>
-            <li>
-                <p>Use <code>xsl:note</code> elements for structured XSLT documentation</p>
-                <p><code>&lt;xsl:note&gt;This is a comment&lt;/xsl:note&gt;</code></p>
-            </li>
-            <li>
-                <p>Use <code>fixed-namespaces</code> to reduce the amount of boilerplate on the <code>xsl:transform</code> element</p>
-                <p><code>&lt;xsl:transform fixed-namespaces="#standard"&gt;...&lt;/xsl:transform&gt;</code></p>
-            </li>
-            <li>
-                <p>Take advantage of new features for simplified stylesheets. The outermost element
-                can now be any instruction, for example <code>xsl:result-document</code> or <code>xsl:map</code>.</p>    
-            </li>
-            <li>
-                <p>Make unprefixed name tests match elements in any namespace</p>
-                <p><code>xpath-default-namespace="##any"</code></p>
-            </li>
-            <li>
-                <p>Declare named item types</p>
-                <p><code>&lt;xsl:item-type name="binary" select="(xs:hexBinary | xs:base64Binary)"/&gt;</code></p>
-            </li>
-            <li>
-                <p>Use types in match patterns</p>
-                <p><code>match="~map(xs:string, xs:integer)</code></p>
-            </li>
-            <li>
-                <p>Use the <code>separator</code> attribute in <code>xsl:for-each</code></p>
-                <p><code>&lt;xsl:for-each select="$input" separator=","&gt;...&lt;/xsl:for-each&gt;</code></p>
-            </li>
-            
-            <!-- 91 to 100 -->
-            <li>
-                <p>Use record types to declare maps with statically known fields</p>
-                <p><code>as record(first as xs:string, middle as xs:string*, last as xs:string)</code></p>
-            </li>
-            <li>
-                <p>Declare function parameters using choice types</p>
-                <p><code>as (xs:date | xs:time | xs:dateTime)</code></p>
-            </li>
-            <li>
-                <p>Declare function parameters using enumeration types</p>
-                <p><code>as enum("red", "green", "blue")</code></p>
-            </li>
-            <li>
-                <p>Use path expressions to navigate trees of maps and arrays (JNodes)</p>
-                <p><code>$map/authors/*[1]/name/first ! string()</code></p>
-            </li>
-            <li>
-                <p>Iterate over arrays with an enhanced FLWOR expression</p>
-                <p><code>for member $m in $array ... return count($m)</code></p>
-            </li>
-            <li>
-                <p>Iterate over maps with an enhanced FLWOR expression</p>
-                <p><code>for key $key value $value in $map return `{$key} = {$value}`</code></p>
-            </li>
-            <li>
-                <p>Use computed node constructors in XPath</p>
-                <p><code>attribute #xlink:href {$target}</code></p>
-            </li>
-            <li>
-                <p>Use enhanced <code>for</code> and <code>let</code> expressions in XPath</p>
-                <p><code>for $x as xs:string at $pos in $X let $r := string-length($x) + $pos return $r + 1</code></p>
-            </li>
-            <li>
-                <p>Use destructuring map assignments</p>
-                <p><code>let {$height, $width} := $rectangle return $height × $width</code></p>
-            </li>
-            <li>
-                <p>Use destructuring array assignments</p>
-                <p><code>let [$first, $second, $third] := $array return ($first, $second, $third)</code></p>
-            </li>
-            
-            <!-- 101 -->
-            <li>
-                <p>Read the specifications at <a href="http://qt4cg.org/">http://qt4cg.org/</a>,
-                and provide feedback at <a href="https://github.com/qt4cg/qtspecs">https://github.com/qt4cg/qtspecs</a></p>
-            </li>
-        </ol>
    
-    </main><footer><div class="prev-uri"><a href="/announcements/2026/05/21-saxonica.html">Saxonica User Group Meeting</a></div><div class="next-uri"><a href="/announcements/2026/05/saxon-13.0.html">Announcing Saxon 13.0!</a></div></footer></body>
-</html>
+    
