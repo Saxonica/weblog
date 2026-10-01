@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Intel-based Mac products</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2026-10-01T17:15:00" />
+  <link rel="shortcut icon" href="/img/scicon-032.png" type="image/png" />
+</head>
+<body>
+<h1>The future of Intel-based Mac products</h1>
+
+<p>When Apple discontinued making computers based on
+the Intel chipset, in favor of their own Apple silicon chips, it was clear that the days
+for Intel-based Mac products were numbered.</p>
+
+<p>The previous macOS release, macOS 26, “Tahoe”, was the last version of macOS
+that could be installed on an Intel Mac and, although macOS 27, “Golden Gate”, can
+use “Rosetta” to support Intel-based applications, Rosetta will be
+removed in macOS 28.</p>
+
+<p>It’s already the case that some significant tools, like <a
+href="https://brew.sh/">Homebrew</a>, have discontinued support for Intel-based
+Macs. And recently,
+<a href="https://www.graalvm.org/latest/getting-started/macos/">GraalVM</a> 
+followed suit.</p>
+
+<p>This puts our SaxonC product line in something of a bind. Ideally, we’d time
+any change in platforms or architectures to line up with a full release. But
+GraalVM’s rather abrupt decision to discontinue support for Intel-based Macs
+means we either have to avoid upgrading the version of GraalVM that we use
+(sacrificing potential performance gains and possibly leaving systems
+vulnerable), or we have to acknowledge that we can no longer distribute SaxonC
+products (including Python and PHP) for Intel-based Macs.</p>
+
+<p>The current plan is that Saxon 12 will continue to support Intel-based Macs,
+but that could change if it became necessary to upgrade GraalVM for that
+release. In some near-term Saxon 13 release, we’ll be upgrading GraalVM and
+discontinuing support for Intel-based Macs.</p>
+
+<p>Not because we want to, but because there’s no practical way to continue
+delivering it.</p>
+
+</body>
+</html>
+
