@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Announcing Saxon 13.1</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2026-10-15T18:00:00" />
+</head>
+<body>
+<h1>Announcing Saxon 13.1!</h1>
+
+<p>The Saxon 13.1 maintenance release has been published. This is a maintenance
+release for Java, C#, C/C++, PHP, and Python that fixes a number of
+issues that have been raised since 13.0 was released.</p>
+
+<p>Saxon 13.1 was released on 15 October 2026. This release has been uploaded to the
+usual locations on the Saxonica website, GitHub, and Maven, PyPi, and NuGet.
+SaxonCS 13.1 is built with .NET 10.</p>
+
+<p>Note that this Saxon 13.1 maintenance release <em>does not</em> try to track
+recent changes in the
+<a href="https://qt4cg.org/">4.0 language specifications</a>.
+What’s implemented and what’s not implemented is
+largely unchanged from Saxon 13.0, though a few minor bugs may have been fixed.
+</p>
+<p>As the 4.0 language features
+develop, there will be periods when implementation and specification are
+out-of-sync.
+See
+<a href="https://www.saxonica.com/documentation13/index.html#!v4extensions">QT4 extensions</a>
+for more information about exactly what is implemented in Saxon 13.1.
+</p>
+
+<p>For a list of the issues resolved in this release, please visit the issue trackers
+for
+<a href="https://saxonica.planio.com/projects/saxon/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f[]=status_id&amp;op[status_id]=c&amp;f[]=cf_4&amp;op[cf_4]=%3D&amp;v[cf_4][]=13.1&amp;f[]=&amp;c[]=tracker&amp;c[]=status&amp;c[]=priority&amp;c[]=subject&amp;c[]=assigned_to&amp;c[]=updated_on&amp;group_by=&amp;t[]=">SaxonJ and SaxonCS</a> or
+<a href="https://saxonica.planio.com/projects/saxon-c/issues?utf8=%E2%9C%93&amp;set_filter=1&amp;sort=id%3Adesc&amp;f[]=status_id&amp;op[status_id]=c&amp;f[]=cf_4&amp;op[cf_4]=%3D&amp;v[cf_4][]=13.1&amp;f[]=&amp;c[]=tracker&amp;c[]=status&amp;c[]=priority&amp;c[]=subject&amp;c[]=assigned_to&amp;c[]=updated_on&amp;group_by=&amp;t[]=">SaxonC</a>
+on the Saxon support site.
+</p>
+
+<p>Download products:</p>
+
+<ul>
+<li>Binaries for PE and EE are available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>SaxonJ-HE is available on the
+<a href="https://central.sonatype.com/artifact/net.sf.saxon/Saxon-HE/13.1">Maven Central
+repository</a>.
+</li>
+<li>SaxonJ-HE, PE, and EE can also be found on our
+<a href="https://dev.saxonica.com/maven/">experimental Maven repository</a>.
+</li>
+<li>SaxonC releases for HE, PE, and EE are also available from our
+<a href="http://www.saxonica.com/download/download_page.xml">download pages</a>.
+</li>
+<li>Python wheels for SaxonC (HE, PE, and EE) are available from
+<a href="https://pypi.org/user/saxonica/">PyPI</a>.
+</li>
+<li>SaxonCS-EE is available on
+<a href="https://www.nuget.org/packages/SaxonCS-EE">NuGet</a>;
+SaxonCS-HE is also available on
+<a href="https://www.nuget.org/packages/SaxonCS-HE">NuGet</a>.
+</li>
+<li>Saxon-HE is available from our open source
+<a href="https://github.com/Saxonica/Saxon-HE/">GitHub repository</a>.
+The GitHub repository also provides source code for those who need it.
+</li>
+</ul>
+
+<p>For more details, please consult
+<a href="https://www.saxonica.com/documentation12">the documentation</a>.
+</p>
+
+<h2>Issues resolved in SaxonJ and SaxonCS</h2>
+
+<p>This release fixes more than sixty issues in SaxonJ and SaxonCS:</p>
+
+<ul class="isslist">
+<li><a href="https://saxonica.plan.io/issues/7274">7274</a>
+    NullPointerException when -TP (timing profile) is requested using the default stylesheet</li>
+<li><a href="https://saxonica.plan.io/issues/7269">7269</a>
+    (and <a href="https://saxonica.plan.io/issues/7138">7138</a>
+     and <a href="https://saxonica.plan.io/issues/7134">7134</a>)
+    Correct the behavior of the JAXP allowed protocols configuration with respect to the empty string</li>
+<li><a href="https://saxonica.plan.io/issues/7263">7263</a>
+    Negating Long.MIN_VALUE fails with StackOverflow exception</li>
+<li><a href="https://saxonica.plan.io/issues/7262">7262</a>
+    Improvements to the samples for schema-aware XQJ</li>
+<li><a href="https://saxonica.plan.io/issues/7260">7260</a>
+    NullPointerException in NodeInfo.children()</li>
+<li><a href="https://saxonica.plan.io/issues/7258">7258</a>
+    Saxon 13 XSLT 4.0: fixed-namespaces is ignored on an imported or included module</li>
+<li><a href="https://saxonica.plan.io/issues/7257">7257</a>
+    SaxonJ-HE 13.0 with a xsl:template match which contains a union, is only tracing calls for the first item in the union</li>
+<li><a href="https://saxonica.plan.io/issues/7250">7250</a>
+    Crash in fn:replace() when using 4.0 if the callback function has the wrong signature</li>
+<li><a href="https://saxonica.plan.io/issues/7246">7246</a>
+    fn:transform() called from XQuery fails with "Unable to retrieve URI .."</li>
+<li><a href="https://saxonica.plan.io/issues/7231">7231</a>
+    SaxonCS-HE 13 gives error when using fn:current-output-uri with xsl:result-document</li>
+<li><a href="https://saxonica.plan.io/issues/7224">7224</a>
+    ClassCastException caused by incorrect result of <code>instance of</code></li>
+<li><a href="https://saxonica.plan.io/issues/7219">7219</a>
+    file:append-text-lines() fails to close the file</li>
+<li><a href="https://saxonica.plan.io/issues/7216">7216</a>
+    Named xsl:result-document leaks primary FileOutputStream on Windows</li>
+<li><a href="https://saxonica.plan.io/issues/7212">7212</a>
+    (and <a href="https://saxonica.plan.io/issues/7179">7179</a>)
+    SaxonCS-HE 13 dependency vulnerabilities</li>
+<li><a href="https://saxonica.plan.io/issues/7207">7207</a>
+    SaxonCS raises SIGILL 132 on older systems</li>
+<li><a href="https://saxonica.plan.io/issues/7197">7197</a>
+    SaxonCS-HE 13 on .NET keeps files loaded by document() locked</li>
+<li><a href="https://saxonica.plan.io/issues/7194">7194</a>
+    SaxonCS doesn't resolve UNC paths correctly</li>
+<li><a href="https://saxonica.plan.io/issues/7193">7193</a>
+    Add Automatic-Module-Name to Saxon-HE jar manifest</li>
+<li><a href="https://saxonica.plan.io/issues/7192">7192</a>
+    Saxon13 fails when for-each-group sorts by current-grouping-key() in a multi-mode template</li>
+<li><a href="https://saxonica.plan.io/issues/7191">7191</a>
+    Optimizer error with <code>to</code> operator?</li>
+<li><a href="https://saxonica.plan.io/issues/7186">7186</a>
+    Internal error evaluating template rule</li>
+<li><a href="https://saxonica.plan.io/issues/7165">7165</a>
+    A valid document must have only one child element</li>
+<li><a href="https://saxonica.plan.io/issues/7156">7156</a>
+    Bare xsl:result-document leaks a FileOutputStream on Windows</li>
+<li><a href="https://saxonica.plan.io/issues/7155">7155</a>
+    NullPointerException in NodePredicate.test(net.sf.saxon.om.GNode)</li>
+<li><a href="https://saxonica.plan.io/issues/7150">7150</a>
+    Error in XML Catalog handling</li>
+<li><a href="https://saxonica.plan.io/issues/7148">7148</a>
+    SaxonCS-HE 13.0 unintentionally includes ICU4N</li>
+<li><a href="https://saxonica.plan.io/issues/7145">7145</a>
+    In SaxonCS-13, old schema API fails with IllegalStateException</li>
+<li><a href="https://saxonica.plan.io/issues/7144">7144</a>
+    SaxonCS: format-number() does not respect picture if it ends with '#'</li>
+<li><a href="https://saxonica.plan.io/issues/7143">7143</a>
+    random-number-generator() is not really deterministic</li>
+<li><a href="https://saxonica.plan.io/issues/7142">7142</a>
+    SaxonCS-HE 13 incorrectly parses numeric values</li>
+<li><a href="https://saxonica.plan.io/issues/7140">7140</a>
+    Incorrect result from bin:shift()</li>
+<li><a href="https://saxonica.plan.io/issues/7139">7139</a>
+    Streamed grouping XSLT crashes when not finding a grouping key</li>
+<li><a href="https://saxonica.plan.io/issues/7136">7136</a>
+    Saxon-HE 13 XQuery NullPointerException: Cannot load from object array because "collators" is null</li>
+<li><a href="https://saxonica.plan.io/issues/7135">7135</a>
+    Unreported type error in general comparison</li>
+<li><a href="https://saxonica.plan.io/issues/7133">7133</a>
+    SaxonCS-HE 13: surprising behavior on XsltTransformer.MessageListener</li>
+<li><a href="https://saxonica.plan.io/issues/7128">7128</a>
+    Error with XInclude enabled, in Saxon 13.0</li>
+<li><a href="https://saxonica.plan.io/issues/7127">7127</a>
+    Saxon 13.0 doesn't use XML catalog's public ID as expected</li>
+<li><a href="https://saxonica.plan.io/issues/7118">7118</a>
+    ArrayIndexOutOfBoundsException in TwineBuilder.java (using non-BMP characters)</li>
+<li><a href="https://saxonica.plan.io/issues/7111">7111</a>
+    Saxon 13.0 dereferences XQuery module namespace URI before using location hint</li>
+<li><a href="https://saxonica.plan.io/issues/7110">7110</a>
+    NullPointerException in ResourceResolverWrappingLSResourceResolver</li>
+<li><a href="https://saxonica.plan.io/issues/7102">7102</a>
+    apply-templates in streaming mode fails when multithreading</li>
+<li><a href="https://saxonica.plan.io/issues/7100">7100</a>
+    SaxonCS-HE fails with MVID mismatch in ICU4N resources under some circumstances.</li>
+<li><a href="https://saxonica.plan.io/issues/7098">7098</a>
+    The NineML jars are unnecessarily included in the Saxon-HE release</li>
+<li><a href="https://saxonica.plan.io/issues/7097">7097</a>
+    ClassCastException in Saxon 13</li>
+<li><a href="https://saxonica.plan.io/issues/7049">7049</a>
+    When used in a push context, fn:unparsed-text ignores the normalize-newlines option</li>
+<li><a href="https://saxonica.plan.io/issues/6899">6899</a>
+    Multiple document validation in SaxonCS</li>
+<li><a href="https://saxonica.plan.io/issues/6872">6872</a>
+    NPE when attempting to compile a recursive XSD</li>
+<li><a href="https://saxonica.plan.io/issues/6857">6857</a>
+    Saxon does not stop when listener warning throws</li>
+</ul>
+
+<p>Notes on the SaxonCS release: SaxonCS 13.1 requires .NET 10.
+We’ve also changed the way that the command line tools are packaged.
+Previously, a single, monolithic executable was produced. This seems to have
+been the source of <a href="https://saxonica.planio.com/issues/7100">at least one</a> bug,
+so we’ve disabled that feature.
+</p>
+
+
+<h2>SaxonC</h2>
+
+<p>This release fixes about ten issues in SaxonC:</p>
+
+<ul class="isslist">
+<li><a href="https://saxonica.plan.io/issues/7132">7132</a>
+    The python samples readme for running pytest in Saxon 13 is incorrect.</li>
+<li><a href="https://saxonica.plan.io/issues/7113">7113</a>
+    Failed to build SaxonC PHP extension: no rule to make target php8_saxon.cpp</li>
+<li><a href="https://saxonica.plan.io/issues/7107">7107</a>
+    Typo in name of PyXsdSchema method export_compoments</li>
+<li><a href="https://saxonica.plan.io/issues/7095">7095</a>
+    Trying to use fn:invisible-xml in XSLT 4.0 with SaxonC 13 EE fails</li>
+<li><a href="https://saxonica.plan.io/issues/7094">7094</a>
+    SaxonC 13 Transform.exe doesn't handle and report exceptions during stylesheet compilation cleanly</li>
+<li><a href="https://saxonica.plan.io/issues/7092">7092</a>
+    SaxonC 13 HE Query.exe doesn't handle error in XQuery cleanly as SaxonC 12.9 HE</li>
+<li><a href="https://saxonica.plan.io/issues/6921">6921</a>
+    Comparison for unsigned integer incorrect</li>
+<li><a href="https://saxonica.plan.io/issues/6919">6919</a>
+    XdmMap::containsKey incorrect check</li>
+</ul>
+
+<p>If you encounter any issues with Saxon 13.1, please
+<a href="https://saxonica.plan.io/projects/saxon/issues">report them</a>
+on our issue tracker.</p>
+
+</body>
+</html>
