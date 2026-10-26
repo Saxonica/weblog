@@ -1,0 +1,32 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>SaxonC eMudhra advisory</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2026-10-26T11:00:00">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/announcements.css"><meta content="Saxonica announcements" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="The latest news from Saxonica." property="og:description"><meta content="https://blog.saxonica.com/announcements/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="SaxonC eMudhra advisory" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/announcements/">Saxonica announcements</a></h1><div class="tagline">The latest news from Saxonica</div></div><h2>SaxonC eMudhra advisory</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2026-10"><span class="date" time="2026-10-26T11:00:00">October&nbsp;26, 2026 at 11:00a.m.</span></a></div></header><main>
+
+
+<p>Oracle
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-91403.html">has
+announced</a> that GraalVM, along with the JDK, have been shipping with a
+default trust store that includes the compromised eMudhra certificates. The
+native-image feature we use to build SaxonC integrates that trust store into the
+SaxonC library, so recent versions of SaxonC (C, C++, Python, and PHP) have also
+shipped with the compromised certificates.</p>
+
+<p>The compromised trust store applies to SaxonC releases starting with 12.6 up
+to and including 13.1. It does not affect SaxonC 12.5 or earlier releases and it
+does not apply to our Java or C# products. Users should take mitigating steps
+to ensure that they’re using Java and C# runtimes that have been patched.</p>
+
+<p>Loading a different trust store in the host language runtime, for example,
+with the Python Requests library, or simply updating the operating system
+Certificate Authorities bundle is insufficient to mitigate the problem.</p>
+
+<p>We are working to build a patch release that removes the eMudhra
+compromised certificates from the default trust store in SaxonC.</p>
+
+</main><footer><div class="prev-uri"><a href="/announcements/2026/10/saxon-13.1.html">Announcing Saxon 13.1!</a></div></footer></body>
+</html>

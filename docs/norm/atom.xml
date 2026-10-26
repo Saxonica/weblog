@@ -1,4 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2026-10-15T16:12:09.701933198Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>Announcing Saxon 13.1!</title><link href="https://blog.saxonica.com/announcements/2026/10/saxon-13.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/saxon-13.1.html</id><published>2026-10-15T18:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/saxon-13.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2026-10-26T11:00:11.666494448Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>SaxonC eMudhra advisory</title><link href="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/26-emudhra.html</id><published>2026-10-26T11:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html"><div xmlns="http://www.w3.org/1999/xhtml">
+
+
+<p>Oracle
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-91403.html">has
+announced</a> that GraalVM, along with the JDK, have been shipping with a
+default trust store that includes the compromised eMudhra certificates. The
+native-image feature we use to build SaxonC integrates that trust store into the
+SaxonC library, so recent versions of SaxonC (C, C++, Python, and PHP) have also
+shipped with the compromised certificates.</p>
+
+<p>The compromised trust store applies to SaxonC releases starting with 12.6 up
+to and including 13.1. It does not affect SaxonC 12.5 or earlier releases and it
+does not apply to our Java or C# products. Users should take mitigating steps
+to ensure that they’re using Java and C# runtimes that have been patched.</p>
+
+<p>Loading a different trust store in the host language runtime, for example,
+with the Python Requests library, or simply updating the operating system
+Certificate Authorities bundle is insufficient to mitigate the problem.</p>
+
+<p>We are working to build a patch release that removes the eMudhra
+compromised certificates from the default trust store in SaxonC.</p>
+
+</div></content></entry><entry><title>Announcing Saxon 13.1!</title><link href="https://blog.saxonica.com/announcements/2026/10/saxon-13.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/saxon-13.1.html</id><published>2026-10-15T18:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/saxon-13.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
 <h1>Announcing Saxon 13.1!</h1>
 
 <p>The Saxon 13.1 maintenance release has been published. This is a maintenance
@@ -2430,35 +2453,5 @@ either.</p>
 and we’ve identified a slightly larger handful that we’d like to
 consider fixing before we ship a SaxonJS 2.6 release. But we will ship
 it, as quickly as practical.</p>
-
-</div></content></entry><entry><title>Looking forward</title><link href="https://blog.saxonica.com/norm/2023/10/02-saxonica.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/02-saxonica.html</id><published>2023-10-02T09:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/02-saxonica.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>As <a href="/mike/2023/10/eot.html">Mike says</a>, today is a big
-day. It is an honour to be able to announce that I am taking on a new
-role as CEO of Saxonica.</p>
-
-<p>Let me start by offering huge congratulations and thanks to Mike and
-Penny Kay, whose talent, commitment, and hard work have made Saxonica
-into the successful company it is today.</p>
-
-<p>I’m happy (and somewhat relieved!) to say that the Saxonica team
-will continue to benefit from Mike’s experience for the foreseeable
-future, as he moves to a new role as Director of Innovation. Working
-part-time, Mike will continue to support customers and colleagues
-alike, as well as ensuring that his in-depth knowledge of our code
-base continues to be passed on to the rest of the Saxonica engineering
-team, myself included!</p>
-
-<p>Before I had the opportunity to join the company in 2020, I was
-already an enthusiastic part of Saxonica’s user base. I know how
-important our products are to our users; I <em>am</em> one of our users!</p>
-
-<p>Working with this team of talented people to develop software that
-makes a real contribution to the XML community has been a privilege.
-Becoming Saxonica’s CEO is an even greater one. I am committed to
-seeing Saxonica grow and prosper into the next decades, continuing the
-reputation for excellence, innovation, and community-mindedness that
-Mike has worked so hard to establish.</p>
 
 </div></content></entry></feed>
