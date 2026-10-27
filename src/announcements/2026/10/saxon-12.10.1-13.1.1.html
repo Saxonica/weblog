@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>SaxonC 12.10.1 and Saxon 13.1.1</title>
+  <meta name="author" content="Norm Tovey-Walsh" />
+  <meta name="pubdate" content="2026-10-27T14:00:00" />
+</head>
+<body>
+<h1>SaxonC 12.10.1 and SaxonC 13.1.1</h1>
+
+<p>SaxonC <a href="26-emudhra.html">is affected</a>
+by the eMudhra CA compromise, because it contains its own
+CA Cert bundle, separate from the operating system bundle and language-specific
+mechanisms like Python’s <code>certifi</code>.</p>
+
+<p>SaxonC is built with GraalVM, against which Oracle have issued the
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-91403.html">CVE-2026-91403</a>
+and
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-114820.html">CVE-2026-114820</a>
+advisories.</p>
+
+<p>These relate to the compromised eMudhra certificates. The 12.10.1 and 13.1.1
+releases adopt the mitigation recommended in CVE-2026-114820: they have been
+rebuilt with updates that remove the set of impacted root CA certificates
+related to eMudhra.</p>
+
+<p>Users should upgrade from vulnerable versions immediately.</p>
+
+<p>Vulnerable versions are SaxonC 12.6 to, and including, 12.10, 13.0, and 13.1.
+Versions 12.5 and prior are not vulnerable because they predate the compromised
+certificates.</p>
+
+<p>If you cannot upgrade, and your workflows should not access remote
+URIs (through <code>&lt;xsl:import&gt;</code>, <code>fn:doc()</code>,
+or other mechanisms), then you can
+prevent HTTP/HTTPS resource access by restricting Saxon with the
+<code>ALLOWED_PROTOCOLS</code> configuration option. See the documentation
+for <a href="https://www.saxonica.com/saxon-c/documentation13/index.html#!configuration"
+>configuration features</a>.</p>
+
+<p>If you must access remote HTTPS URIs, then no mitigation is possible, and you
+should upgrade as soon as possible.</p>
+
+<p>Note that this vulnerability does not apply to the Saxon Java or C# products, only
+SaxonC (C, C++, Python, and PHP) releases are affected.
+Java and C# users should ensure that they’re using Java and C#
+runtimes that have been patched to mitigate the vulnerability.
+</p>
+
+</body>
+</html>
