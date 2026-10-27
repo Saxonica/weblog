@@ -1,4 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2026-10-26T11:00:11.666494448Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>SaxonC eMudhra advisory</title><link href="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/26-emudhra.html</id><published>2026-10-26T11:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxon Chronicles</title><subtitle>(in a Norman style)</subtitle><link href="https://blog.saxonica.com/norm/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom/norm.xml" rel="self"/><id>https://blog.saxonica.com/norm/atom.xml</id><updated>2026-10-27T14:01:24.665710489Z</updated><author><name>Norm Tovey-Walsh</name></author><entry><title>SaxonC 12.10.1 and SaxonC 13.1.1</title><link href="https://blog.saxonica.com/announcements/2026/10/saxon-12.10.1-13.1.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/saxon-12.10.1-13.1.1.html</id><published>2026-10-27T14:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/saxon-12.10.1-13.1.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>SaxonC 12.10.1 and SaxonC 13.1.1</h1>
+
+<p>SaxonC <a href="26-emudhra.html">is affected</a>
+by the eMudhra CA compromise, because it contains its own
+CA Cert bundle, separate from the operating system bundle and language-specific
+mechanisms like Python’s <code>certifi</code>.</p>
+
+<p>SaxonC is built with GraalVM, against which Oracle have issued the
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-91403.html">CVE-2026-91403</a>
+and
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-114820.html">CVE-2026-114820</a>
+advisories.</p>
+
+<p>These relate to the compromised eMudhra certificates. The 12.10.1 and 13.1.1
+releases adopt the mitigation recommended in CVE-2026-114820: they have been
+rebuilt with updates that remove the set of impacted root CA certificates
+related to eMudhra.</p>
+
+<p>Users should upgrade from vulnerable versions immediately.</p>
+
+<p>Vulnerable versions are SaxonC 12.6 to, and including, 12.10, 13.0, and 13.1.
+Versions 12.5 and prior are not vulnerable because they predate the compromised
+certificates.</p>
+
+<p>If you cannot upgrade, and your workflows should not access remote
+URIs (through <code>&lt;xsl:import&gt;</code>, <code>fn:doc()</code>,
+or other mechanisms), then you can
+prevent HTTP/HTTPS resource access by restricting Saxon with the
+<code>ALLOWED_PROTOCOLS</code> configuration option. See the documentation
+for <a href="https://www.saxonica.com/saxon-c/documentation13/index.html#!configuration">configuration features</a>.</p>
+
+<p>If you must access remote HTTPS URIs, then no mitigation is possible, and you
+should upgrade as soon as possible.</p>
+
+<p>Note that this vulnerability does not apply to the Saxon Java or C# products, only
+SaxonC (C, C++, Python, and PHP) releases are affected.
+Java and C# users should ensure that they’re using Java and C#
+runtimes that have been patched to mitigate the vulnerability.
+</p>
+
+</div></content></entry><entry><title>SaxonC eMudhra advisory</title><link href="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/26-emudhra.html</id><published>2026-10-26T11:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>Oracle
@@ -2420,38 +2461,5 @@ For more details, please consult
 <p>If you encounter any issues with SaxonJS 2.6, please
 <a href="https://saxonica.plan.io/projects/saxon-js/issues">report them</a>
 on our issue tracker.</p>
-
-</div></content></entry><entry><title>SaxonJS 2.5 ** NO LONGER SUPPORTED **</title><link href="https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html</id><published>2023-10-06T13:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2023/10/06-no-longer-supported.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p><a href="https://en.wikipedia.org/wiki/TL;DR">TL;DR</a>, you can
-ignore the message.</p>
-
-<p>Several folks have noticed that, since about yesterday, if you run
-the SaxonJS 2.5 <code>xslt3</code> Node.js command line processor, it
-prints a scary “no longer supported” message.</p>
-
-<p>Sorry. Our bad. The message is only informative and has no effect
-on the performance of the processor.</p>
-
-<p>We support SaxonJS releases for at least a year and a while back
-(far enough back that I can’t easily determine when from the
-repository history), we confidently assumed that we’d always do a
-release at least once a year. So when you got that message, it was to
-encourage you to upgrade.</p>
-
-<p>Except this year, we published a whole bunch of other releases,
-embarked on SaxonJS 3.0, shifted our web infrastructure around, and
-did a bunch of other things. What we didn’t do was publish SaxonJS 3.0
-within a year, and because we were heads-down on that, we didn’t
-notice that we hadn’t published a SaxonJS 2.6 release within a year
-either.</p>
-
-<p>(It’s all a little embarrassing.)</p>
-
-<p>We’ve fixed a handful of bugs in SaxonJS 2.5 since we shipped it,
-and we’ve identified a slightly larger handful that we’d like to
-consider fixing before we ship a SaxonJS 2.6 release. But we will ship
-it, as quickly as practical.</p>
 
 </div></content></entry></feed>

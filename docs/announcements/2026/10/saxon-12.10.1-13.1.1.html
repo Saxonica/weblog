@@ -1,0 +1,50 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>SaxonC 12.10.1 and Saxon 13.1.1</title>
+  <meta name="author" content="Norm Tovey-Walsh">
+  <meta name="pubdate" content="2026-10-27T14:00:00">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/announcements.css"><meta content="Saxonica announcements" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="The latest news from Saxonica." property="og:description"><meta content="https://blog.saxonica.com/announcements/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="SaxonC 12.10.1 and Saxon 13.1.1" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="norm-tovey-walsh"><header><div class="banner"><h1><a href="/announcements/">Saxonica announcements</a></h1><div class="tagline">The latest news from Saxonica</div></div><h2>SaxonC 12.10.1 and SaxonC 13.1.1</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#norm-tovey-walsh">Norm Tovey-Walsh</a></span><span class="on"> on </span><a href="/authors.html#norm-tovey-walsh-D2026-10"><span class="date" time="2026-10-27T14:00:00">October&nbsp;27, 2026 at 02:00p.m.</span></a></div></header><main>
+
+
+<p>SaxonC <a href="26-emudhra.html">is affected</a>
+by the eMudhra CA compromise, because it contains its own
+CA Cert bundle, separate from the operating system bundle and language-specific
+mechanisms like Python’s <code>certifi</code>.</p>
+
+<p>SaxonC is built with GraalVM, against which Oracle have issued the
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-91403.html">CVE-2026-91403</a>
+and
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-114820.html">CVE-2026-114820</a>
+advisories.</p>
+
+<p>These relate to the compromised eMudhra certificates. The 12.10.1 and 13.1.1
+releases adopt the mitigation recommended in CVE-2026-114820: they have been
+rebuilt with updates that remove the set of impacted root CA certificates
+related to eMudhra.</p>
+
+<p>Users should upgrade from vulnerable versions immediately.</p>
+
+<p>Vulnerable versions are SaxonC 12.6 to, and including, 12.10, 13.0, and 13.1.
+Versions 12.5 and prior are not vulnerable because they predate the compromised
+certificates.</p>
+
+<p>If you cannot upgrade, and your workflows should not access remote
+URIs (through <code>&lt;xsl:import&gt;</code>, <code>fn:doc()</code>,
+or other mechanisms), then you can
+prevent HTTP/HTTPS resource access by restricting Saxon with the
+<code>ALLOWED_PROTOCOLS</code> configuration option. See the documentation
+for <a href="https://www.saxonica.com/saxon-c/documentation13/index.html#!configuration">configuration features</a>.</p>
+
+<p>If you must access remote HTTPS URIs, then no mitigation is possible, and you
+should upgrade as soon as possible.</p>
+
+<p>Note that this vulnerability does not apply to the Saxon Java or C# products, only
+SaxonC (C, C++, Python, and PHP) releases are affected.
+Java and C# users should ensure that they’re using Java and C#
+runtimes that have been patched to mitigate the vulnerability.
+</p>
+
+</main><footer><div class="prev-uri"><a href="/announcements/2026/10/26-emudhra.html">SaxonC eMudhra advisory</a></div></footer></body>
+</html>

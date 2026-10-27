@@ -1,4 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2026-10-26T11:00:13.178734595Z</updated><entry><title>SaxonC eMudhra advisory</title><link href="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/26-emudhra.html</id><published>2026-10-26T11:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet href="/xslt/atom.xsl" type="text/xsl"?><feed xmlns="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xml:lang="EN-us"><title>Saxonica Weblogs</title><link href="https://blog.saxonica.com/" rel="alternate" type="text/html"/><link href="https://blog.saxonica.com/atom.xml" rel="self"/><id>https://blog.saxonica.com/atom.xml</id><updated>2026-10-27T14:01:26.875127254Z</updated><entry><title>SaxonC 12.10.1 and SaxonC 13.1.1</title><link href="https://blog.saxonica.com/announcements/2026/10/saxon-12.10.1-13.1.1.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/saxon-12.10.1-13.1.1.html</id><published>2026-10-27T14:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/saxon-12.10.1-13.1.1.html"><div xmlns="http://www.w3.org/1999/xhtml">
+<h1>SaxonC 12.10.1 and SaxonC 13.1.1</h1>
+
+<p>SaxonC <a href="26-emudhra.html">is affected</a>
+by the eMudhra CA compromise, because it contains its own
+CA Cert bundle, separate from the operating system bundle and language-specific
+mechanisms like Python’s <code>certifi</code>.</p>
+
+<p>SaxonC is built with GraalVM, against which Oracle have issued the
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-91403.html">CVE-2026-91403</a>
+and
+<a href="https://www.oracle.com/security-alerts/alert-cve-2026-114820.html">CVE-2026-114820</a>
+advisories.</p>
+
+<p>These relate to the compromised eMudhra certificates. The 12.10.1 and 13.1.1
+releases adopt the mitigation recommended in CVE-2026-114820: they have been
+rebuilt with updates that remove the set of impacted root CA certificates
+related to eMudhra.</p>
+
+<p>Users should upgrade from vulnerable versions immediately.</p>
+
+<p>Vulnerable versions are SaxonC 12.6 to, and including, 12.10, 13.0, and 13.1.
+Versions 12.5 and prior are not vulnerable because they predate the compromised
+certificates.</p>
+
+<p>If you cannot upgrade, and your workflows should not access remote
+URIs (through <code>&lt;xsl:import&gt;</code>, <code>fn:doc()</code>,
+or other mechanisms), then you can
+prevent HTTP/HTTPS resource access by restricting Saxon with the
+<code>ALLOWED_PROTOCOLS</code> configuration option. See the documentation
+for <a href="https://www.saxonica.com/saxon-c/documentation13/index.html#!configuration">configuration features</a>.</p>
+
+<p>If you must access remote HTTPS URIs, then no mitigation is possible, and you
+should upgrade as soon as possible.</p>
+
+<p>Note that this vulnerability does not apply to the Saxon Java or C# products, only
+SaxonC (C, C++, Python, and PHP) releases are affected.
+Java and C# users should ensure that they’re using Java and C#
+runtimes that have been patched to mitigate the vulnerability.
+</p>
+
+</div></content></entry><entry><title>SaxonC eMudhra advisory</title><link href="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/announcements/2026/10/26-emudhra.html</id><published>2026-10-26T11:00:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/announcements/2026/10/26-emudhra.html"><div xmlns="http://www.w3.org/1999/xhtml">
 
 
 <p>Oracle
@@ -2750,75 +2791,5 @@ SaxonJS 2.x can use.</p>
 <p>If you encounter any issues with SaxonJS 2.7, please
 <a href="https://saxonica.plan.io/projects/saxon-js/issues">report them</a>
 on our issue tracker.</p>
-
-</div></content></entry><entry><title>Packaging SaxonJS for the browser</title><link href="https://blog.saxonica.com/norm/2024/08/16-packaging.html" rel="alternate" type="text/html"/><id>https://blog.saxonica.com/norm/2024/08/16-packaging.html</id><published>2024-08-16T15:20:00Z</published><content type="xhtml" xml:base="https://blog.saxonica.com/norm/2024/08/16-packaging.html"><div xmlns="http://www.w3.org/1999/xhtml">
-
-
-<p>Over the years, there have been several requests to improve the way that
-SaxonJS is packaged for the browser. In the run up towards SaxonJS 3.0 (real
-soon now, I promise), I’ve spent a few hours trying to see if that’s possible.</p>
-
-<p>For SaxonJS on Node.js, things seem to be working the way users expect. You
-can install SaxonJS, and <em>xslt3.js</em>, the command-line XSLT processor,
-with <code>npm install</code>. Then you can use them as you would other Node.js
-modules and applications.</p>
-
-<p>For the browser, things are a little less clear.</p>
-
-<p>I’ll start out by observing that SaxonJS is a large(ish) collection of mostly
-plain JavaScript files. There are a mixture of techniques used, as you might
-expect from a code base that stretches back seven or eight years (roughly ∞ in
-JavaScript years). This code is compiled by the <a href="https://developers.google.com/closure/compiler">Closure Compiler</a> to
-produce the release artifacts.</p>
-
-<div class="aside">
-<p><em>Aside:</em> Producing TypeScript instead of JavaScript is almost certainly
-impractical. And
-the answer to the question, “can you make it an ESM module?” appears to be “no”. But
-maybe I’m wrong?</p>
-</div>
-
-<p>Almost anything is <em>possible</em> in software,
-but there some things are probably <em>impractical</em> because of how SaxonJS
-is built.
-</p>
-
-<p>What I’ve come to realize after several hours is that I
-don’t actually understand what problem I’m trying to solve. That usually makes
-problems harder.</p>
-
-<p>For example, it would be easy to package the browser versions of the SaxonJS
-libraries into the <code>saxon-js</code> <em>npm</em> package. That would allow
-you to use <code>npm install</code> to install it. Once installed, you could
-refer to it in HTML like this:</p>
-
-<pre><code>&lt;script src="node_modules/saxon-js/SaxonJS3.rt.js"&gt;&lt;/script&gt;</code></pre>
-
-<p>That’s a non-zero usability improvement over downloading the browser release
-yourself and adding it to your project, but it’s an <em>awfully small</em>
-improvement. So small, that I conjecture that the request to “put it in the npm
-package” means more than that. But I don’t know what more.</p>
-
-<p>Another request that’s come up a couple of times is whether we should provide
-a version that’s been packaged up with <em>webpack</em>. Well. Okay. I spent
-a bit of time on that and eventually I managed to get</p>
-
-<pre><code>npx webpack --config webpack.config.js</code></pre>
-
-<p>to take <code>src/SaxonJS3.js</code>, chew on it for a while, and produce
-<code>dist/SaxonJS3.js</code>. That was a little, uh, underwhelming. I started
-with a JavaScript library that I could load in the browser and ended with…a
-different one, I guess?</p>
-
-<p>Then there are suggestions that instead of <em>webpack</em> I should be
-trying <em>vite</em> or <em>bun</em> or something else and do I also need
-<em>browserify</em>? I don’t know.
-I’m about to give up, at least in the short term, but before I do, I thought
-I’d see if anyone out there can tell me what I’m missing.</p>
-
-<p>If you would like to see SaxonJS for the browser packaged up in some
-different way, can you tell me how? And why? A small test case would be ideal:
-something that isn’t too complicated, that doesn’t work with SaxonJS as it’s
-distributed today, that would work if we packaged it in some other way.</p>
 
 </div></content></entry></feed>
