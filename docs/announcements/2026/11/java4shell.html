@@ -1,0 +1,18 @@
+<!DOCTYPE HTML><html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  
+  <title>Saxon and the Java CVE-2026-114938 ‘Java4Shell’ vulnerability</title>
+  <meta name="author" content="Matt Patterson">
+  <meta name="pubdate" content="2026-11-19T14:50:00">
+<link rel="stylesheet" type="text/css" href="/css/blog.css"><link rel="stylesheet" type="text/css" href="/css/announcements.css"><meta content="Saxonica announcements" property="og:site_name"><meta content="https://blog.saxonica.com/img/sitecard.png" property="og:image"><meta content="The latest news from Saxonica." property="og:description"><meta content="https://blog.saxonica.com/announcements/" property="og:url"><meta content="600" property="og:image:width"><meta content="315" property="og:image:height"><meta content="Saxon and the Java CVE-2026-114938 ‘Java4Shell’ vulnerability" property="og:title"><meta content="en_GB" property="og:locale"><meta content="website" property="og:type"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body class="matt-patterson"><header><div class="banner"><h1><a href="/announcements/">Saxonica announcements</a></h1><div class="tagline">The latest news from Saxonica</div></div><h2>Saxon and the Java CVE-2026-114938 ‘Java4Shell’ vulnerability</h2><aside class="nav"><div class="navlinks"><div id="search"><form action="https://www.google.com/search" target="_parent"><span>Search: </span><input size="20" name="as_q"><input type="hidden" name="hl" value="en"><input type="hidden" name="ie" value="UTF-8"><input type="hidden" name="btnG" value="Google+Search"><input type="hidden" name="as_qdr" value="all"><input type="hidden" name="as_occt" value="any"><input type="hidden" name="as_dt" value="i"><input type="hidden" name="as_sitesearch" value="blog.saxonica.com"></form></div><div id="blogroll"><a href="/">Home (combined archives)</a><br><a href="/announcements/">Announcements</a><br><a href="/mike/">Saxon diaries</a><br><a href="/oneil/">O’Neil Delpratt’s Blog</a><br><a href="/norm/">Saxon Chronicles</a></div></div></aside><div class="byline"><span class="by">By </span><span class="name"><a href="/authors.html#matt-patterson">Matt Patterson</a></span><span class="on"> on </span><a href="/authors.html#matt-patterson-D2026-11"><span class="date" time="2026-11-19T14:50:00">November&nbsp;19, 2026 at 02:50p.m.</span></a></div></header><main>
+
+
+<p>A new security vulnerability (<a href="https://nvd.nist.gov/vuln/detail/cve-2026-114938">CVE-2026-114938</a>) has been announced against OpenJDK. The vulnerability exists in the JDK’s implementation of the Base 64 decoder when running on affected x86-64 hardware. Some code within Saxon and its dependencies will make use of the JDK’s Base 64 decoder. User applications may also do so. Customers using SaxonJ on affected x86-64 hardware should upgrade their Java version as soon as possible.</p>
+
+<p>The vulnerability exploits code which can only run on a CPU that supports AVX-512 instructions. SaxonJ is only vulnerable if running on a vulnerable version of Java on an AVX-512 capable CPU (typically a high-end server CPU).</p>
+
+<p>SaxonC is not vulnerable. SaxonC for x86-64 on Linux, macOS, and Windows, is compiled to support a wide range of CPUs, and excludes AVX-512 support at compile time as part of that effort.</p>
+
+</main><footer><div class="prev-uri"><a href="/announcements/2026/10/saxon-12.10.1-13.1.1.html">SaxonC 12.10.1 and SaxonC 13.1.1</a></div></footer></body>
+</html>
